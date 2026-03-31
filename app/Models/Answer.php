@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model
 {
-    protected $fillable = ['choice_label', 'score', 'answer', 'image_file', 'question_id', 'question_type'];
+    protected $fillable = ['choice_label', 'score', 'answer', 'image_file', 'lang', 'question_id', 'question_type'];
 
     public function question()
     {

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('label');
             $table->unsignedInteger('order')->default(0);
+            $table->string('lang', 10)->default('id');
             $table->foreignId('group_id')->constrained('question_groups')->cascadeOnDelete();
             $table->timestamps();
         });

@@ -8,7 +8,7 @@ class QuestionGroup extends Model
 {
     protected $table = 'question_groups';
 
-    protected $fillable = ['code', 'name'];
+    protected $fillable = ['code', 'name', 'lang'];
 
     public function questions()
     {

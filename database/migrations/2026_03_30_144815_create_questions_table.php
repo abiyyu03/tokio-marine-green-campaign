@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('question_groups', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
+            $table->string('code');
             $table->string('name');
+            $table->string('lang', 10)->default('id');
+            $table->unique(['code', 'lang']);
             $table->timestamps();
         });
     }

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->integer('score')->default(0);
             $table->string('answer');
             $table->string('image_file')->nullable();
+            $table->string('lang', 10)->default('id');
             $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete();
             $table->enum('question_type', ['essay', 'single_choice', 'multiple_choice', 'linear_scale']);
             $table->timestamps();

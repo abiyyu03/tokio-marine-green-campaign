@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
-    protected $fillable = ['label', 'order', 'group_id'];
+    protected $fillable = ['label', 'order', 'lang', 'group_id'];
 
     public function group()
     {
