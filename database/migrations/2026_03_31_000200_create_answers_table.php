@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('choice_label')->nullable(); // A, B, C and etc
             $table->integer('score')->default(0);
             $table->string('answer');
+            $table->string('image_file')->nullable();
             $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete();
             $table->enum('question_type', ['essay', 'single_choice', 'multiple_choice', 'linear_scale']);
             $table->timestamps();
