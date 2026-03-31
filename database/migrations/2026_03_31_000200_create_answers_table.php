@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('answers', function (Blueprint $table) {
             $table->id();
-            $table->string('choice')->nullable();
+            $table->string('choice_label')->nullable(); // A, B, C and etc
             $table->integer('score')->default(0);
-            $table->string('label');
+            $table->string('answer');
             $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete();
             $table->enum('question_type', ['essay', 'single_choice', 'multiple_choice', 'linear_scale']);
             $table->timestamps();
