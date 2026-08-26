@@ -9,13 +9,19 @@ use App\Models\EmissionFieldOption;
 use Illuminate\Database\Seeder;
 
 /**
- * Menyusun ulang tiga langkah wizard persis seperti desain UI.
+ * Menyusun tiga langkah wizard persis seperti desain UI.
  * Seluruh struktur dideklarasikan sebagai array; loader di bawahnya generik,
  * sehingga menambah pertanyaan baru cukup menambah entri array.
  *
- * PERHATIAN: angka pada `factors` dan `meta.tariff_per_kwh` masih placeholder
- * yang perlu dikonfirmasi ke sumber resmi sebelum rilis. Kolom `source` dan
- * `reference_year` disediakan untuk itu.
+ * ANGGARAN POIN (gauge "Skor Kamu", total 100):
+ *   Transportasi      35  = moda 20 + jarak 15
+ *   Listrik Rumah     30  = AC 14 + kulkas 6 + daya 10
+ *   Konsumsi & Sampah 35  = plastik 6 + tas 6 + pilah 7 + galon 6 + daging 6 + belanja 4
+ *
+ * PERHATIAN: seluruh angka `points`, `kg_co2e_year`, `numeric_value`, dan
+ * `factors` masih PLACEHOLDER yang perlu dikonfirmasi ke sumber resmi sebelum
+ * rilis. Kolom `source` dan `reference_year` pada emission_factors disediakan
+ * untuk itu.
  */
 class CalculatorSchemaSeeder extends Seeder
 {
@@ -34,18 +40,16 @@ class CalculatorSchemaSeeder extends Seeder
                 'slug' => $data['slug'],
                 'calculator_key' => $data['calculator_key'],
                 'icon' => $data['icon'] ?? null,
-                'is_repeatable' => $data['is_repeatable'] ?? false,
-                'max_entries' => $data['max_entries'] ?? null,
+                'image_file' => $data['image_file'] ?? null,
+                'accent_color' => $data['accent_color'] ?? null,
+                'max_points' => $data['max_points'],
                 'sort_order' => $data['sort_order'],
                 'is_active' => true,
             ]
         );
 
         foreach ($data['translations'] as $locale => $attributes) {
-            $category->translations()->updateOrCreate(
-                ['locale' => $locale],
-                $attributes
-            );
+            $category->translations()->updateOrCreate(['locale' => $locale], $attributes);
         }
 
         // Pass 1: buat semua field tanpa dependensi.
@@ -54,14 +58,9 @@ class CalculatorSchemaSeeder extends Seeder
             $field = EmissionField::updateOrCreate(
                 ['emission_category_id' => $category->id, 'code' => $fieldData['code']],
                 [
-                    'input_type' => $fieldData['input_type'],
-                    'display_style' => $fieldData['display_style'] ?? null,
+                    'input_type' => $fieldData['input_type'] ?? 'single_choice',
+                    'display_style' => $fieldData['display_style'] ?? 'pill',
                     'unit' => $fieldData['unit'] ?? null,
-                    'unit_position' => $fieldData['unit_position'] ?? 'suffix',
-                    'decimals' => $fieldData['decimals'] ?? 0,
-                    'min_value' => $fieldData['min_value'] ?? null,
-                    'max_value' => $fieldData['max_value'] ?? null,
-                    'step' => $fieldData['step'] ?? null,
                     'is_required' => $fieldData['is_required'] ?? true,
                     'is_factor_key' => $fieldData['is_factor_key'] ?? false,
                     'is_basis' => $fieldData['is_basis'] ?? false,
@@ -74,14 +73,17 @@ class CalculatorSchemaSeeder extends Seeder
                 $field->translations()->updateOrCreate(['locale' => $locale], $attributes);
             }
 
-            foreach ($fieldData['options'] ?? [] as $optionIndex => $optionData) {
+            foreach ($fieldData['options'] as $optionIndex => $optionData) {
                 $option = EmissionFieldOption::updateOrCreate(
                     ['emission_field_id' => $field->id, 'code' => $optionData['code']],
                     [
                         'image_file' => $optionData['image_file'] ?? null,
                         'icon' => $optionData['icon'] ?? null,
+                        'points' => $optionData['points'] ?? 0,
                         'numeric_value' => $optionData['numeric_value'] ?? null,
-                        'numeric_unit' => $optionData['numeric_unit'] ?? null,
+                        'numeric_unit' => $optionData['numeric_unit'] ?? ($fieldData['unit'] ?? null),
+                        'kg_co2e_year' => $optionData['kg_co2e_year'] ?? null,
+                        'factor_key' => $optionData['factor_key'] ?? null,
                         'meta' => $optionData['meta'] ?? null,
                         'sort_order' => $optionIndex + 1,
                         'is_active' => true,
@@ -108,7 +110,7 @@ class CalculatorSchemaSeeder extends Seeder
             ]);
         }
 
-        foreach ($data['factors'] as $factorData) {
+        foreach ($data['factors'] ?? [] as $factorData) {
             EmissionFactor::updateOrCreate(
                 [
                     'emission_category_id' => $category->id,
@@ -117,7 +119,7 @@ class CalculatorSchemaSeeder extends Seeder
                 [
                     'value' => $factorData['value'],
                     'unit' => $factorData['unit'],
-                    'basis_unit' => $factorData['basis_unit'],
+                    'basis_unit' => $factorData['basis_unit'] ?? null,
                     'source' => $factorData['source'] ?? 'PLACEHOLDER - perlu verifikasi',
                     'reference_year' => $factorData['reference_year'] ?? null,
                     'is_active' => true,
@@ -130,332 +132,528 @@ class CalculatorSchemaSeeder extends Seeder
     private function definition(): array
     {
         return [
-            $this->transportasiDarat(),
-            $this->dayaRumahTangga(),
-            $this->peralatanRumahTangga(),
+            $this->transportasi(),
+            $this->listrikRumah(),
+            $this->konsumsiSampah(),
         ];
     }
 
-    private function transportasiDarat(): array
+    /**
+     * Langkah 1 - Transportasi.
+     * Hitung: faktor(moda) x jarak(km/hari) x 365.
+     */
+    private function transportasi(): array
     {
         return [
-            'code' => 'transportasi_darat',
-            'slug' => 'transportasi-darat',
-            'calculator_key' => 'distance_factor',
-            'icon' => 'car-side',
-            'is_repeatable' => true,
-            'max_entries' => 10,
+            'code' => 'transportasi',
+            'slug' => 'transportasi',
+            'calculator_key' => 'factor_basis',
+            'icon' => 'car',
+            'image_file' => 'images/calculator/transportasi.jpg',
+            'accent_color' => '#F59E0B',
+            'max_points' => 35,
             'sort_order' => 1,
             'translations' => [
                 'id' => [
-                    'name' => 'Transportasi Darat',
-                    'title' => 'Transportasi Darat',
-                    'subtitle' => 'Bagaimana Cara Anda Beraktivitas Hari Ini?',
-                    'summary_label' => 'Total Emisi perjalanan Anda',
-                    'add_entry_label' => 'Tambah Kendaraan Lain',
+                    'name' => 'Transportasi',
+                    'panel_title' => 'Transportasi',
+                    'panel_description' => 'Pilih kendaraan dan jarak harian yang paling sering kamu tempuh untuk menghitung kontribusi emisi dari sektor transportasi.',
                 ],
                 'en' => [
-                    'name' => 'Land Transport',
-                    'title' => 'Land Transport',
-                    'subtitle' => 'How Do You Get Around Today?',
-                    'summary_label' => 'Your Total Travel Emissions',
-                    'add_entry_label' => 'Add Another Vehicle',
+                    'name' => 'Transport',
+                    'panel_title' => 'Transport',
+                    'panel_description' => 'Pick the vehicle and daily distance you travel most often so we can measure your emissions from transport.',
                 ],
             ],
             'fields' => [
                 [
                     'code' => 'moda_transportasi',
-                    'input_type' => 'single_choice',
                     'display_style' => 'card',
                     'is_factor_key' => true,
                     'translations' => [
-                        'id' => ['label' => 'Pilih moda transportasi utama Anda'],
-                        'en' => ['label' => 'Choose your main mode of transport'],
+                        'id' => [
+                            'label' => 'Apa moda transportasi utama yang kamu gunakan sehari-hari?',
+                            'summary_label' => 'Moda',
+                        ],
+                        'en' => [
+                            'label' => 'What is your main mode of transport day to day?',
+                            'summary_label' => 'Mode',
+                        ],
                     ],
                     'options' => [
-                        ['code' => 'mobil', 'icon' => 'car',
-                            'translations' => ['id' => ['label' => 'Mobil'], 'en' => ['label' => 'Car']]],
-                        ['code' => 'motor', 'icon' => 'motorcycle',
-                            'translations' => ['id' => ['label' => 'Motor'], 'en' => ['label' => 'Motorcycle']]],
-                    ],
-                ],
-                [
-                    'code' => 'bahan_bakar',
-                    'input_type' => 'single_choice',
-                    'display_style' => 'card',
-                    'is_factor_key' => true,
-                    // Muncul setelah moda transportasi dipilih (apa pun pilihannya).
-                    'depends_on' => 'moda_transportasi',
-                    'translations' => [
-                        'id' => ['label' => 'Bahan bakar apa yang digunakan kendaraan Anda?'],
-                        'en' => ['label' => 'What fuel does your vehicle use?'],
-                    ],
-                    'options' => [
-                        ['code' => 'listrik', 'icon' => 'ev-plug',
-                            'translations' => ['id' => ['label' => 'Listrik'], 'en' => ['label' => 'Electric']]],
-                        ['code' => 'bensin', 'icon' => 'fuel-pump',
-                            'translations' => ['id' => ['label' => 'Bensin'], 'en' => ['label' => 'Gasoline']]],
-                        ['code' => 'solar', 'icon' => 'fuel-can',
-                            'translations' => ['id' => ['label' => 'Solar'], 'en' => ['label' => 'Diesel']]],
+                        [
+                            'code' => 'mobil_bbm', 'points' => 20, 'factor_key' => 'mobil_bbm',
+                            'icon' => 'car', 'image_file' => 'images/calculator/moda/mobil-bensin.png',
+                            'translations' => [
+                                'id' => ['label' => 'Mobil Bensin (BBM)', 'summary_label' => 'Mobil Bensin'],
+                                'en' => ['label' => 'Petrol Car', 'summary_label' => 'Petrol Car'],
+                            ],
+                        ],
+                        [
+                            'code' => 'motor_bbm', 'points' => 10, 'factor_key' => 'motor_bbm',
+                            'icon' => 'motorcycle', 'image_file' => 'images/calculator/moda/motor-bensin.png',
+                            'translations' => [
+                                'id' => ['label' => 'Motor Bensin (BBM)', 'summary_label' => 'Motor Bensin'],
+                                'en' => ['label' => 'Petrol Motorcycle', 'summary_label' => 'Petrol Motorcycle'],
+                            ],
+                        ],
+                        [
+                            'code' => 'mobil_ev', 'points' => 12, 'factor_key' => 'mobil_ev',
+                            'icon' => 'car-electric', 'image_file' => 'images/calculator/moda/mobil-listrik.png',
+                            'translations' => [
+                                'id' => ['label' => 'Mobil Listrik (EV)', 'summary_label' => 'Mobil Listrik'],
+                                'en' => ['label' => 'Electric Car (EV)', 'summary_label' => 'Electric Car'],
+                            ],
+                        ],
+                        [
+                            'code' => 'motor_ev', 'points' => 5, 'factor_key' => 'motor_ev',
+                            'icon' => 'motorcycle-electric', 'image_file' => 'images/calculator/moda/motor-listrik.png',
+                            'translations' => [
+                                'id' => ['label' => 'Motor Listrik (EV)', 'summary_label' => 'Motor Listrik'],
+                                'en' => ['label' => 'Electric Motorcycle (EV)', 'summary_label' => 'Electric Motorcycle'],
+                            ],
+                        ],
+                        [
+                            'code' => 'transportasi_umum', 'points' => 6, 'factor_key' => 'transportasi_umum',
+                            'icon' => 'bus', 'image_file' => 'images/calculator/moda/transportasi-umum.png',
+                            'translations' => [
+                                'id' => ['label' => 'Transportasi Umum', 'summary_label' => 'Transportasi Umum'],
+                                'en' => ['label' => 'Public Transport', 'summary_label' => 'Public Transport'],
+                            ],
+                        ],
+                        [
+                            'code' => 'kombinasi', 'points' => 13, 'factor_key' => 'kombinasi',
+                            'icon' => 'shuffle', 'image_file' => 'images/calculator/moda/kombinasi.png',
+                            'translations' => [
+                                'id' => ['label' => 'Kombinasi', 'summary_label' => 'Kombinasi'],
+                                'en' => ['label' => 'A Mix of Modes', 'summary_label' => 'Mixed'],
+                            ],
+                        ],
                     ],
                 ],
                 [
                     'code' => 'jarak_harian',
-                    'input_type' => 'number',
-                    'unit' => 'KM',
-                    'unit_position' => 'suffix',
+                    'unit' => 'km/day',
                     'is_basis' => true,
-                    'min_value' => 0,
-                    'max_value' => 1000,
-                    'step' => 1,
                     'translations' => [
                         'id' => [
-                            'label' => 'Seberapa jauh Anda menempuh perjalanan dalam sehari?',
-                            'placeholder' => 'Contoh: 30',
-                            'unit_label' => 'KM',
+                            'label' => 'Berapa estimasi total jarak yang kamu tempuh dalam sehari?',
+                            'summary_label' => 'Jarak',
                         ],
                         'en' => [
-                            'label' => 'How far do you travel in a day?',
-                            'placeholder' => 'e.g. 30',
-                            'unit_label' => 'KM',
+                            'label' => 'Roughly how far do you travel in a day?',
+                            'summary_label' => 'Distance',
+                        ],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'lt_10', 'points' => 2, 'numeric_value' => 6,
+                            'translations' => [
+                                'id' => ['label' => 'Kurang dari 10 km / hari', 'summary_label' => '< 10 km / hari'],
+                                'en' => ['label' => 'Less than 10 km / day', 'summary_label' => '< 10 km / day'],
+                            ],
+                        ],
+                        [
+                            'code' => '10_25', 'points' => 5, 'numeric_value' => 17.5,
+                            'translations' => [
+                                'id' => ['label' => '10 - 25 km / hari', 'summary_label' => '10 - 25 km / hari'],
+                                'en' => ['label' => '10 - 25 km / day', 'summary_label' => '10 - 25 km / day'],
+                            ],
+                        ],
+                        [
+                            'code' => '26_50', 'points' => 10, 'numeric_value' => 38,
+                            'translations' => [
+                                'id' => ['label' => '26 - 50 km / hari', 'summary_label' => '26 - 50 km / hari'],
+                                'en' => ['label' => '26 - 50 km / day', 'summary_label' => '26 - 50 km / day'],
+                            ],
+                        ],
+                        [
+                            'code' => 'gt_50', 'points' => 15, 'numeric_value' => 65,
+                            'translations' => [
+                                'id' => ['label' => 'Lebih dari 50 km / hari', 'summary_label' => '> 50 km / hari'],
+                                'en' => ['label' => 'More than 50 km / day', 'summary_label' => '> 50 km / day'],
+                            ],
                         ],
                     ],
                 ],
             ],
             'factors' => [
-                ['key' => 'mobil|bensin',  'value' => 0.19200, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km'],
-                ['key' => 'mobil|solar',   'value' => 0.17100, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km'],
-                ['key' => 'mobil|listrik', 'value' => 0.15000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km'],
-                ['key' => 'motor|bensin',  'value' => 0.10300, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km'],
-                ['key' => 'motor|listrik', 'value' => 0.02600, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km'],
-                ['key' => 'motor|solar',   'value' => 0.10300, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km',
-                    'notes' => 'Kombinasi tidak lazim di Indonesia. Konfirmasi apakah opsi Solar perlu disembunyikan saat moda = Motor.'],
-            ],
-        ];
-    }
-
-    private function dayaRumahTangga(): array
-    {
-        return [
-            'code' => 'daya_rumah_tangga',
-            'slug' => 'daya-rumah-tangga',
-            'calculator_key' => 'electricity_bill',
-            'icon' => 'home',
-            'is_repeatable' => false,
-            'sort_order' => 2,
-            'translations' => [
-                'id' => [
-                    'name' => 'Daya Rumah Tangga',
-                    'title' => 'Daya Rumah Tangga',
-                    'subtitle' => 'Berikan Dampak Positif dari Rumah.',
-                    'summary_label' => 'Total Emisi rumah tangga Anda',
-                ],
-                'en' => [
-                    'name' => 'Household Energy',
-                    'title' => 'Household Energy',
-                    'subtitle' => 'Make a Positive Impact from Home.',
-                    'summary_label' => 'Your Total Household Emissions',
-                ],
-            ],
-            'fields' => [
-                [
-                    'code' => 'anggota_keluarga',
-                    'input_type' => 'number',
-                    'unit' => 'Orang',
-                    'min_value' => 1,
-                    'max_value' => 30,
-                    'step' => 1,
-                    'translations' => [
-                        'id' => [
-                            'label' => 'Berapa banyak anggota keluarga yang tinggal bersama Anda?',
-                            'placeholder' => 'Contoh: 30',
-                            'unit_label' => 'Orang',
-                        ],
-                        'en' => [
-                            'label' => 'How many family members live with you?',
-                            'placeholder' => 'e.g. 30',
-                            'unit_label' => 'People',
-                        ],
-                    ],
-                ],
-                [
-                    'code' => 'sumber_listrik',
-                    'input_type' => 'single_choice',
-                    'display_style' => 'card',
-                    'is_factor_key' => true,
-                    'translations' => [
-                        'id' => ['label' => 'Dari mana listrik rumah Anda berasal?'],
-                        'en' => ['label' => 'Where does your home electricity come from?'],
-                    ],
-                    'options' => [
-                        ['code' => 'pln', 'icon' => 'transmission-tower',
-                            'translations' => ['id' => ['label' => '100% PLN'], 'en' => ['label' => '100% Grid']]],
-                        ['code' => 'energi_bersih', 'icon' => 'solar-panel',
-                            'translations' => ['id' => ['label' => '100% Energi Bersih'], 'en' => ['label' => '100% Clean Energy']]],
-                        ['code' => 'hybrid', 'icon' => 'home-bolt', 'meta' => ['renewable_share' => 0.5],
-                            'translations' => ['id' => ['label' => 'Hybrid'], 'en' => ['label' => 'Hybrid']]],
-                    ],
-                ],
-                [
-                    'code' => 'daya_terpasang',
-                    'input_type' => 'select',
-                    'display_style' => 'dropdown',
-                    'unit' => 'VA',
-                    'translations' => [
-                        'id' => [
-                            'label' => 'Berapa daya listrik terpasang di rumah Anda?',
-                            'placeholder' => 'Pilih Daya Listrik Rumah Anda',
-                            'unit_label' => 'VA',
-                        ],
-                        'en' => [
-                            'label' => 'What is your installed electrical capacity?',
-                            'placeholder' => 'Select your home capacity',
-                            'unit_label' => 'VA',
-                        ],
-                    ],
-                    // numeric_value = daya (VA), meta.tariff_per_kwh = tarif Rp/kWh
-                    // yang dipakai untuk menurunkan kWh dari nominal tagihan.
-                    'options' => [
-                        ['code' => '450', 'numeric_value' => 450, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 415.00],
-                            'translations' => ['id' => ['label' => '450 VA'], 'en' => ['label' => '450 VA']]],
-                        ['code' => '900_subsidi', 'numeric_value' => 900, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 605.00],
-                            'translations' => ['id' => ['label' => '900 VA (Subsidi)'], 'en' => ['label' => '900 VA (Subsidised)']]],
-                        ['code' => '900_rtm', 'numeric_value' => 900, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 1352.00],
-                            'translations' => ['id' => ['label' => '900 VA (Non-Subsidi)'], 'en' => ['label' => '900 VA (Non-Subsidised)']]],
-                        ['code' => '1300', 'numeric_value' => 1300, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 1444.70],
-                            'translations' => ['id' => ['label' => '1.300 VA'], 'en' => ['label' => '1,300 VA']]],
-                        ['code' => '2200', 'numeric_value' => 2200, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 1444.70],
-                            'translations' => ['id' => ['label' => '2.200 VA'], 'en' => ['label' => '2,200 VA']]],
-                        ['code' => '3500_5500', 'numeric_value' => 3500, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 1699.53],
-                            'translations' => ['id' => ['label' => '3.500 - 5.500 VA'], 'en' => ['label' => '3,500 - 5,500 VA']]],
-                        ['code' => '6600_up', 'numeric_value' => 6600, 'numeric_unit' => 'VA',
-                            'meta' => ['tariff_per_kwh' => 1699.53],
-                            'translations' => ['id' => ['label' => '6.600 VA ke atas'], 'en' => ['label' => '6,600 VA and above']]],
-                    ],
-                ],
-                [
-                    'code' => 'tagihan_bulanan',
-                    'input_type' => 'currency',
-                    'unit' => 'Rp',
-                    'unit_position' => 'prefix',
-                    'is_basis' => true,
-                    'min_value' => 0,
-                    'translations' => [
-                        'id' => ['label' => 'Rata-rata tagihan listrik Anda per bulan?', 'placeholder' => '0', 'unit_label' => 'Rp'],
-                        'en' => ['label' => 'Your average monthly electricity bill?', 'placeholder' => '0', 'unit_label' => 'Rp'],
-                    ],
-                ],
-            ],
-            'factors' => [
-                ['key' => 'pln', 'value' => 0.87000, 'unit' => 'kgCO2e/kWh', 'basis_unit' => 'kWh',
-                    'notes' => 'Faktor emisi grid. Konfirmasi angka resmi per wilayah/tahun.'],
-                ['key' => 'energi_bersih', 'value' => 0.00000, 'unit' => 'kgCO2e/kWh', 'basis_unit' => 'kWh'],
-                ['key' => 'hybrid', 'value' => 0.43500, 'unit' => 'kgCO2e/kWh', 'basis_unit' => 'kWh',
-                    'notes' => 'Diasumsikan 50% grid. Sesuaikan dengan meta.renewable_share bila porsinya dibuat dinamis.'],
+                ['key' => 'mobil_bbm', 'value' => 0.19200000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day'],
+                ['key' => 'motor_bbm', 'value' => 0.07500000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day'],
+                ['key' => 'mobil_ev', 'value' => 0.13000000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day',
+                    'notes' => 'Turunan dari 0,15 kWh/km x faktor grid PLN.'],
+                ['key' => 'motor_ev', 'value' => 0.03000000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day',
+                    'notes' => 'Turunan dari 0,035 kWh/km x faktor grid PLN.'],
+                ['key' => 'transportasi_umum', 'value' => 0.05500000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day'],
+                ['key' => 'kombinasi', 'value' => 0.11000000, 'unit' => 'kgCO2e/km', 'basis_unit' => 'km/day',
+                    'notes' => 'Rata-rata tertimbang mobil BBM, motor BBM, dan transportasi umum.'],
             ],
         ];
     }
 
     /**
-     * CATATAN: layar untuk langkah ini tidak ikut dilampirkan, jadi daftar
-     * alat di bawah disusun dari tabel "C. Peralatan Rumah Tangga" pada
-     * halaman hasil (Lampu Pijar, AC) lalu dilengkapi alat umum lainnya.
-     * Perlu dicocokkan ulang dengan desain aslinya.
+     * Langkah 2 - Listrik Rumah.
+     * Hitung: total kWh/tahun dari tiap opsi x faktor grid PLN.
      */
-    private function peralatanRumahTangga(): array
+    private function listrikRumah(): array
     {
         return [
-            'code' => 'peralatan_rumah_tangga',
-            'slug' => 'peralatan-rumah-tangga',
-            'calculator_key' => 'appliance_usage',
-            'icon' => 'lamp',
-            'is_repeatable' => true,
-            'max_entries' => 20,
-            'sort_order' => 3,
+            'code' => 'listrik_rumah',
+            'slug' => 'listrik-rumah',
+            'calculator_key' => 'factor_basis',
+            'icon' => 'bolt',
+            'image_file' => 'images/calculator/listrik-rumah.jpg',
+            'accent_color' => '#10B981',
+            'max_points' => 30,
+            'sort_order' => 2,
             'translations' => [
                 'id' => [
-                    'name' => 'Peralatan Rumah Tangga',
-                    'title' => 'Peralatan Rumah Tangga',
-                    'subtitle' => 'Alat elektronik apa yang Anda gunakan sehari-hari?',
-                    'summary_label' => 'Total Emisi peralatan Anda',
-                    'add_entry_label' => 'Tambah Peralatan Lain',
+                    'name' => 'Listrik Rumah',
+                    'panel_title' => 'Konsumsi Listrik & Perangkat Rumah Tangga',
+                    'panel_description' => 'Penggunaan daya listrik rumah tangga merupakan salah satu penyumbang emisi terbesar. Pilih peralatan dan kapasitas listrik rumahmu untuk mengukur dampaknya.',
                 ],
                 'en' => [
-                    'name' => 'Home Appliances',
-                    'title' => 'Home Appliances',
-                    'subtitle' => 'Which appliances do you use daily?',
-                    'summary_label' => 'Your Total Appliance Emissions',
-                    'add_entry_label' => 'Add Another Appliance',
+                    'name' => 'Home Electricity',
+                    'panel_title' => 'Electricity Use & Household Appliances',
+                    'panel_description' => 'Household electricity is one of the largest sources of emissions. Pick the appliances and connected capacity at home to measure their impact.',
                 ],
             ],
             'fields' => [
                 [
-                    'code' => 'jenis_alat',
-                    'input_type' => 'single_choice',
-                    'display_style' => 'card',
-                    // numeric_value = daya rata-rata (watt), dipakai menghitung kWh.
+                    'code' => 'penggunaan_ac',
+                    'unit' => 'kwh/year',
+                    'is_basis' => true,
                     'translations' => [
-                        'id' => ['label' => 'Alat elektronik apa yang Anda gunakan?'],
-                        'en' => ['label' => 'Which appliance do you use?'],
+                        'id' => [
+                            'label' => 'Bagaimana penggunaan Air Conditioner (AC) di rumahmu?',
+                            'summary_label' => 'AC',
+                        ],
+                        'en' => [
+                            'label' => 'How is air conditioning used at your home?',
+                            'summary_label' => 'AC',
+                        ],
                     ],
                     'options' => [
-                        ['code' => 'lampu_pijar', 'numeric_value' => 60, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Lampu Pijar'], 'en' => ['label' => 'Incandescent Lamp']]],
-                        ['code' => 'lampu_led', 'numeric_value' => 10, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Lampu LED'], 'en' => ['label' => 'LED Lamp']]],
-                        ['code' => 'ac', 'numeric_value' => 840, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'AC'], 'en' => ['label' => 'Air Conditioner']]],
-                        ['code' => 'kulkas', 'numeric_value' => 150, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Kulkas'], 'en' => ['label' => 'Refrigerator']]],
-                        ['code' => 'televisi', 'numeric_value' => 120, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Televisi'], 'en' => ['label' => 'Television']]],
-                        ['code' => 'mesin_cuci', 'numeric_value' => 500, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Mesin Cuci'], 'en' => ['label' => 'Washing Machine']]],
-                        ['code' => 'kipas_angin', 'numeric_value' => 60, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Kipas Angin'], 'en' => ['label' => 'Electric Fan']]],
-                        ['code' => 'rice_cooker', 'numeric_value' => 400, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Rice Cooker'], 'en' => ['label' => 'Rice Cooker']]],
-                        ['code' => 'water_heater', 'numeric_value' => 1500, 'numeric_unit' => 'watt',
-                            'translations' => ['id' => ['label' => 'Water Heater'], 'en' => ['label' => 'Water Heater']]],
+                        [
+                            'code' => 'tidak_ada', 'points' => 0, 'numeric_value' => 0,
+                            'translations' => [
+                                'id' => ['label' => 'Tidak Menggunakan AC', 'summary_label' => 'Tanpa AC'],
+                                'en' => ['label' => 'No air conditioning', 'summary_label' => 'No AC'],
+                            ],
+                        ],
+                        [
+                            'code' => 'satu_unit_5jam_standar', 'points' => 10, 'numeric_value' => 1230,
+                            'translations' => [
+                                'id' => ['label' => '1 Unit (< 5 jam / hari) - Standar', 'summary_label' => '1 Unit (< 5 jam / hari) - Standar'],
+                                'en' => ['label' => '1 unit (< 5 hrs / day) - Standard', 'summary_label' => '1 unit (< 5 hrs) - Standard'],
+                            ],
+                        ],
+                        [
+                            'code' => 'satu_unit_8jam_standar', 'points' => 13, 'numeric_value' => 2760,
+                            'translations' => [
+                                'id' => ['label' => '1 Unit (> 8 jam / hari) - Standar', 'summary_label' => '1 Unit (> 8 jam / hari) - Standar'],
+                                'en' => ['label' => '1 unit (> 8 hrs / day) - Standard', 'summary_label' => '1 unit (> 8 hrs) - Standard'],
+                            ],
+                        ],
+                        [
+                            'code' => 'satu_unit_5jam_inverter', 'points' => 6, 'numeric_value' => 850,
+                            'translations' => [
+                                'id' => ['label' => '1 Unit (< 5 jam / hari) - Inverter', 'summary_label' => '1 Unit (< 5 jam / hari) - Inverter'],
+                                'en' => ['label' => '1 unit (< 5 hrs / day) - Inverter', 'summary_label' => '1 unit (< 5 hrs) - Inverter'],
+                            ],
+                        ],
+                        [
+                            'code' => 'satu_unit_8jam_inverter', 'points' => 11, 'numeric_value' => 1910,
+                            'translations' => [
+                                'id' => ['label' => '1 Unit (> 8 jam / hari) - Inverter', 'summary_label' => '1 Unit (> 8 jam / hari) - Inverter'],
+                                'en' => ['label' => '1 unit (> 8 hrs / day) - Inverter', 'summary_label' => '1 unit (> 8 hrs) - Inverter'],
+                            ],
+                        ],
+                        [
+                            'code' => 'lebih_dari_satu_unit', 'points' => 14, 'numeric_value' => 4200,
+                            'translations' => [
+                                'id' => ['label' => 'Lebih dari 1 Unit AC', 'summary_label' => '> 1 Unit AC'],
+                                'en' => ['label' => 'More than 1 AC unit', 'summary_label' => '> 1 AC unit'],
+                            ],
+                        ],
                     ],
                 ],
                 [
-                    'code' => 'jumlah_unit',
-                    'input_type' => 'number',
-                    'unit' => 'Unit',
-                    'min_value' => 1,
-                    'max_value' => 100,
-                    'step' => 1,
-                    'translations' => [
-                        'id' => ['label' => 'Berapa unit yang Anda miliki?', 'placeholder' => 'Contoh: 2', 'unit_label' => 'Unit'],
-                        'en' => ['label' => 'How many units do you have?', 'placeholder' => 'e.g. 2', 'unit_label' => 'Units'],
-                    ],
-                ],
-                [
-                    'code' => 'durasi_harian',
-                    'input_type' => 'number',
-                    'unit' => 'Jam/Hari',
+                    'code' => 'tipe_kulkas',
+                    'unit' => 'kwh/year',
                     'is_basis' => true,
-                    'min_value' => 0,
-                    'max_value' => 24,
-                    'step' => 0.5,
-                    'decimals' => 1,
                     'translations' => [
-                        'id' => ['label' => 'Berapa lama digunakan dalam sehari?', 'placeholder' => 'Contoh: 8', 'unit_label' => 'Jam/Hari'],
-                        'en' => ['label' => 'How long is it used per day?', 'placeholder' => 'e.g. 8', 'unit_label' => 'Hours/Day'],
+                        'id' => [
+                            'label' => 'Tipe kulkas apa yang digunakan di rumahmu?',
+                            'summary_label' => 'Kulkas',
+                        ],
+                        'en' => [
+                            'label' => 'What type of refrigerator do you use at home?',
+                            'summary_label' => 'Refrigerator',
+                        ],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'tidak_ada', 'points' => 0, 'numeric_value' => 0,
+                            'translations' => [
+                                'id' => ['label' => 'Tidak Ada Kulkas', 'summary_label' => 'Tanpa Kulkas'],
+                                'en' => ['label' => 'No refrigerator', 'summary_label' => 'None'],
+                            ],
+                        ],
+                        [
+                            'code' => 'standar', 'points' => 6, 'numeric_value' => 480,
+                            'translations' => [
+                                'id' => ['label' => 'Kulkas Standar (Non-Inverter)', 'summary_label' => 'Kulkas Standar (Non-Inverter)'],
+                                'en' => ['label' => 'Standard refrigerator (non-inverter)', 'summary_label' => 'Standard (non-inverter)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'inverter', 'points' => 3, 'numeric_value' => 250,
+                            'translations' => [
+                                'id' => ['label' => 'Kulkas Hemat Energi (Inverter)', 'summary_label' => 'Kulkas Inverter'],
+                                'en' => ['label' => 'Energy-saving refrigerator (inverter)', 'summary_label' => 'Inverter'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'daya_terpasang',
+                    'unit' => 'kwh/year',
+                    'is_basis' => true,
+                    'translations' => [
+                        'id' => [
+                            'label' => 'Berapa batas daya listrik (VA) terpasang di rumahmu?',
+                            'summary_label' => 'Daya Listrik',
+                        ],
+                        'en' => [
+                            'label' => 'What is the connected electrical capacity (VA) at your home?',
+                            'summary_label' => 'Capacity',
+                        ],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'lte_900', 'points' => 5, 'numeric_value' => 720,
+                            'meta' => ['va' => 900],
+                            'translations' => [
+                                'id' => ['label' => '≤ 900 VA', 'summary_label' => '≤ 900 VA'],
+                                'en' => ['label' => '≤ 900 VA', 'summary_label' => '≤ 900 VA'],
+                            ],
+                        ],
+                        [
+                            'code' => '1300', 'points' => 8, 'numeric_value' => 1200,
+                            'meta' => ['va' => 1300],
+                            'translations' => [
+                                'id' => ['label' => '1300 VA', 'summary_label' => '1300 VA'],
+                                'en' => ['label' => '1300 VA', 'summary_label' => '1300 VA'],
+                            ],
+                        ],
+                        [
+                            'code' => '2200', 'points' => 10, 'numeric_value' => 2000,
+                            'meta' => ['va' => 2200],
+                            'translations' => [
+                                'id' => ['label' => '2200 VA', 'summary_label' => '2200 VA'],
+                                'en' => ['label' => '2200 VA', 'summary_label' => '2200 VA'],
+                            ],
+                        ],
                     ],
                 ],
             ],
             'factors' => [
-                // Tanpa field kunci: satu faktor grid untuk seluruh peralatan.
-                ['key' => '', 'value' => 0.87000, 'unit' => 'kgCO2e/kWh', 'basis_unit' => 'kWh',
-                    'notes' => 'Samakan dengan faktor grid pada kategori Daya Rumah Tangga.'],
+                [
+                    'key' => '', 'value' => 0.87000000, 'unit' => 'kgCO2e/kWh', 'basis_unit' => 'kwh/year',
+                    'notes' => 'Faktor emisi grid PLN sistem Jawa-Bali. Perlu diperbarui ke angka resmi terakhir.',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Langkah 3 - Konsumsi & Sampah.
+     * Hitung: penjumlahan kg CO2e/tahun tiap opsi terpilih.
+     */
+    private function konsumsiSampah(): array
+    {
+        return [
+            'code' => 'konsumsi_sampah',
+            'slug' => 'konsumsi-sampah',
+            'calculator_key' => 'direct_sum',
+            'icon' => 'recycle',
+            'image_file' => 'images/calculator/konsumsi-sampah.jpg',
+            'accent_color' => '#EF4444',
+            'max_points' => 35,
+            'sort_order' => 3,
+            'translations' => [
+                'id' => [
+                    'name' => 'Konsumsi & Sampah',
+                    'panel_title' => 'Gaya Hidup & Pola Konsumsi Harian',
+                    'panel_description' => 'Kebiasaan belanja, pengelolaan sampah, dan pilihan makananmu memberikan dampak langsung terhadap jumlah jejak karbon harian.',
+                ],
+                'en' => [
+                    'name' => 'Consumption & Waste',
+                    'panel_title' => 'Lifestyle & Daily Consumption',
+                    'panel_description' => 'Your shopping habits, how you handle waste, and what you eat all feed directly into your daily carbon footprint.',
+                ],
+            ],
+            'fields' => [
+                [
+                    'code' => 'plastik_sekali_pakai',
+                    'translations' => [
+                        'id' => ['label' => 'Seberapa sering kamu menggunakan plastik sekali pakai?', 'summary_label' => 'Penggunaan Plastik'],
+                        'en' => ['label' => 'How often do you use single-use plastic?', 'summary_label' => 'Single-use Plastic'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'jarang', 'points' => 1, 'kg_co2e_year' => 15,
+                            'translations' => [
+                                'id' => ['label' => 'Jarang (0-2x / minggu)', 'summary_label' => 'Jarang (0-2x / minggu)'],
+                                'en' => ['label' => 'Rarely (0-2x / week)', 'summary_label' => 'Rarely (0-2x / week)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'sedang', 'points' => 5, 'kg_co2e_year' => 40,
+                            'translations' => [
+                                'id' => ['label' => 'Sedang (3-5x / minggu)', 'summary_label' => 'Sedang (3-5x / minggu)'],
+                                'en' => ['label' => 'Moderate (3-5x / week)', 'summary_label' => 'Moderate (3-5x / week)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'sering', 'points' => 6, 'kg_co2e_year' => 75,
+                            'translations' => [
+                                'id' => ['label' => 'Sering (>5x / minggu)', 'summary_label' => 'Sering (>5x / minggu)'],
+                                'en' => ['label' => 'Often (>5x / week)', 'summary_label' => 'Often (>5x / week)'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'tas_belanja',
+                    'translations' => [
+                        'id' => ['label' => 'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'summary_label' => 'Penggunaan Tas Belanja'],
+                        'en' => ['label' => 'Do you always bring your own shopping bag?', 'summary_label' => 'Reusable Bag'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'selalu', 'points' => 0, 'kg_co2e_year' => 0,
+                            'translations' => [
+                                'id' => ['label' => 'Ya, Selalu', 'summary_label' => 'Selalu'],
+                                'en' => ['label' => 'Yes, always', 'summary_label' => 'Always'],
+                            ],
+                        ],
+                        [
+                            'code' => 'kadang', 'points' => 3, 'kg_co2e_year' => 12,
+                            'translations' => [
+                                'id' => ['label' => 'Kadang-kadang', 'summary_label' => 'Kadang-kadang'],
+                                'en' => ['label' => 'Sometimes', 'summary_label' => 'Sometimes'],
+                            ],
+                        ],
+                        [
+                            'code' => 'tidak_pernah', 'points' => 6, 'kg_co2e_year' => 25,
+                            'translations' => [
+                                'id' => ['label' => 'Tidak Pernah', 'summary_label' => 'Tidak Pernah'],
+                                'en' => ['label' => 'Never', 'summary_label' => 'Never'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'pilah_sampah',
+                    'translations' => [
+                        'id' => ['label' => 'Apakah kamu memilah sampah organik dan anorganik di rumah?', 'summary_label' => 'Milah Sampah'],
+                        'en' => ['label' => 'Do you separate organic and inorganic waste at home?', 'summary_label' => 'Waste Sorting'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'ya', 'points' => 0, 'kg_co2e_year' => 0,
+                            'translations' => [
+                                'id' => ['label' => 'Ya', 'summary_label' => 'Ya'],
+                                'en' => ['label' => 'Yes', 'summary_label' => 'Yes'],
+                            ],
+                        ],
+                        [
+                            'code' => 'tidak', 'points' => 7, 'kg_co2e_year' => 120,
+                            'translations' => [
+                                'id' => ['label' => 'Tidak', 'summary_label' => 'Tidak'],
+                                'en' => ['label' => 'No', 'summary_label' => 'No'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'galon_isi_ulang',
+                    'translations' => [
+                        'id' => ['label' => 'Apakah kamu menggunakan galon isi ulang untuk kebutuhan minum?', 'summary_label' => 'Penggunaan Galon Isi Ulang'],
+                        'en' => ['label' => 'Do you use refillable water gallons for drinking?', 'summary_label' => 'Refill Gallon'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'ya', 'points' => 0, 'kg_co2e_year' => 0,
+                            'translations' => [
+                                'id' => ['label' => 'Ya', 'summary_label' => 'Ya'],
+                                'en' => ['label' => 'Yes', 'summary_label' => 'Yes'],
+                            ],
+                        ],
+                        [
+                            'code' => 'tidak', 'points' => 6, 'kg_co2e_year' => 60,
+                            'translations' => [
+                                'id' => ['label' => 'Tidak', 'summary_label' => 'Tidak'],
+                                'en' => ['label' => 'No', 'summary_label' => 'No'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'daging_merah',
+                    'translations' => [
+                        'id' => ['label' => 'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'summary_label' => 'Konsumsi Daging Merah'],
+                        'en' => ['label' => 'How often do you eat red meat (beef/lamb)?', 'summary_label' => 'Red Meat'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'jarang', 'points' => 2, 'kg_co2e_year' => 120,
+                            'translations' => [
+                                'id' => ['label' => 'Jarang (0-1x / minggu)', 'summary_label' => 'Jarang (0-1x / minggu)'],
+                                'en' => ['label' => 'Rarely (0-1x / week)', 'summary_label' => 'Rarely (0-1x / week)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'sedang', 'points' => 4, 'kg_co2e_year' => 320,
+                            'translations' => [
+                                'id' => ['label' => 'Sedang (2-4x / minggu)', 'summary_label' => 'Sedang (2-4x / minggu)'],
+                                'en' => ['label' => 'Moderate (2-4x / week)', 'summary_label' => 'Moderate (2-4x / week)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'sering', 'points' => 6, 'kg_co2e_year' => 620,
+                            'translations' => [
+                                'id' => ['label' => 'Sering (>5x / minggu)', 'summary_label' => 'Sering (>5x / minggu)'],
+                                'en' => ['label' => 'Often (>5x / week)', 'summary_label' => 'Often (>5x / week)'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'code' => 'belanja_online',
+                    'translations' => [
+                        'id' => ['label' => 'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'summary_label' => 'Belanja Online'],
+                        'en' => ['label' => 'How many online purchases do you make in a month?', 'summary_label' => 'Online Shopping'],
+                    ],
+                    'options' => [
+                        [
+                            'code' => 'lte_5', 'points' => 2, 'kg_co2e_year' => 45,
+                            'translations' => [
+                                'id' => ['label' => '≤ 5 kali / bulan', 'summary_label' => '≤ 5 kali / bulan'],
+                                'en' => ['label' => '≤ 5 times / month', 'summary_label' => '≤ 5 / month'],
+                            ],
+                        ],
+                        [
+                            'code' => 'gt_5', 'points' => 4, 'kg_co2e_year' => 110,
+                            'translations' => [
+                                'id' => ['label' => '> 5 kali / bulan', 'summary_label' => '> 5 kali / bulan'],
+                                'en' => ['label' => 'More than 5 times / month', 'summary_label' => 'More than 5 / month'],
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ];
     }

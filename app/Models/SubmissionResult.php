@@ -6,22 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Hasil akhir yang dibekukan agar halaman hasil tidak berubah
- * saat faktor emisi diperbarui.
+ * Hasil akhir yang dibekukan saat submission selesai.
  */
 class SubmissionResult extends Model
 {
     protected $fillable = [
-        'submission_id', 'result_tier_id', 'household_size',
-        'total_kg_co2e_year', 'per_capita_ton_co2e_year', 'computed_at',
+        'submission_id', 'result_tier_id', 'score',
+        'total_kg_co2e_year', 'computed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'household_size' => 'integer',
+            'score' => 'integer',
             'total_kg_co2e_year' => 'float',
-            'per_capita_ton_co2e_year' => 'float',
             'computed_at' => 'datetime',
         ];
     }
@@ -34,5 +32,10 @@ class SubmissionResult extends Model
     public function tier(): BelongsTo
     {
         return $this->belongsTo(ResultTier::class, 'result_tier_id');
+    }
+
+    public function totalTonCo2eYear(): float
+    {
+        return $this->total_kg_co2e_year / 1000;
     }
 }

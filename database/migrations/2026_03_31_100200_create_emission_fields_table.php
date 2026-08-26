@@ -4,6 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Satu baris = satu pertanyaan di dalam langkah wizard.
+ *
+ * Desain baru hanya memakai pilihan bertombol (single_choice); tidak ada lagi
+ * input angka bebas. Karena itu kolom pengatur input numerik (min/max/step/
+ * decimals) dihapus — angka basis perhitungan kini menempel pada opsi
+ * (`emission_field_options.numeric_value`).
+ */
 return new class extends Migration
 {
     public function up(): void
@@ -12,31 +20,21 @@ return new class extends Migration
             $table->id();
             $table->foreignId('emission_category_id')->constrained()->cascadeOnDelete();
             $table->string('code');                     // moda_transportasi, jarak_harian, ...
-            $table->enum('input_type', [
-                'single_choice',
-                'multiple_choice',
-                'select',
-                'number',
-                'currency',
-                'text',
-                'date',
-            ]);
-            $table->string('display_style')->nullable(); // card, dropdown, radio, stepper
+            $table->enum('input_type', ['single_choice', 'multiple_choice'])
+                ->default('single_choice');
 
-            // Kode kanonik untuk perhitungan; teks tampilannya ada di unit_label
-            // pada tabel terjemahan (mis. "Orang" -> "People").
-            $table->string('unit')->nullable();          // KM, Orang, Rp, VA
-            $table->enum('unit_position', ['prefix', 'suffix'])->default('suffix');
-            $table->unsignedTinyInteger('decimals')->default(0);
-            $table->decimal('min_value', 16, 4)->nullable();
-            $table->decimal('max_value', 16, 4)->nullable();
-            $table->decimal('step', 16, 4)->nullable();
+            // card  = kartu bergambar 2 kolom (moda transportasi)
+            // pill  = tombol teks yang mengalir (sisanya)
+            $table->string('display_style')->default('pill');
+
+            // Satuan kanonik dari numeric_value opsi: km/day, kwh/year, kg/year.
+            $table->string('unit')->nullable();
 
             $table->boolean('is_required')->default(true);
-            $table->boolean('is_factor_key')->default(false);
-            $table->boolean('is_basis')->default(false);
+            $table->boolean('is_factor_key')->default(false); // opsi terpilih menentukan faktor emisi
+            $table->boolean('is_basis')->default(false);      // opsi terpilih menyumbang angka basis
 
-            // Tampil bersyarat: "Bahan bakar" baru muncul setelah moda dipilih.
+            // Tampil bersyarat; belum dipakai desain saat ini, tetap disediakan.
             $table->foreignId('depends_on_field_id')->nullable()
                 ->constrained('emission_fields')->nullOnDelete();
             $table->string('depends_on_option_code')->nullable(); // null = cukup terisi apa pun
@@ -53,10 +51,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('emission_field_id')->constrained()->cascadeOnDelete();
             $table->string('locale', 10);
-            $table->string('label');                     // "Seberapa jauh Anda menempuh perjalanan dalam sehari?"
-            $table->string('placeholder')->nullable();   // "Contoh: 30"
+            $table->string('label');                    // "Apa moda transportasi utama yang kamu gunakan sehari-hari?"
+            $table->string('summary_label')->nullable();// "Moda", "Jarak" — untuk ringkasan sidebar
             $table->string('helper_text')->nullable();
-            $table->string('unit_label')->nullable();     // "Orang" / "People", "Jam/Hari" / "Hours/Day"
             $table->timestamps();
 
             $table->unique(['emission_field_id', 'locale'], 'efield_trans_unique');

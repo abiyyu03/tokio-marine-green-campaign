@@ -5,8 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Angka pembanding di sidebar halaman hasil:
- * Rata-rata Global 6.26 / ASEAN 7.8 / Indonesia 3.62 ton CO2-eq/Tahun/Kapita.
+ * Angka pembanding di halaman hasil, mis. kalimat
+ * "berada di atas rata-rata masyarakat Indonesia (2 - 2,5 Ton CO2/tahun)".
+ *
+ * Desain menampilkan RENTANG, bukan satu angka, sehingga `max_value`
+ * disediakan; bila null, `value` diperlakukan sebagai angka tunggal.
  */
 return new class extends Migration
 {
@@ -14,9 +17,11 @@ return new class extends Migration
     {
         Schema::create('emission_benchmarks', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();             // global, asean, indonesia
+            $table->string('code')->unique();             // indonesia, global, asean
             $table->decimal('value', 12, 4);
+            $table->decimal('max_value', 12, 4)->nullable();
             $table->string('unit')->default('tCO2e/capita/year');
+            $table->boolean('is_primary')->default(false); // dipakai di kalimat pembanding utama
             $table->string('source')->nullable();
             $table->unsignedSmallInteger('reference_year')->nullable();
             $table->unsignedSmallInteger('sort_order')->default(0);
@@ -29,7 +34,7 @@ return new class extends Migration
             $table->foreignId('emission_benchmark_id')
                 ->constrained(indexName: 'ebench_trans_fk')->cascadeOnDelete();
             $table->string('locale', 10);
-            $table->string('label');                      // "Rata-rata Global"
+            $table->string('label');                      // "rata-rata masyarakat Indonesia"
             $table->timestamps();
 
             $table->unique(['emission_benchmark_id', 'locale'], 'ebench_trans_unique');

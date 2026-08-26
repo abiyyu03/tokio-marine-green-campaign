@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EmissionFieldTranslation extends Model
 {
     protected $fillable = [
-        'emission_field_id', 'locale', 'label', 'placeholder', 'helper_text', 'unit_label',
+        'emission_field_id', 'locale', 'label', 'summary_label', 'helper_text',
     ];
 
     public function field(): BelongsTo

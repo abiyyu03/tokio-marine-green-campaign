@@ -6,10 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Hasil akhir yang dibekukan saat submission selesai, supaya halaman hasil
- * tetap konsisten walaupun faktor emisi diperbarui di kemudian hari.
+ * tetap konsisten walaupun angka referensi diperbarui di kemudian hari.
  *
- * Semua emisi disimpan dalam kg CO2e per TAHUN sebagai satu-satunya sumber
- * kebenaran; nilai per hari / per bulan / ton diturunkan saat ditampilkan.
+ * `score` adalah angka yang tampil di gauge "Skor Kamu" (0-100).
+ * Emisi disimpan dalam kg CO2e per TAHUN sebagai satu-satunya sumber
+ * kebenaran; tampilan "±3,8 Ton CO2 / Tahun" diturunkan saat render.
  */
 return new class extends Migration
 {
@@ -20,18 +21,19 @@ return new class extends Migration
             $table->foreignId('submission_id')->unique()->constrained()->cascadeOnDelete();
             $table->foreignId('result_tier_id')->nullable()
                 ->constrained('result_tiers')->nullOnDelete();
-            $table->unsignedSmallInteger('household_size')->nullable();
-            $table->decimal('total_kg_co2e_year', 18, 4);
-            $table->decimal('per_capita_ton_co2e_year', 12, 4);
+            $table->unsignedTinyInteger('score')->default(0);
+            $table->decimal('total_kg_co2e_year', 18, 4)->default(0);
             $table->timestamp('computed_at');
             $table->timestamps();
         });
 
-        // Sumber angka pie chart + baris "Total Emisi" tiap tabel di halaman hasil.
+        // Sumber angka kartu per kategori di halaman hasil
+        // ("Transportasi ±1,52 Ton CO2 / Tahun").
         Schema::create('submission_category_results', function (Blueprint $table) {
             $table->id();
             $table->foreignId('submission_id')->constrained()->cascadeOnDelete();
             $table->foreignId('emission_category_id')->constrained()->cascadeOnDelete();
+            $table->unsignedSmallInteger('score')->default(0);
             $table->decimal('kg_co2e_year', 18, 4)->default(0);
             $table->decimal('percentage', 7, 4)->default(0);
             $table->timestamps();

@@ -8,4 +8,46 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* -----------------------------------------------------------------------
+       Palet kalkulator karbon, diturunkan dari mockup.
+       Nilainya masih provisional; NAMANYA sengaja semantik supaya mengganti
+       palet asli nanti = ubah blok ini saja, nol baris Blade.
+       ----------------------------------------------------------------------- */
+
+    /* Biru terang: judul "Kalkulator Karbon", progress bar, tombol Login,
+       border & latar opsi terpilih. */
+    --color-brand-50: oklch(0.975 0.012 240);
+    --color-brand-100: oklch(0.945 0.028 240);
+    --color-brand-200: oklch(0.898 0.055 240);
+    --color-brand-300: oklch(0.836 0.086 240);
+    --color-brand-400: oklch(0.752 0.118 240);
+    --color-brand-500: oklch(0.688 0.135 240);
+    --color-brand-600: oklch(0.600 0.132 243);
+    --color-brand-700: oklch(0.505 0.112 245);
+    --color-brand-800: oklch(0.425 0.090 246);
+    --color-brand-900: oklch(0.362 0.072 247);
+    --color-brand-950: oklch(0.245 0.050 248);
+
+    /* Teal gelap: tombol aksi utama ("Lanjut ke ...", "Lihat Hasil"). */
+    --color-deep-50: oklch(0.972 0.014 215);
+    --color-deep-100: oklch(0.938 0.032 215);
+    --color-deep-500: oklch(0.585 0.095 215);
+    --color-deep-600: oklch(0.512 0.088 217);
+    --color-deep-700: oklch(0.445 0.077 219);
+    --color-deep-800: oklch(0.378 0.064 221);
+    --color-deep-900: oklch(0.318 0.052 223);
+
+    /* Navy footer Tokio Marine. */
+    --color-navy-800: oklch(0.315 0.045 250);
+    --color-navy-900: oklch(0.262 0.040 252);
+
+    /* Latar panel kiri wizard. */
+    --color-panel: oklch(0.955 0.020 240);
+
+    /* Merah korporat Tokio Marine — untuk aksen co-branding. */
+    --color-tm-red: oklch(0.552 0.213 27);
+
+    /* Geometri kartu wizard: satu knob, bukan rounded-* yang tersebar. */
+    --radius-card: 0.75rem;
 }
