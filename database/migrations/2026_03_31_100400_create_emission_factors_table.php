@@ -5,15 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Faktor emisi. Menggantikan kolom `answers.score` yang bertipe integer dan
- * karenanya tidak bisa menampung angka desimal kecil, apalagi faktor kombinasi.
+ * Faktor emisi per kategori, dipisah dari opsi supaya angkanya bisa
+ * diperbarui di satu tempat tanpa menyentuh teks pertanyaan.
  *
- * `factor_key` dibentuk dari kode opsi pada field ber-flag is_factor_key,
- * digabung dengan "|" mengikuti urutan sort_order field:
- *   Mobil + Bensin  -> "mobil|bensin"
- *   Motor + Listrik -> "motor|listrik"
- *   100% PLN        -> "pln"
- * Kategori tanpa field kunci memakai factor_key = "" (satu faktor tunggal).
+ * `factor_key` dicocokkan dengan `emission_field_options.factor_key` milik
+ * opsi terpilih pada field ber-flag is_factor_key:
+ *   Mobil Bensin (BBM) -> "mobil_bbm"   -> 0.192 kgCO2e/km
+ *   Motor Listrik (EV) -> "motor_ev"    -> 0.021 kgCO2e/km
+ * Kategori tanpa field kunci memakai factor_key = "" (satu faktor tunggal),
+ * mis. faktor grid listrik PLN untuk kategori Listrik Rumah.
  */
 return new class extends Migration
 {
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('factor_key')->default('');
             $table->decimal('value', 18, 8);
             $table->string('unit');                       // kgCO2e/km, kgCO2e/kWh
-            $table->string('basis_unit')->nullable();     // km, kWh, liter
+            $table->string('basis_unit')->nullable();     // km/day, kwh/year
             $table->string('source')->nullable();         // wajib diisi saat data final
             $table->unsignedSmallInteger('reference_year')->nullable();
             $table->date('valid_from')->nullable();

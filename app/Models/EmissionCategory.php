@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Satu langkah wizard kalkulator.
+ * Satu langkah wizard kalkulator (Transportasi, Listrik Rumah, Konsumsi & Sampah).
  */
 class EmissionCategory extends Model
 {
@@ -17,14 +17,15 @@ class EmissionCategory extends Model
     protected string $translationClass = EmissionCategoryTranslation::class;
 
     protected $fillable = [
-        'code', 'slug', 'calculator_key', 'icon',
-        'is_repeatable', 'max_entries', 'sort_order', 'is_active',
+        'code', 'slug', 'calculator_key', 'icon', 'image_file', 'accent_color',
+        'max_points', 'sort_order', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_repeatable' => 'boolean',
+            'max_points' => 'integer',
+            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -37,12 +38,6 @@ class EmissionCategory extends Model
     public function factors(): HasMany
     {
         return $this->hasMany(EmissionFactor::class);
-    }
-
-    /** Field yang nilainya ikut membentuk kunci pencarian faktor emisi. */
-    public function factorKeyFields(): HasMany
-    {
-        return $this->fields()->where('is_factor_key', true);
     }
 
     public function scopeActive(Builder $query): Builder

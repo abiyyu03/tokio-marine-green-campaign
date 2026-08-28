@@ -5,14 +5,18 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Pilihan untuk field bertipe choice/select. Menggantikan tabel `answers` lama.
+ * Pilihan jawaban. Setiap opsi membawa DUA angka yang saling melengkapi:
  *
- * `numeric_value` menampung angka bawaan opsi sehingga tabel referensi khusus
- * (daftar tarif PLN, daftar watt alat elektronik) tidak perlu dibuat terpisah:
- *   - opsi "900 VA"      -> numeric_value 900,  numeric_unit "VA",
- *                           meta {"tariff_per_kwh": 1352}
- *   - opsi "AC"          -> numeric_value 840,  numeric_unit "watt"
- *   - opsi "Hybrid"      -> meta {"renewable_share": 0.5}
+ *   `points`         -> menaikkan gauge "Skor Kamu" (0-100) secara langsung.
+ *   angka emisi      -> bahan hitung ton CO2e di halaman hasil, bentuknya
+ *                       tergantung calculator_key kategorinya:
+ *                         numeric_value  = basis (km/hari, kWh/tahun)
+ *                         kg_co2e_year   = kontribusi emisi tahunan langsung
+ *
+ * Contoh:
+ *   "10 - 25 km / hari"  -> points 7,  numeric_value 17.5 (km/day)
+ *   "Kulkas Standar"     -> points 4,  numeric_value 480  (kwh/year)
+ *   "Sedang (3-5x/mg)"   -> points 5,  kg_co2e_year 62.4
  */
 return new class extends Migration
 {
@@ -21,11 +25,19 @@ return new class extends Migration
         Schema::create('emission_field_options', function (Blueprint $table) {
             $table->id();
             $table->foreignId('emission_field_id')->constrained()->cascadeOnDelete();
-            $table->string('code');                      // mobil, motor, bensin, solar, pln, ...
-            $table->string('image_file')->nullable();
+            $table->string('code');
+            $table->string('image_file')->nullable();     // gambar kartu moda transportasi
             $table->string('icon')->nullable();
+
+            $table->unsignedSmallInteger('points')->default(0);
+
             $table->decimal('numeric_value', 18, 6)->nullable();
             $table->string('numeric_unit')->nullable();
+            $table->decimal('kg_co2e_year', 18, 4)->nullable();
+
+            // Kode faktor emisi yang dipakai bila field ini is_factor_key.
+            $table->string('factor_key')->nullable();
+
             $table->json('meta')->nullable();
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
@@ -42,7 +54,8 @@ return new class extends Migration
             $table->foreignId('emission_field_option_id')
                 ->constrained(indexName: 'eopt_trans_fk')->cascadeOnDelete();
             $table->string('locale', 10);
-            $table->string('label');                     // "Mobil", "Bensin", "100% PLN"
+            $table->string('label');                     // "Mobil Bensin (BBM)"
+            $table->string('summary_label')->nullable(); // "Mobil Bensin" — versi pendek untuk sidebar
             $table->string('description')->nullable();
             $table->timestamps();
 

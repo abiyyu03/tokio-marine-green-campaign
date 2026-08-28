@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ResultTierTranslation extends Model
 {
-    protected $fillable = ['result_tier_id', 'locale', 'badge_label', 'headline', 'description'];
+    protected $fillable = [
+        'result_tier_id', 'locale', 'label', 'badge_label', 'headline', 'description',
+    ];
 
     public function tier(): BelongsTo
     {
