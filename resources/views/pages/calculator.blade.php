@@ -198,17 +198,36 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             {{-- Progress Bar --}}
             <div class="mt-6 w-full lg:w-3/4">
                 @php
-                    $progress = $step === 1 ? 25 : ($step === 2 ? 50 : ($step === 3 ? 75 : 100));
+                    if ($step == 1) {
+                        $progress = 30;
+                    } elseif ($step == 2) {
+                        $progress = 60;
+                    } elseif ($step == 3) {
+                        $progress = 90;
+                    } else {
+                        $progress = 99;
+                    }
                 @endphp
                 <div class="relative h-2 w-full rounded-full bg-slate-200">
+                    {{-- Bar hijau yang berjalan --}}
                     <div class="absolute left-0 top-0 h-2 rounded-full bg-[#0d9488] transition-all duration-500" style="width: {{ $progress }}%"></div>
                     
-                    {{-- Titik Penanda (4 Titik) --}}
-                    <div class="absolute inset-0 flex items-center justify-between px-0.5">
-                        <span class="size-1.5 rounded-full {{ $progress >= 0 ? 'bg-white' : 'bg-[#0d9488]' }}"></span>
-                        <span class="size-1.5 rounded-full {{ $progress >= 33 ? 'bg-white' : 'bg-[#0d9488]' }}"></span>
-                        <span class="size-1.5 rounded-full {{ $progress >= 66 ? 'bg-white' : 'bg-[#0d9488]' }}"></span>
-                        <span class="size-1.5 rounded-full {{ $progress >= 100 ? 'bg-white' : 'bg-[#0d9488]' }}"></span>
+                    {{-- Titik Penanda (Disesuaikan dengan persentase absolut) --}}
+                    <div class="absolute inset-0">
+                        {{-- Titik 0% (Start) --}}
+                        <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 0 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 0%;"></span>
+                        
+                        {{-- Titik 30% (Step 1) --}}
+                        <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 30 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 30%;"></span>
+                        
+                        {{-- Titik 60% (Step 2) --}}
+                        <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 60 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 60%;"></span>
+                        
+                        {{-- Titik 90% (Step 3) --}}
+                        <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 90 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 90%;"></span>
+                        
+                        {{-- Titik 99% (Data Diri) --}}
+                        <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 99 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 99%;"></span>
                     </div>
                 </div>
                 <p class="mt-2 text-xs sm:text-sm text-[#0d9488]">
