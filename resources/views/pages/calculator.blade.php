@@ -59,6 +59,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
     public ?string $stepError = null;
 
+    /** Uuid hasil yang sudah dibekukan, penjaga submit ganda. */
+    public ?string $completedUuid = null;
+
     public function mount(): void
     {
         $submission = $this->submission();
@@ -312,6 +315,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     /** Menyimpan lead, membekukan hasil, lalu pindah ke halaman hasil. */
     public function submitLeads()
     {
+        // Klik kedua pada tombol yang sama tidak boleh membuat hasil baru.
+        if ($this->completedUuid) {
+            return $this->redirectRoute('calculator.result', ['uuid' => $this->completedUuid], navigate: true);
+        }
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:180'],
@@ -322,20 +330,26 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             'consent' => ['accepted'],
         ]);
 
-        // Jawaban emisi bisa saja belum lengkap kalau user melompat lewat URL
-        // atau menghapus pilihan setelah melewati langkahnya.
-        $unfinished = $this->categories->first(fn ($category) => ! $this->stepComplete($category));
+        $submission = $this->submission();
+
+        // Kelengkapan diperiksa dari isi draft, BUKAN dari `answers` di layar.
+        // Keduanya bisa berbeda: draftnya mungkin sudah hilang (dihapus, atau
+        // sesi berpindah) sementara layar masih memegang jawaban lama. Kalau
+        // yang dipercaya state layar, hasil kosong bisa ikut dibekukan dan
+        // terlihat sah di halaman hasil — skor 0 dengan badge "Dampak Ringan".
+        $stored = $this->storedAnswers();
+        $unfinished = $this->categories->first(fn (EmissionCategory $category) => ! $this->stepComplete($category, $stored));
 
         if ($unfinished) {
+            $this->answers = $stored;
             $index = $this->categories->search(fn (EmissionCategory $c) => $c->id === $unfinished->id);
             $this->step = $index === false ? 1 : $index + 1;
             $this->stepError = __('calculator.validation.incomplete');
+            $this->forgetAnswerState();
             $this->forgetStepState();
 
             return null;
         }
-
-        $submission = $this->submission();
 
         $lead = Leads::create([
             'name' => $validated['name'],
@@ -359,6 +373,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         app(CarbonCalculator::class)->finalise($submission->fresh(['values.field', 'values.option']));
 
         // Draft selesai: sesi berikutnya memulai submission baru.
+        $this->completedUuid = $submission->uuid;
         session()->forget(self::DRAFT_KEY);
 
         return $this->redirectRoute('calculator.result', ['uuid' => $submission->uuid], navigate: true);
@@ -368,11 +383,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     // Internal
     // -----------------------------------------------------------------
 
-    private function stepComplete(?EmissionCategory $category): bool
+    /**
+     * @param  array<int, int>|null  $answers  sumber jawaban; default state layar
+     */
+    private function stepComplete(?EmissionCategory $category, ?array $answers = null): bool
     {
+        $answers ??= $this->answers;
         $required = $category?->fields->where('is_required', true) ?? collect();
 
-        return $required->every(fn ($field) => filled($this->answers[$field->id] ?? null));
+        return $required->every(fn ($field) => filled($answers[$field->id] ?? null));
     }
 
     /** Field mana pun di seluruh langkah, dicari berdasarkan id. */

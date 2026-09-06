@@ -204,16 +204,22 @@ class ResultReferenceSeeder extends Seeder
                 'code' => 'bensin', 'icon' => 'fuel', 'sort_order' => 1,
                 'id' => '**:value Liter Bensin** yang dikonsumsi kendaraan',
                 'en' => '**:value litres of petrol** burned by a vehicle',
+                'unit_id' => 'Liter bensin kendaraan',
+                'unit_en' => 'Litres of vehicle petrol',
             ],
             [
                 'code' => 'penerbangan', 'icon' => 'plane', 'sort_order' => 2,
                 'id' => '**:value Kali Penerbangan** domestik antarkota',
                 'en' => '**:value domestic flights** between cities',
+                'unit_id' => 'Penerbangan domestik antarkota',
+                'unit_en' => 'Domestic flights between cities',
             ],
             [
                 'code' => 'pohon', 'icon' => 'tree', 'sort_order' => 3,
                 'id' => 'Butuh **:value Pohon Dewasa** selama 1 tahun penuh untuk menyerap seluruh emisimu',
                 'en' => 'It takes **:value mature trees** a full year to absorb all of your emissions',
+                'unit_id' => 'Pohon dewasa menyerap selama 1 tahun',
+                'unit_en' => 'Mature trees absorbing for a full year',
             ],
         ];
 
@@ -234,7 +240,7 @@ class ResultReferenceSeeder extends Seeder
             foreach (['id', 'en'] as $locale) {
                 $equivalence->translations()->updateOrCreate(
                     ['locale' => $locale],
-                    ['template' => $data[$locale]]
+                    ['template' => $data[$locale], 'unit_label' => $data['unit_'.$locale]]
                 );
             }
         }

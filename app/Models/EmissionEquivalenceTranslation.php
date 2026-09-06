@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmissionEquivalenceTranslation extends Model
 {
-    protected $fillable = ['emission_equivalence_id', 'locale', 'template'];
+    protected $fillable = ['emission_equivalence_id', 'locale', 'template', 'unit_label'];
 
     public function equivalence(): BelongsTo
     {
