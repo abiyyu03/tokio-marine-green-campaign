@@ -54,6 +54,15 @@ class ResultText
     }
 
     /**
+     * "2,52" dari 2517 kg, tapi "2" dari 2000 kg — nol di belakang koma
+     * dibuang. Dipakai kartu total dan kartu per kategori di halaman hasil.
+     */
+    public static function tonCompact(float $kgCo2e, int $decimals = 2, ?string $locale = null): string
+    {
+        return self::compact($kgCo2e / 1000, $decimals, $locale);
+    }
+
+    /**
      * Angka tanpa nol di belakang koma: 2,0 -> "2" tapi 2,5 tetap "2,5".
      * Dipakai pada rentang pembanding "(2 - 2,5 Ton CO2/tahun)".
      */

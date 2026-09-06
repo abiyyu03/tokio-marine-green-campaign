@@ -3,10 +3,14 @@
 return [
     'title' => 'Jejak Karbon Tahunanmu',
     'greeting' => 'Halo, :name! 👋',
-    'intro' => 'Berikut adalah analisis jejak emisi tahunanmu berdasarkan data aktivitas yang telah kamu masukkan.',
+    'intro' => 'Berikut adalah analisis jejak emisi tahunanmu berdasarkan data aktivitas yang kamu masukkan:',
 
     'total_label' => 'Jejak Karbon Kamu',
     'ton_per_year' => 'Ton CO₂ / Tahun',
+    'ton_unit' => 'Ton CO₂',
+    'per_year' => '/ Tahun',
+    'download' => 'Download Result',
+    'done' => 'Selesai',
 
     'comparison' => [
         'above' => 'Halo :name, jejak emisi tahunanmu saat ini berada di atas :benchmark (:range Ton CO₂/tahun).',
@@ -32,9 +36,14 @@ return [
         'empty' => 'Belum ada lokasi Rumah Pilah yang terdaftar.',
     ],
 
+    'email_notice' => [
+        'title' => 'Cek Email Kamu!',
+        'body' => 'Laporan hasil perhitungan dan daftar rekomendasi Bank Sampah terdekat telah kami kirimkan ke email yang kamu daftarkan.',
+    ],
+
     'community' => [
         'heading' => 'Dampak Kolektif Komunitas',
-        'intro' => ':name, jika :cohort orang dengan profil sepertimu melakukan aksi memilah sampah ini, lebih dari :min - :max Ton CO₂ dapat dihindari setiap tahunnya.',
+        'intro' => ':name, jika :cohort orang dengan profil emisi sepertimu melakukan aksi memilah sampah ini, lebih dari :min - :max Ton CO₂ dapat dihindari setiap tahunnya.',
         'stats_heading' => 'Tahun ini, komunitas mitra Bank Sampah telah:',
         'cta' => 'Saya Mau Ikut Berkontribusi',
     ],

@@ -14,11 +14,14 @@ return [
     ],
 
     'nav' => [
+        'back' => 'Kembali',
         'back_home' => 'Kembali ke Beranda',
         'back_to' => 'Kembali ke :step',
+        'continue' => 'Lanjut',
         'continue_to' => 'Lanjut ke :step',
         'to_personal_data' => 'Isi Data Diri & Lihat Hasil',
         'see_result' => 'Lihat Hasil Perhitungan',
+        'processing' => 'Memproses...',
     ],
 
     'personal' => [
@@ -47,6 +50,7 @@ return [
     ],
 
     'validation' => [
+        'form' => 'Mohon lengkapi data yang masih kosong sebelum melanjutkan.',
         'incomplete' => 'Lengkapi semua pertanyaan di langkah ini dulu ya.',
     ],
 ];

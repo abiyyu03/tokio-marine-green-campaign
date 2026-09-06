@@ -12,7 +12,7 @@ class SubmissionResult extends Model
 {
     protected $fillable = [
         'submission_id', 'result_tier_id', 'score',
-        'total_kg_co2e_year', 'computed_at',
+        'total_kg_co2e_year', 'raw_kg_co2e_year', 'computed_at',
     ];
 
     protected function casts(): array
@@ -20,6 +20,7 @@ class SubmissionResult extends Model
         return [
             'score' => 'integer',
             'total_kg_co2e_year' => 'float',
+            'raw_kg_co2e_year' => 'float',
             'computed_at' => 'datetime',
         ];
     }

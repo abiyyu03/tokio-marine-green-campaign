@@ -4,21 +4,37 @@ namespace Database\Seeders;
 
 use App\Models\CommunityImpact;
 use App\Models\EmissionBenchmark;
-use App\Models\EmissionCategory;
 use App\Models\EmissionEquivalence;
 use App\Models\Recommendation;
 use App\Models\ResultTier;
 use Illuminate\Database\Seeder;
 
 /**
- * Data referensi halaman hasil: tier skor, angka pembanding, blok "setara
- * dengan", rekomendasi aksi, dan statistik dampak kolektif komunitas.
+ * Data referensi halaman hasil, mengikuti "Dokumentasi Logic & UI Copy
+ * Result Page Kalkulator Karbon".
+ *
+ * MATRIKS TIER (bagian 1 dokumen):
+ *   0-30   Dampak Ringan  1,5-2 Ton  Green Starter    #166534
+ *   31-60  Dampak Sedang  2-3   Ton  Earth Supporter  #854d0e
+ *   61-100 Dampak Tinggi  3-5   Ton  Climate Mover    #991b1b
+ *
+ * KOEFISIEN PADANAN VISUAL (bagian 3 dokumen):
+ *   1 Ton CO2e = 420 Liter bensin = 4,7 penerbangan domestik = 50 pohon dewasa
+ * Tabel di database menyimpan kebalikannya (kg CO2e per satu satuan) supaya
+ * satu rumus `emisi / kg_per_unit` berlaku untuk semua baris.
  *
  * Template terjemahan memakai penanda **tebal** dan placeholder :value / :name
- * yang dirender oleh App\Support\ResultText.
+ * / :range yang dirender oleh App\Support\ResultText.
  */
 class ResultReferenceSeeder extends Seeder
 {
+    /** 1 Ton CO2e setara berapa satuan padanan. */
+    private const UNITS_PER_TON = [
+        'bensin' => 420,
+        'penerbangan' => 4.7,
+        'pohon' => 50,
+    ];
+
     public function run(): void
     {
         $tiers = $this->seedTiers();
@@ -34,58 +50,67 @@ class ResultReferenceSeeder extends Seeder
         $definitions = [
             [
                 'code' => 'ringan', 'min_score' => 0, 'max_score' => 30,
-                'approx_min' => 1.2, 'approx_max' => 2.0,
-                'badge_icon' => 'leaf', 'color' => '#22C55E', 'sort_order' => 1,
+                'approx_min' => 1.5, 'approx_max' => 2.0,
+                'avoided_min' => 7.5, 'avoided_max' => 8.0,
+                'badge_icon' => 'leaf', 'color' => '#166534', 'sort_order' => 1,
                 'translations' => [
                     'id' => [
                         'label' => 'Dampak Ringan',
-                        'badge_label' => 'Climate Hero',
-                        'headline' => 'Kerja Bagus, :name!',
-                        'description' => 'Jejak emisimu sudah tergolong ringan. Pertahankan kebiasaan baik ini, dan ajak satu orang terdekat untuk ikut memulainya:',
+                        'badge_label' => 'Green Starter',
+                        'headline' => 'Pertahankan Kebiasaan Baikmu!',
+                        'benchmark_note' => 'Gaya hidupmu sudah sangat baik dan tergolong ramah lingkungan! Emisimu berada di bawah rata-rata per kapita masyarakat Indonesia (:range Ton CO₂/tahun).',
+                        'description' => 'Untuk terus menjaga bumi dan menekan sisa emisi harianmu, kamu bisa mulai langkah kecil berikut dari rumah:',
                     ],
                     'en' => [
                         'label' => 'Low Impact',
-                        'badge_label' => 'Climate Hero',
-                        'headline' => 'Great Work, :name!',
-                        'description' => 'Your footprint is already low. Keep these habits going, and bring one person close to you along:',
+                        'badge_label' => 'Green Starter',
+                        'headline' => 'Keep Up the Good Habits!',
+                        'benchmark_note' => 'Your lifestyle is already very kind to the planet. Your footprint sits below the Indonesian average per capita (:range tonnes CO₂/year).',
+                        'description' => 'To keep it that way and trim what is left of your daily emissions, you can start with these small steps at home:',
                     ],
                 ],
             ],
             [
                 'code' => 'sedang', 'min_score' => 31, 'max_score' => 60,
                 'approx_min' => 2.0, 'approx_max' => 3.0,
-                'badge_icon' => 'seedling', 'color' => '#F59E0B', 'sort_order' => 2,
+                'avoided_min' => 8.0, 'avoided_max' => 16.0,
+                'badge_icon' => 'seedling', 'color' => '#854d0e', 'sort_order' => 2,
                 'translations' => [
                     'id' => [
                         'label' => 'Dampak Sedang',
-                        'badge_label' => 'Climate Shifter',
-                        'headline' => 'Sedikit Lagi, :name!',
-                        'description' => 'Jejak emisimu berada di tengah. Satu atau dua kebiasaan baru sudah cukup untuk menurunkannya ke level ringan:',
+                        'badge_label' => 'Earth Supporter',
+                        'headline' => 'Kabar Baik Untukmu, :name!',
+                        'benchmark_note' => 'Jejak emisi harianmu saat ini mendekati rata-rata per kapita masyarakat Indonesia (:range Ton CO₂/tahun). Masih ada ruang untuk penghematan!',
+                        'description' => 'Kamu bisa menekan emisi harianmu secara signifikan tanpa harus mengubah seluruh pola hidup sekaligus. Cukup mulai dari 1 kebiasaan kecil dari rumah:',
                     ],
                     'en' => [
                         'label' => 'Moderate Impact',
-                        'badge_label' => 'Climate Shifter',
-                        'headline' => 'Almost There, :name!',
-                        'description' => 'Your footprint sits in the middle. One or two new habits are enough to bring it down to the low tier:',
+                        'badge_label' => 'Earth Supporter',
+                        'headline' => 'Good News for You, :name!',
+                        'benchmark_note' => 'Your daily footprint is close to the Indonesian average per capita (:range tonnes CO₂/year). There is still room to save!',
+                        'description' => 'You can bring your daily emissions down significantly without changing your whole lifestyle at once. One small habit at home is enough to start:',
                     ],
                 ],
             ],
             [
                 'code' => 'tinggi', 'min_score' => 61, 'max_score' => 100,
                 'approx_min' => 3.0, 'approx_max' => 5.0,
-                'badge_icon' => 'bolt', 'color' => '#EF4444', 'sort_order' => 3,
+                'avoided_min' => 16.0, 'avoided_max' => 23.0,
+                'badge_icon' => 'bolt', 'color' => '#991b1b', 'sort_order' => 3,
                 'translations' => [
                     'id' => [
                         'label' => 'Dampak Tinggi',
                         'badge_label' => 'Climate Mover',
-                        'headline' => 'Kabar Baik Untukmu, :name!',
-                        'description' => 'Jejak emisi yang tinggi memberikan peluang besar bagi kamu untuk membuat perubahan berdampak signifikan. Kamu tidak perlu mengubah seluruh gaya hidupmu sekaligus, cukup mulai dari 1 kebiasaan kecil dari rumah:',
+                        'headline' => 'Peluang Besar Membuat Perubahan!',
+                        'benchmark_note' => 'Jejak emisi harianmu saat ini berada di atas rata-rata per kapita masyarakat Indonesia (:range Ton CO₂/tahun).',
+                        'description' => 'Jejak emisi yang tinggi memberikan peluang besar bagi kamu untuk membuat perubahan berdampak signifikan dengan langkah sederhana:',
                     ],
                     'en' => [
                         'label' => 'High Impact',
                         'badge_label' => 'Climate Mover',
-                        'headline' => 'Good News for You, :name!',
-                        'description' => 'A high footprint means a big opportunity to make a real difference. You do not need to change your whole lifestyle at once, just start with one small habit at home:',
+                        'headline' => 'A Big Chance to Make a Difference!',
+                        'benchmark_note' => 'Your daily footprint is currently above the Indonesian average per capita (:range tonnes CO₂/year).',
+                        'description' => 'A high footprint is a big opportunity to make a real difference with simple steps:',
                     ],
                 ],
             ],
@@ -101,6 +126,8 @@ class ResultReferenceSeeder extends Seeder
                     'max_score' => $data['max_score'],
                     'approx_min_ton_co2e' => $data['approx_min'],
                     'approx_max_ton_co2e' => $data['approx_max'],
+                    'community_avoided_min_ton_co2e' => $data['avoided_min'],
+                    'community_avoided_max_ton_co2e' => $data['avoided_max'],
                     'badge_icon' => $data['badge_icon'],
                     'color' => $data['color'],
                     'sort_order' => $data['sort_order'],
@@ -124,8 +151,8 @@ class ResultReferenceSeeder extends Seeder
             [
                 'code' => 'indonesia', 'value' => 2.00, 'max_value' => 2.50,
                 'is_primary' => true, 'sort_order' => 1,
-                'id' => 'rata-rata masyarakat Indonesia',
-                'en' => 'the Indonesian average',
+                'id' => 'rata-rata per kapita masyarakat Indonesia',
+                'en' => 'the Indonesian average per capita',
             ],
             [
                 'code' => 'global', 'value' => 6.26, 'max_value' => null,
@@ -166,24 +193,25 @@ class ResultReferenceSeeder extends Seeder
 
     /**
      * Blok "setiap tahunnya emisi harianmu setara dengan".
-     * Angkanya sengaja dipilih agar konsisten dengan contoh di desain:
-     * 3,8 ton -> 1.645 liter bensin, 18 penerbangan, 192 pohon.
+     *
+     * Uji cepat memakai koefisien dokumen: 2 Ton -> 840 liter, 9 penerbangan,
+     * 100 pohon; 5 Ton -> 2.100 liter, 24 penerbangan, 250 pohon.
      */
     private function seedEquivalences(): void
     {
         $items = [
             [
-                'code' => 'bensin', 'kg_per_unit' => 2.310000, 'icon' => 'fuel', 'sort_order' => 1,
+                'code' => 'bensin', 'icon' => 'fuel', 'sort_order' => 1,
                 'id' => '**:value Liter Bensin** yang dikonsumsi kendaraan',
                 'en' => '**:value litres of petrol** burned by a vehicle',
             ],
             [
-                'code' => 'penerbangan', 'kg_per_unit' => 211.000000, 'icon' => 'plane', 'sort_order' => 2,
+                'code' => 'penerbangan', 'icon' => 'plane', 'sort_order' => 2,
                 'id' => '**:value Kali Penerbangan** domestik antarkota',
                 'en' => '**:value domestic flights** between cities',
             ],
             [
-                'code' => 'pohon', 'kg_per_unit' => 19.800000, 'icon' => 'tree', 'sort_order' => 3,
+                'code' => 'pohon', 'icon' => 'tree', 'sort_order' => 3,
                 'id' => 'Butuh **:value Pohon Dewasa** selama 1 tahun penuh untuk menyerap seluruh emisimu',
                 'en' => 'It takes **:value mature trees** a full year to absorb all of your emissions',
             ],
@@ -193,10 +221,11 @@ class ResultReferenceSeeder extends Seeder
             $equivalence = EmissionEquivalence::updateOrCreate(
                 ['code' => $data['code']],
                 [
-                    'kg_co2e_per_unit' => $data['kg_per_unit'],
+                    'kg_co2e_per_unit' => round(1000 / self::UNITS_PER_TON[$data['code']], 6),
                     'decimals' => 0,
                     'icon' => $data['icon'],
-                    'source' => 'PLACEHOLDER - perlu verifikasi',
+                    'source' => 'Dokumentasi Logic Result Page - 1 Ton CO2e = '
+                        .self::UNITS_PER_TON[$data['code']].' satuan',
                     'sort_order' => $data['sort_order'],
                     'is_active' => true,
                 ]
@@ -211,36 +240,44 @@ class ResultReferenceSeeder extends Seeder
         }
     }
 
-    /** @param array<string, ResultTier> $tiers */
+    /**
+     * "Rekomendasi Aksi Khusus :name" — dua butir per tier, angka setoran
+     * sampah dan potensi penguranganya naik seiring tier.
+     *
+     * @param  array<string, ResultTier>  $tiers
+     */
     private function seedRecommendations(array $tiers): void
     {
-        $categories = EmissionCategory::pluck('id', 'code');
-
         $items = [
             [
-                'code' => 'pilah_setor_sampah', 'tier' => null, 'category' => null, 'sort_order' => 1,
+                'code' => 'pilah_setor_ringan', 'tier' => 'ringan', 'sort_order' => 1,
+                'id' => 'Mulai memilah dan menyetorkan **1 kg sampah/minggu** (±52 kg/tahun).',
+                'en' => 'Start sorting and dropping off **1 kg of waste per week** (±52 kg/year).',
+            ],
+            [
+                'code' => 'potensi_ringan', 'tier' => 'ringan', 'sort_order' => 2,
+                'id' => 'Kamu berpotensi mengurangi hingga **75 - 80 kg CO₂ per tahun** (memotong **4 - 8%** dari total emisi tahunanmu!).',
+                'en' => 'You could cut up to **75 - 80 kg CO₂ per year** (**4 - 8%** off your annual total!).',
+            ],
+            [
+                'code' => 'pilah_setor_sedang', 'tier' => 'sedang', 'sort_order' => 1,
+                'id' => 'Mulai memilah dan menyetorkan **1 - 2 kg sampah/minggu** (±52 - 104 kg/tahun).',
+                'en' => 'Start sorting and dropping off **1 - 2 kg of waste per week** (±52 - 104 kg/year).',
+            ],
+            [
+                'code' => 'potensi_sedang', 'tier' => 'sedang', 'sort_order' => 2,
+                'id' => 'Kamu berpotensi mengurangi hingga **80 - 160 kg CO₂ per tahun** (memotong **3 - 6%** dari total emisi tahunanmu!).',
+                'en' => 'You could cut up to **80 - 160 kg CO₂ per year** (**3 - 6%** off your annual total!).',
+            ],
+            [
+                'code' => 'pilah_setor_tinggi', 'tier' => 'tinggi', 'sort_order' => 1,
                 'id' => 'Mulai memilah dan menyetorkan **2 - 3 kg sampah/minggu** (±104 - 156 kg/tahun).',
                 'en' => 'Start sorting and dropping off **2 - 3 kg of waste per week** (±104 - 156 kg/year).',
             ],
             [
-                'code' => 'potensi_pengurangan', 'tier' => 'tinggi', 'category' => null, 'sort_order' => 2,
-                'id' => 'Kamu berpotensi mengurangi hingga **160 - 230 kg CO₂ per tahun** (memotong **4 - 7%** dari total emisi tahunanmu).',
-                'en' => 'You could cut up to **160 - 230 kg CO₂ per year** (**4 - 7%** off your annual total).',
-            ],
-            [
-                'code' => 'transport_shift', 'tier' => null, 'category' => 'transportasi', 'sort_order' => 3,
-                'id' => 'Ganti **2 hari perjalanan per minggu** ke transportasi umum atau berbagi kendaraan.',
-                'en' => 'Swap **2 travel days a week** for public transport or carpooling.',
-            ],
-            [
-                'code' => 'listrik_hemat', 'tier' => null, 'category' => 'listrik_rumah', 'sort_order' => 4,
-                'id' => 'Naikkan suhu AC ke **25°C** dan cabut perangkat yang menyala siaga.',
-                'en' => 'Set the AC to **25°C** and unplug devices left on standby.',
-            ],
-            [
-                'code' => 'konsumsi_bijak', 'tier' => null, 'category' => 'konsumsi_sampah', 'sort_order' => 5,
-                'id' => 'Bawa tas belanja sendiri dan gabungkan pesanan online jadi **satu kali pengiriman**.',
-                'en' => 'Bring your own shopping bag and bundle online orders into **a single delivery**.',
+                'code' => 'potensi_tinggi', 'tier' => 'tinggi', 'sort_order' => 2,
+                'id' => ':name berpotensi mengurangi hingga **160 - 230 kg CO₂ per tahun** (memotong **4 - 7%** dari total emisi tahunanmu!).',
+                'en' => ':name could cut up to **160 - 230 kg CO₂ per year** (**4 - 7%** off your annual total!).',
             ],
         ];
 
@@ -248,8 +285,8 @@ class ResultReferenceSeeder extends Seeder
             $recommendation = Recommendation::updateOrCreate(
                 ['code' => $data['code']],
                 [
-                    'result_tier_id' => $data['tier'] ? $tiers[$data['tier']]->id : null,
-                    'emission_category_id' => $data['category'] ? $categories[$data['category']] ?? null : null,
+                    'result_tier_id' => $tiers[$data['tier']]->id,
+                    'emission_category_id' => null,
                     'sort_order' => $data['sort_order'],
                     'is_active' => true,
                 ]
@@ -262,6 +299,17 @@ class ResultReferenceSeeder extends Seeder
                 );
             }
         }
+
+        // Butir versi lama tidak lagi cocok dengan dokumen: yang tanpa tier akan
+        // muncul di semua tier, yang per kategori menambah butir di luar dua
+        // butir yang ditetapkan. Dinonaktifkan, bukan dihapus, supaya hasil
+        // lama yang sudah pernah menampilkannya tetap bisa ditelusuri.
+        Recommendation::query()
+            ->whereIn('code', [
+                'pilah_setor_sampah', 'potensi_pengurangan',
+                'transport_shift', 'listrik_hemat', 'konsumsi_bijak',
+            ])
+            ->update(['is_active' => false]);
     }
 
     private function seedCommunityImpacts(): void

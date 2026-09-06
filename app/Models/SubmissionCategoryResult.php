@@ -12,7 +12,7 @@ class SubmissionCategoryResult extends Model
 {
     protected $fillable = [
         'submission_id', 'emission_category_id',
-        'score', 'kg_co2e_year', 'percentage',
+        'score', 'kg_co2e_year', 'raw_kg_co2e_year', 'percentage',
     ];
 
     protected function casts(): array
@@ -20,6 +20,7 @@ class SubmissionCategoryResult extends Model
         return [
             'score' => 'integer',
             'kg_co2e_year' => 'float',
+            'raw_kg_co2e_year' => 'float',
             'percentage' => 'float',
         ];
     }

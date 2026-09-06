@@ -3,10 +3,14 @@
 return [
     'title' => 'Your Annual Carbon Footprint',
     'greeting' => 'Hi, :name! 👋',
-    'intro' => 'Here is the analysis of your annual emissions based on the activity data you entered.',
+    'intro' => 'Here is the analysis of your annual emissions based on the activity data you entered:',
 
     'total_label' => 'Your Carbon Footprint',
     'ton_per_year' => 'tonnes CO₂ / year',
+    'ton_unit' => 'tonnes CO₂',
+    'per_year' => '/ year',
+    'download' => 'Download Result',
+    'done' => 'Done',
 
     'comparison' => [
         'above' => 'Hi :name, your annual footprint is currently above :benchmark (:range tonnes CO₂/year).',
@@ -32,9 +36,14 @@ return [
         'empty' => 'No sorting house locations have been listed yet.',
     ],
 
+    'email_notice' => [
+        'title' => 'Check Your Inbox!',
+        'body' => 'We have sent your full report and the list of nearby sorting houses to the email address you registered.',
+    ],
+
     'community' => [
         'heading' => 'Collective Community Impact',
-        'intro' => ':name, if :cohort people with a profile like yours sorted their waste this way, more than :min - :max tonnes of CO₂ could be avoided every year.',
+        'intro' => ':name, if :cohort people with an emissions profile like yours sorted their waste this way, more than :min - :max tonnes of CO₂ could be avoided every year.',
         'stats_heading' => 'This year, our Bank Sampah partner community has:',
         'cta' => 'I Want to Take Part',
     ],

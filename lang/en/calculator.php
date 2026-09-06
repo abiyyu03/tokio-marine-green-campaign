@@ -14,11 +14,14 @@ return [
     ],
 
     'nav' => [
+        'back' => 'Back',
         'back_home' => 'Back to Home',
         'back_to' => 'Back to :step',
+        'continue' => 'Continue',
         'continue_to' => 'Continue to :step',
         'to_personal_data' => 'Add Your Details & See Results',
         'see_result' => 'See My Results',
+        'processing' => 'Processing...',
     ],
 
     'personal' => [
@@ -47,6 +50,7 @@ return [
     ],
 
     'validation' => [
+        'form' => 'Please fill in the details that are still missing before continuing.',
         'incomplete' => 'Please answer every question in this step first.',
     ],
 ];

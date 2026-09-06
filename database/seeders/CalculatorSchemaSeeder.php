@@ -18,6 +18,16 @@ use Illuminate\Database\Seeder;
  *   Listrik Rumah     30  = AC 14 + kulkas 6 + daya 10
  *   Konsumsi & Sampah 35  = plastik 6 + tas 6 + pilah 7 + galon 6 + daging 6 + belanja 4
  *
+ * GAYA TAMPILAN FIELD (`display_style`, dipakai wizard):
+ *   card         kartu bergambar 4 kolom (moda transportasi)
+ *   pill         tombol teks 2 kolom (jarak, listrik rumah)
+ *   pill_compact tombol teks 3 kolom (konsumsi & sampah)
+ *
+ * PORSI EMISI PER SEKTOR (`emission_share`, dipakai halaman hasil):
+ *   Transportasi 40% | Listrik Rumah 35% | Konsumsi & Sampah 25%
+ * Angka ini ditetapkan dokumen logic Result Page dan sengaja berbeda dari
+ * anggaran poin di atas — poin mengukur perilaku, share membagi ton emisi.
+ *
  * PERHATIAN: seluruh angka `points`, `kg_co2e_year`, `numeric_value`, dan
  * `factors` masih PLACEHOLDER yang perlu dikonfirmasi ke sumber resmi sebelum
  * rilis. Kolom `source` dan `reference_year` pada emission_factors disediakan
@@ -43,6 +53,7 @@ class CalculatorSchemaSeeder extends Seeder
                 'image_file' => $data['image_file'] ?? null,
                 'accent_color' => $data['accent_color'] ?? null,
                 'max_points' => $data['max_points'],
+                'emission_share' => $data['emission_share'] ?? null,
                 'sort_order' => $data['sort_order'],
                 'is_active' => true,
             ]
@@ -152,6 +163,7 @@ class CalculatorSchemaSeeder extends Seeder
             'image_file' => 'images/calculator/transportasi.jpg',
             'accent_color' => '#F59E0B',
             'max_points' => 35,
+            'emission_share' => 0.40,
             'sort_order' => 1,
             'translations' => [
                 'id' => [
@@ -305,6 +317,7 @@ class CalculatorSchemaSeeder extends Seeder
             'image_file' => 'images/calculator/listrik-rumah.jpg',
             'accent_color' => '#10B981',
             'max_points' => 30,
+            'emission_share' => 0.35,
             'sort_order' => 2,
             'translations' => [
                 'id' => [
@@ -481,6 +494,7 @@ class CalculatorSchemaSeeder extends Seeder
             'image_file' => 'images/calculator/konsumsi-sampah.jpg',
             'accent_color' => '#EF4444',
             'max_points' => 35,
+            'emission_share' => 0.25,
             'sort_order' => 3,
             'translations' => [
                 'id' => [
@@ -497,6 +511,7 @@ class CalculatorSchemaSeeder extends Seeder
             'fields' => [
                 [
                     'code' => 'plastik_sekali_pakai',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Seberapa sering kamu menggunakan plastik sekali pakai?', 'summary_label' => 'Penggunaan Plastik'],
                         'en' => ['label' => 'How often do you use single-use plastic?', 'summary_label' => 'Single-use Plastic'],
@@ -527,6 +542,7 @@ class CalculatorSchemaSeeder extends Seeder
                 ],
                 [
                     'code' => 'tas_belanja',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'summary_label' => 'Penggunaan Tas Belanja'],
                         'en' => ['label' => 'Do you always bring your own shopping bag?', 'summary_label' => 'Reusable Bag'],
@@ -557,6 +573,7 @@ class CalculatorSchemaSeeder extends Seeder
                 ],
                 [
                     'code' => 'pilah_sampah',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Apakah kamu memilah sampah organik dan anorganik di rumah?', 'summary_label' => 'Milah Sampah'],
                         'en' => ['label' => 'Do you separate organic and inorganic waste at home?', 'summary_label' => 'Waste Sorting'],
@@ -580,6 +597,7 @@ class CalculatorSchemaSeeder extends Seeder
                 ],
                 [
                     'code' => 'galon_isi_ulang',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Apakah kamu menggunakan galon isi ulang untuk kebutuhan minum?', 'summary_label' => 'Penggunaan Galon Isi Ulang'],
                         'en' => ['label' => 'Do you use refillable water gallons for drinking?', 'summary_label' => 'Refill Gallon'],
@@ -603,6 +621,7 @@ class CalculatorSchemaSeeder extends Seeder
                 ],
                 [
                     'code' => 'daging_merah',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'summary_label' => 'Konsumsi Daging Merah'],
                         'en' => ['label' => 'How often do you eat red meat (beef/lamb)?', 'summary_label' => 'Red Meat'],
@@ -633,6 +652,7 @@ class CalculatorSchemaSeeder extends Seeder
                 ],
                 [
                     'code' => 'belanja_online',
+                    'display_style' => 'pill_compact',
                     'translations' => [
                         'id' => ['label' => 'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'summary_label' => 'Belanja Online'],
                         'en' => ['label' => 'How many online purchases do you make in a month?', 'summary_label' => 'Online Shopping'],
