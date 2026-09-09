@@ -31,8 +31,8 @@ panel hosting tidak menampilkannya.
     ├── index.php       <- dari deploy/index.php
     ├── .htaccess       <- pengamanan (dari public/.htaccess)
     ├── favicon.ico
-    ├── robots.txt
     └── build/          <- hasil `npm run build`
+                           (robots.txt & sitemap.xml dilayani route, bukan file)
 ```
 
 ---
@@ -62,6 +62,10 @@ rsync -a \
 
 cp -r public/. deploy/build/public_html/
 cp deploy/index.php deploy/build/public_html/index.php
+
+# Penanda vite dev server. Kalau file ini ikut terkirim, situs live mencoba
+# memuat CSS/JS dari 127.0.0.1:5173 dan tampil tanpa gaya sama sekali.
+rm -f deploy/build/public_html/hot
 
 # e. Dua zip terpisah supaya upload File Manager tidak timeout
 cd deploy/build
@@ -142,6 +146,44 @@ pastikan tidak ada error, lalu kembalikan ke `false`.
    dan kedua tombolnya (**Lihat Hasil Lengkap**, **Unduh Laporan**) harus
    membuka halaman yang benar. Cek juga folder spam.
 7. Pastikan `storage/logs/laravel-*.log` bersih.
+
+---
+
+## SEO & pratinjau tautan
+
+Judul, deskripsi, kata kunci, kartu WhatsApp/sosmed, dan structured data
+dirakit `App\Support\Seo` dari `lang/{locale}/seo.php`, lalu dicetak
+`resources/views/components/seo-head.blade.php` di setiap halaman.
+
+**`APP_URL` menentukan hasilnya.** Nilai itu dipakai untuk `<link rel=canonical>`,
+`og:url`, alamat gambar pratinjau, dan baris `Sitemap:` di robots.txt. Kalau
+masih `localhost`, WhatsApp tidak akan menampilkan gambar dan Google akan
+mengindeks alamat yang salah.
+
+**Yang perlu dicek setelah live:**
+
+```bash
+D=https://domain-anda.com
+
+curl -s $D/            | grep -E 'og:(title|description|image)'   # kartu WhatsApp
+curl -s $D/robots.txt                                             # baris Sitemap harus domain asli
+curl -s $D/sitemap.xml                                            # 2 URL publik
+curl -sI $D/asset/images/og-cover.jpg | head -1                   # harus 200
+```
+
+Lalu tempel alamat situs di **WhatsApp** (chat ke diri sendiri) untuk melihat
+kartunya, dan daftarkan `sitemap.xml` di **Google Search Console**. WhatsApp
+menyimpan pratinjau di cache cukup lama — kalau kartunya salah setelah
+perbaikan, uji dengan menambahkan `?v=2` di ujung alamat.
+
+**Yang sengaja tidak diindeks:** `/admin/*` serta `/kalkulator/hasil/*`
+(beralamat uuid dan berisi data peserta). Keduanya mengirim
+`<meta name="robots" content="noindex, nofollow">` dan ditolak di robots.txt.
+
+**Batasan yang perlu diketahui:** pilihan bahasa disimpan di session, jadi versi
+ID dan EN berbagi satu URL yang sama. Akibatnya hanya versi Indonesia yang
+terindeks dan `hreflang` belum bisa dipasang. Kalau nanti versi Inggris perlu
+ikut diindeks, bahasanya harus pindah ke URL sendiri (mis. `/en/...`).
 
 ---
 

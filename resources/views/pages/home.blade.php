@@ -1,12 +1,16 @@
 <?php
 
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
- * Beranda Utama Tokio Marine Green Campaign
+ * Beranda Utama Tokio Marine Green Campaign.
+ *
+ * Judul halaman tidak ditulis lewat #[Title]: argumen atribut harus konstan
+ * sehingga judulnya tidak bisa ikut berganti bahasa. Judul, deskripsi, kartu
+ * WhatsApp, dan structured data halaman ini datang dari App\Support\Seo —
+ * teksnya di lang/{locale}/seo.php.
  */
-new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
+new class extends Component
 {
     //
 };
@@ -30,13 +34,16 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                 <div class="absolute inset-0 bg-gradient-to-b from-[#00AEC7]/50 via-[#00AEC7]/35 to-transparent"></div>
 
                 <div class="relative z-10 flex max-w-3xl flex-col items-center text-center">
+                    <p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-white/90 sm:text-sm">
+                        Tokio Marine &times; Jaga Bumi
+                    </p>
+
                     <h1 class="text-3xl font-black leading-tight text-white sm:text-4xl md:text-5xl">
-                        Hitung Jejak Karbonmu dalam 3 Menit, <br class="hidden sm:block">
-                        Mulai Langkah Nyata untuk Bumi
+                        Kalkulator Karbon: Hitung Jejak Karbonmu dalam 3 Menit
                     </h1>
                     
                     <p class="mt-4 max-w-2xl text-sm leading-relaxed text-white/90 sm:mt-6 sm:text-base font-medium">
-                        Pendekatan praktis berbasis data emisi nasional untuk memahami seberapa besar dampak aktivitas harianmu terhadap lingkungan.
+                        Mulai langkah nyata untuk bumi. Carbon calculator berbasis data emisi nasional untuk memahami seberapa besar dampak aktivitas harianmu terhadap lingkungan &mdash; gratis, tanpa perlu membuat akun.
                     </p>
 
                     <a
@@ -52,7 +59,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                 {{-- Floating Card Desktop --}}
                 <div class="absolute bottom-6 left-6 z-20 hidden max-w-[320px] items-center gap-4 rounded-2xl bg-white p-4 shadow-xl sm:flex lg:bottom-10 lg:left-10">
                     <div class="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200">
-                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Ilustrasi Bumi" class="h-full w-full object-cover">
+                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Jaringan listrik sebagai sumber jejak karbon rumah tangga" loading="lazy" decoding="async" class="h-full w-full object-cover">
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-900 leading-tight">Mengapa Ini Penting?</h3>
@@ -65,7 +72,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                 {{-- Floating Card Mobile --}}
                 <div class="relative z-10 mt-12 flex w-full max-w-xs items-center gap-4 rounded-2xl bg-white p-4 shadow-lg sm:hidden">
                     <div class="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200">
-                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Ilustrasi Bumi" class="h-full w-full object-cover">
+                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Jaringan listrik sebagai sumber jejak karbon rumah tangga" loading="lazy" decoding="async" class="h-full w-full object-cover">
                     </div>
                     <div class="text-left">
                         <h3 class="text-sm font-bold text-slate-900 leading-tight">Mengapa Ini Penting?</h3>
@@ -81,7 +88,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="w-full">
                         <div class="rounded-3xl w-full aspect-[4/3] overflow-hidden shadow-sm">
-                            <img src="{{ asset('asset/images/abdi-rahman-h-kRFzTZVN-Fc-unsplash.jpg') }}" alt="About Us Tokio Marine Green Campaign" class="w-full h-full object-cover">
+                            <img src="{{ asset('asset/images/abdi-rahman-h-kRFzTZVN-Fc-unsplash.jpg') }}" alt="Relawan program Jaga Bumi memilah sampah bersama warga" loading="lazy" decoding="async" class="w-full h-full object-cover">
                         </div>
                     </div>
 
@@ -129,7 +136,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                     {{-- Card 1 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/manki-kim-21xwHD7XZmM-unsplash.jpg') }}" alt="Transportasi Darat" class="w-full h-full object-cover">
+                            <img src="{{ asset('asset/images/manki-kim-21xwHD7XZmM-unsplash.jpg') }}" alt="Transportasi darat, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Transportasi Darat</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -140,7 +147,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                     {{-- Card 2 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/kurasitama-2jXw1nqdGpk-unsplash.jpg') }}" alt="Daya Rumah Tangga" class="w-full h-full object-cover">
+                            <img src="{{ asset('asset/images/kurasitama-2jXw1nqdGpk-unsplash.jpg') }}" alt="Daya listrik rumah tangga, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Daya Rumah Tangga</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -151,7 +158,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                     {{-- Card 3 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/lisa-anna-ZkWMfHPNWpw-unsplash.jpg') }}" alt="Peralatan Rumah Tangga" class="w-full h-full object-cover">
+                            <img src="{{ asset('asset/images/lisa-anna-ZkWMfHPNWpw-unsplash.jpg') }}" alt="Peralatan rumah tangga, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Peralatan Rumah Tangga</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -223,7 +230,7 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
             {{-- ==================== BANNER CTA ==================== --}}
             <section class="py-8">
                 <div class="relative w-full rounded-[2rem] overflow-hidden min-h-[300px] flex flex-col items-center justify-center text-center px-4 py-12 bg-slate-100 shadow-md">
-                    <img src="{{ asset('asset/images/group-asian-diverse-people-volunteer-teamwork-environment-conservationvolunteer-help-picking-plastic-foam-garbage-park-areavolunteering-world-environment-day (2).jpg') }}" alt="Relawan" class="absolute inset-0 w-full h-full object-cover">
+                    <img src="{{ asset('asset/images/group-asian-diverse-people-volunteer-teamwork-environment-conservationvolunteer-help-picking-plastic-foam-garbage-park-areavolunteering-world-environment-day (2).jpg') }}" alt="Relawan mengumpulkan sampah plastik di taman kota" class="absolute inset-0 w-full h-full object-cover">
                     
                     {{-- Overlay gelap tipis agar teks putih mudah dibaca --}}
                     <div class="absolute inset-0 bg-slate-900/40"></div>
@@ -265,113 +272,32 @@ new #[Title('Beranda | Tokio Marine Green Campaign')] class extends Component
                     </p>
                 </div>
 
-                {{-- Kanan: Accordion List --}}
+                {{-- Kanan: Accordion List.
+                     Isinya dari App\Support\Seo::faq() — sumber yang sama dengan
+                     structured data FAQPage di <head>, karena Google mensyaratkan
+                     FAQ terstruktur sama persis dengan yang terlihat pengunjung. --}}
                 <div class="flex flex-col space-y-4">
-                    
-                    {{-- FAQ Item 1 --}}
-                    <div x-data="{ expanded: true }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
-                        <button @click="expanded = !expanded" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
-                            <div class="flex items-start gap-4">
-                                <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-base sm:text-lg font-bold text-[#00AEC7] leading-snug pr-4">Apakah hasil perhitungan kalkulator karbon ini 100% akurat?</span>
-                            </div>
-                            <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
-                                <svg x-show="!expanded" style="display: none;" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                <svg x-show="expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
-                            </span>
-                        </button>
-                        <div x-show="expanded" x-collapse>
-                            <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                Perhitungan di kalkulator ini bersifat estimasi berdasarkan standar faktor emisi rata-rata (seperti standar IPCC dan US EPA). Hasil ini dirancang untuk memberikan gambaran umum dan kesadaran mengenai besaran jejak emisi harianmu, bukan sebagai angka pengukuran absolut.
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- FAQ Item 2 --}}
-                    <div x-data="{ expanded: false }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
-                        <button @click="expanded = !expanded" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
-                            <div class="flex items-start gap-4">
-                                <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-base sm:text-lg font-bold text-[#00AEC7] leading-snug pr-4" :class="{'text-[#00AEC7]': expanded, 'text-slate-800': !expanded}">Mengapa variabel yang dihitung mencakup transportasi darat, daya, dan peralatan rumah tangga?</span>
-                            </div>
-                            <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
-                                <svg x-show="!expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                <svg x-show="expanded" style="display: none;" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
-                            </span>
-                        </button>
-                        <div x-show="expanded" x-collapse style="display: none;">
-                            <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                Ketiga sektor ini merupakan kontributor utama emisi harian tingkat individu. Mengukur konsumsi BBM/jarak tempuh, daya listrik hunian, serta intensitas alat elektronik membantu kita memetakan potensi penghematan energi secara lebih efektif.
+                    @foreach (App\Support\Seo::faq() as $index => $item)
+                        <div x-data="{ expanded: {{ $loop->first ? 'true' : 'false' }} }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
+                            <button @click="expanded = !expanded" :aria-expanded="expanded ? 'true' : 'false'" aria-controls="faq-answer-{{ $index }}" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
+                                <div class="flex items-start gap-4">
+                                    <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h3 class="text-base sm:text-lg font-bold leading-snug pr-4" :class="expanded ? 'text-[#00AEC7]' : 'text-slate-800'">{{ $item['q'] }}</h3>
+                                </div>
+                                <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
+                                    <svg x-show="!expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                                    <svg x-show="expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
+                                </span>
+                            </button>
+                            <div x-show="expanded" x-collapse id="faq-answer-{{ $index }}">
+                                <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
+                                    {{ $item['a'] }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    {{-- FAQ Item 3 --}}
-                    <div x-data="{ expanded: false }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
-                        <button @click="expanded = !expanded" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
-                            <div class="flex items-start gap-4">
-                                <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-base sm:text-lg font-bold text-[#00AEC7] leading-snug pr-4" :class="{'text-[#00AEC7]': expanded, 'text-slate-800': !expanded}">Bagaimana jika saya menggunakan kendaraan listrik (EV) atau panel surya di rumah?</span>
-                            </div>
-                            <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
-                                <svg x-show="!expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                <svg x-show="expanded" style="display: none;" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
-                            </span>
-                        </button>
-                        <div x-show="expanded" x-collapse style="display: none;">
-                            <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                Kalkulator telah menyesuaikan faktor emisi untuk opsi ramah lingkungan. Penggunaan kendaraan listrik atau sumber energi terbarukan akan menghasilkan estimasi emisi yang jauh lebih rendah dibandingkan penggunaan BBM atau listrik PLN konvensional.
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- FAQ Item 4 --}}
-                    <div x-data="{ expanded: false }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
-                        <button @click="expanded = !expanded" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
-                            <div class="flex items-start gap-4">
-                                <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-base sm:text-lg font-bold text-[#00AEC7] leading-snug pr-4" :class="{'text-[#00AEC7]': expanded, 'text-slate-800': !expanded}">Apakah data pribadi yang saya masukkan saat pengisian aman?</span>
-                            </div>
-                            <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
-                                <svg x-show="!expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                <svg x-show="expanded" style="display: none;" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
-                            </span>
-                        </button>
-                        <div x-show="expanded" x-collapse style="display: none;">
-                            <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                Sangat aman. Data yang kamu masukkan hanya digunakan untuk keperluan kalkulasi emisi dan personalisasi rekomendasi pada result page. Kami menjaga privasi pengguna dan tidak pernah membagikan data pribadi kamu kepada pihak ketiga.
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- FAQ Item 5 --}}
-                    <div x-data="{ expanded: false }" class="bg-[#f2f9f9] border border-[#d6eef0] rounded-2xl overflow-hidden transition-all duration-300">
-                        <button @click="expanded = !expanded" class="w-full flex items-start justify-between p-6 text-left focus:outline-none">
-                            <div class="flex items-start gap-4">
-                                <svg class="size-5 text-[#00AEC7] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-base sm:text-lg font-bold text-[#00AEC7] leading-snug pr-4" :class="{'text-[#00AEC7]': expanded, 'text-slate-800': !expanded}">Apa yang bisa saya lakukan setelah mengetahui hasil estimasi emisi karbon saya?</span>
-                            </div>
-                            <span class="shrink-0 grid place-items-center size-8 rounded-lg bg-[#00AEC7] text-white">
-                                <svg x-show="!expanded" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                                <svg x-show="expanded" style="display: none;" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
-                            </span>
-                        </button>
-                        <div x-show="expanded" x-collapse style="display: none;">
-                            <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                Pada result page, kamu akan mendapatkan rekomendasi aksi nyata sesuai kategori dampakmu (ringan, sedang, atau tinggi), seperti saran pemilahan sampah harian hingga lokasi Rumah Pilah/Bank Sampah terdekat untuk mulai menekan sisa emisi harian.
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
 
                 </div>
             </section>

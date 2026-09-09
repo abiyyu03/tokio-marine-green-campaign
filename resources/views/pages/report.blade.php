@@ -3,7 +3,6 @@
 use App\Support\ResultReport;
 use App\Support\ResultText;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
@@ -18,7 +17,7 @@ use Livewire\Component;
  * Dibuka dengan ?cetak=1 dari tombol "Download Result" supaya dialog cetak
  * langsung muncul; tanpa parameter itu halaman tetap bisa dibaca biasa.
  */
-new #[Title('Laporan Jejak Karbon | Tokio Marine Green Campaign')] class extends Component
+new class extends Component
 {
     public string $uuid = '';
 

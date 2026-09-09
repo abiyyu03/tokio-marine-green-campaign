@@ -11,7 +11,6 @@ use App\Services\ResultEmailer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
@@ -27,7 +26,7 @@ use Livewire\Component;
  * sidebar selalu berasal dari `points` yang sama dengan yang dipakai
  * App\Services\CarbonCalculator saat hasil dibekukan.
  */
-new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extends Component {
+new class extends Component {
     /** Kunci session penyimpan draft yang sedang dikerjakan. */
     private const DRAFT_KEY = 'calculator.draft_uuid';
 

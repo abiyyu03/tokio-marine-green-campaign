@@ -3,7 +3,6 @@
 use App\Support\ResultReport;
 use App\Support\ResultText;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
@@ -14,7 +13,7 @@ use Livewire\Component;
  * pun, supaya laporan yang sudah dibagikan tidak berubah ketika angka
  * referensi diperbarui. Halaman laporan cetak memakai sumber yang sama.
  */
-new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class extends Component
+new class extends Component
 {
     public string $uuid = '';
 
