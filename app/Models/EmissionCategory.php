@@ -18,13 +18,14 @@ class EmissionCategory extends Model
 
     protected $fillable = [
         'code', 'slug', 'calculator_key', 'icon', 'image_file', 'accent_color',
-        'max_points', 'sort_order', 'is_active',
+        'max_points', 'emission_share', 'sort_order', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'max_points' => 'integer',
+            'emission_share' => 'float',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
