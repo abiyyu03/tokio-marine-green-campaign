@@ -35,9 +35,6 @@ return [
         'strategy' => env('CARBON_ESTIMATION_STRATEGY', 'tier_band'),
     ],
 
-    // Jumlah kartu Rumah Pilah yang tampil sebelum tombol "Load More".
-    'drop_off_page_size' => 3,
-
     // Zona waktu untuk menampilkan dan menyaring tanggal di area admin.
     // config('app.timezone') sengaja dibiarkan UTC: mengubahnya akan
     // menggeser makna seluruh kolom created_at yang sudah tersimpan.

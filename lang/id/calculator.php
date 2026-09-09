@@ -20,7 +20,9 @@ return [
         'continue' => 'Lanjut',
         'continue_to' => 'Lanjut ke :step',
         'to_personal_data' => 'Isi Data Diri & Lihat Hasil',
+        'to_personal_data_short' => 'Isi Data Diri',
         'see_result' => 'Lihat Hasil Perhitungan',
+        'see_result_short' => 'Lihat Hasil',
         'processing' => 'Memproses...',
     ],
 
@@ -35,6 +37,9 @@ return [
         'email_placeholder' => 'Contoh: ahmadjaelani@gmail.com',
         'whatsapp' => 'Masukkan Nomor WhatsApp Anda',
         'whatsapp_placeholder' => 'Contoh: 081234567896',
+        // Kolomnya sudah berawalan +62, jadi contoh di dalam kotak ditulis tanpa 0.
+        'whatsapp_hint_placeholder' => '81234567890',
+        'whatsapp_hint' => 'Tulis tanpa awalan +62. Contoh: 81234567890',
         'dob' => 'Masukkan Tanggal Lahir Anda',
         'dob_placeholder' => 'Pilih tanggal lahir',
         'gender' => 'Apa Gender Anda',
@@ -50,7 +55,7 @@ return [
     ],
 
     'validation' => [
-        'form' => 'Mohon lengkapi data yang masih kosong sebelum melanjutkan.',
+        'form' => 'Ada isian yang perlu diperbaiki dulu:',
         'incomplete' => 'Lengkapi semua pertanyaan di langkah ini dulu ya.',
     ],
 ];

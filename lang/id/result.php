@@ -29,8 +29,9 @@ return [
 
     'drop_off' => [
         'heading' => 'Temukan Rumah Pilah Terdekat!',
-        'see_more' => 'Lihat Lebih Banyak',
-        'load_more' => 'Load More',
+        'count' => ':count lokasi — geser untuk melihat semuanya',
+        'scroll_prev' => 'Lihat lokasi sebelumnya',
+        'scroll_next' => 'Lihat lokasi berikutnya',
         'maps' => 'Lihat di Maps',
         'whatsapp' => 'Hubungi WhatsApp',
         'empty' => 'Belum ada lokasi Rumah Pilah yang terdaftar.',

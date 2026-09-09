@@ -312,6 +312,48 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         $this->forgetStepState();
     }
 
+    /**
+     * Aturan langkah data diri.
+     *
+     * Dipakai dua kali: sekali saat submit, dan sekali per field lewat
+     * `updated()`. Pesannya tidak ditulis di sini melainkan di
+     * lang/{locale}/validation.php (blok `custom` + `attributes`), supaya
+     * kalimat error ikut berganti bahasa seperti teks halaman lainnya.
+     *
+     * @return array<string, array<int, string>>
+     */
+    private function personalRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:180'],
+            // Nomor disimpan tanpa +62 (lihat normalisedWhatsapp), jadi yang
+            // diterima hanya angka — huruf akan hilang diam-diam saat
+            // dinormalisasi dan menghasilkan nomor yang salah.
+            'whatsapp' => ['required', 'string', 'min:8', 'max:20', 'regex:/^[0-9][0-9 ()-]*$/'],
+            'dob' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'in:male,female'],
+            'intent' => ['nullable', 'in:belum_tahu,mungkin,tentu'],
+            'consent' => ['accepted'],
+        ];
+    }
+
+    /**
+     * Validasi ulang satu field begitu isiannya berubah (wire:model.blur).
+     *
+     * Tanpa ini pesan error langkah data diri baru hilang setelah tombol
+     * submit ditekan lagi — jadi field yang sudah dibetulkan tetap terlihat
+     * merah dan pesannya terbaca seolah isian masih kosong.
+     */
+    public function updated(string $property): void
+    {
+        $rules = $this->personalRules();
+
+        if (array_key_exists($property, $rules)) {
+            $this->validateOnly($property, $rules);
+        }
+    }
+
     /** Menyimpan lead, membekukan hasil, lalu pindah ke halaman hasil. */
     public function submitLeads()
     {
@@ -320,15 +362,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             return $this->redirectRoute('calculator.result', ['uuid' => $this->completedUuid], navigate: true);
         }
 
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:180'],
-            'whatsapp' => ['required', 'string', 'min:8', 'max:20'],
-            'dob' => ['nullable', 'date', 'before:today'],
-            'gender' => ['nullable', 'in:male,female'],
-            'intent' => ['nullable', 'in:belum_tahu,mungkin,tentu'],
-            'consent' => ['accepted'],
-        ]);
+        $validated = $this->validate($this->personalRules());
 
         $submission = $this->submission();
 
@@ -557,9 +591,18 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             {{-- KOLOM KIRI: FORMULIR WIZARD --}}
             <div class="{{ $this->isPersonalStep ? 'rounded-2xl bg-white p-6 shadow-sm border border-slate-100' : 'space-y-6' }}">
 
+                {{-- Ringkasan error: di layar sempit field yang bermasalah bisa
+                     berada jauh di bawah lipatan, jadi pesannya diulang di atas. --}}
                 @if ($stepError || $errors->any())
-                    <div class="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 mb-6">
-                        {{ $stepError ?? __('calculator.validation.form') }}
+                    <div role="alert" class="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200 mb-6">
+                        <p class="font-semibold">{{ $stepError ?? __('calculator.validation.form') }}</p>
+                        @if ($errors->any())
+                            <ul class="mt-2 list-disc space-y-1 pl-5 text-xs">
+                                @foreach ($errors->all() as $message)
+                                    <li>{{ $message }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                 @endif
 
@@ -622,75 +665,108 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <p class="mt-1.5 text-sm text-slate-600">{{ __('calculator.personal.panel_description') }}</p>
                     </div>
 
+                    {{-- Satu sumber kelas input: kotaknya harus terlihat (tanpa
+                         `border` field-nya tampak seperti teks biasa), dan berubah
+                         merah begitu fieldnya bermasalah. --}}
+                    @php($inputBase = 'block w-full rounded-xl border bg-white py-3 text-sm transition focus:outline-none focus:ring-4')
+                    @php($inputOk = 'border-slate-300 focus:border-[#0d9488] focus:ring-[#0d9488]/20')
+                    @php($inputBad = 'border-red-400 bg-red-50/40 focus:border-red-500 focus:ring-red-100')
+
                     {{-- Row 1: Nama & Email --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-5 sm:mb-6">
                         <fieldset>
                             <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.name') }}</label>
-                            <input type="text" wire:model="name" id="name" placeholder="{{ __('calculator.personal.name_placeholder') }}" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('name') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            <input
+                                type="text" wire:model.blur="name" id="name" autocomplete="name"
+                                placeholder="{{ __('calculator.personal.name_placeholder') }}"
+                                @error('name') aria-invalid="true" aria-describedby="name-error" @enderror
+                                class="px-4 {{ $inputBase }} {{ $errors->has('name') ? $inputBad : $inputOk }}"
+                            >
+                            @error('name') <p id="name-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
 
                         <fieldset>
                             <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.email') }}</label>
-                            <input type="email" wire:model="email" id="email" placeholder="{{ __('calculator.personal.email_placeholder') }}" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('email') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            <input
+                                type="email" wire:model.blur="email" id="email" autocomplete="email" inputmode="email"
+                                placeholder="{{ __('calculator.personal.email_placeholder') }}"
+                                @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
+                                class="px-4 {{ $inputBase }} {{ $errors->has('email') ? $inputBad : $inputOk }}"
+                            >
+                            @error('email') <p id="email-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-5 sm:mb-6">
                         <fieldset>
                             <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.whatsapp') }}</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
-                                <input type="text" wire:model="whatsapp" id="whatsapp" placeholder="8123456789" class="block w-full rounded-xl border-slate-200 pl-14 pr-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500">+62</span>
+                                <input
+                                    type="tel" wire:model.blur="whatsapp" id="whatsapp" autocomplete="tel-national" inputmode="numeric"
+                                    placeholder="{{ __('calculator.personal.whatsapp_hint_placeholder') }}"
+                                    @error('whatsapp') aria-invalid="true" aria-describedby="whatsapp-error" @enderror
+                                    class="pl-14 pr-4 {{ $inputBase }} {{ $errors->has('whatsapp') ? $inputBad : $inputOk }}"
+                                >
                             </div>
-                            @error('whatsapp') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            @error('whatsapp')
+                                <p id="whatsapp-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @else
+                                <p class="mt-1.5 text-xs text-slate-500">{{ __('calculator.personal.whatsapp_hint') }}</p>
+                            @enderror
                         </fieldset>
 
                         <fieldset>
                             <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.dob') }}</label>
-                            <input type="date" wire:model="dob" id="dob" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20 text-slate-700">
-                            @error('dob') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            <input
+                                type="date" wire:model.blur="dob" id="dob" autocomplete="bday"
+                                max="{{ now()->subDay()->toDateString() }}"
+                                @error('dob') aria-invalid="true" aria-describedby="dob-error" @enderror
+                                class="px-4 text-slate-700 {{ $inputBase }} {{ $errors->has('dob') ? $inputBad : $inputOk }}"
+                            >
+                            @error('dob') <p id="dob-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 3: Jenis Kelamin --}}
-                    <fieldset class="mb-6">
+                    <fieldset class="mb-5 sm:mb-6">
                         <legend class="text-sm font-semibold text-slate-800 mb-3">{{ __('calculator.personal.gender') }}</legend>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             @foreach (['male' => __('calculator.personal.gender_male'), 'female' => __('calculator.personal.gender_female')] as $value => $label)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === $value ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                <label class="relative flex cursor-pointer items-center justify-between gap-2 rounded-xl border-2 bg-white p-3 transition-all sm:p-4 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
                                     <input type="radio" wire:model.live="gender" value="{{ $value }}" class="sr-only">
-                                    <span class="text-sm font-semibold text-slate-700">{{ $label }}</span>
-                                    <div class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    <span class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ $label }}</span>
+                                    <div class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if ($gender === $value) <div class="size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
+                        @error('gender') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
                     </fieldset>
 
                     {{-- Row 4: Intent --}}
-                    <fieldset class="mb-6">
+                    <fieldset class="mb-5 sm:mb-6">
                         <legend class="text-sm font-semibold text-slate-800 mb-3">{{ __('calculator.personal.intent') }}</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             @foreach (['belum_tahu', 'mungkin', 'tentu'] as $value)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ $intent === $value ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                <label class="relative flex cursor-pointer items-center justify-between gap-2 rounded-lg border-2 bg-white p-3 transition-all {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
                                     <input type="radio" wire:model.live="intent" value="{{ $value }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ __('calculator.personal.intent_'.$value) }}</span>
-                                    <div class="flex size-4 items-center justify-center rounded-full border-2 {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    <span class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ __('calculator.personal.intent_'.$value) }}</span>
+                                    <div class="flex size-4 shrink-0 items-center justify-center rounded-full border-2 {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if ($intent === $value) <div class="size-2 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
+                        @error('intent') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
                     <fieldset>
-                        <div class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <input id="consent" type="checkbox" wire:model="consent" class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
+                        <div class="flex items-start gap-3 rounded-xl border bg-slate-50 p-3 sm:p-4 {{ $errors->has('consent') ? 'border-red-400 bg-red-50/60' : 'border-slate-200' }}">
+                            <input id="consent" type="checkbox" wire:model.live="consent" class="size-5 mt-0.5 shrink-0 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
                                 {!! __('calculator.personal.consent', [
                                     'terms' => '<a href="#" class="font-semibold text-[#0d9488] hover:underline">'.e(__('calculator.personal.consent_terms')).'</a>',
@@ -704,8 +780,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
             </div>
 
-            {{-- KOLOM KANAN: PANEL SKOR & SUMMARY (Sticky) --}}
-            <aside class="sticky top-24 space-y-4">
+            {{-- KOLOM KANAN: PANEL SKOR & SUMMARY (sticky hanya saat dua kolom;
+                 di mobile panel ini ikut mengalir di bawah formulir) --}}
+            <aside class="space-y-4 lg:sticky lg:top-24">
 
                 {{-- Score Card --}}
                 <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
@@ -743,10 +820,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" wire:key="summary-{{ $loop->index }}">
                         <h4 class="mb-4 text-xs font-bold text-slate-800">{{ $block['name'] }}</h4>
                         <div class="space-y-3 text-[11px] sm:text-xs">
+                            {{-- Label dan jawabannya boleh membungkus: di layar sempit
+                                 pasangan seperti "Konsumsi Daging Merah / Sedang (2-4x
+                                 per minggu)" tidak muat dalam satu baris. --}}
                             @foreach ($block['rows'] as $row)
-                                <div class="flex justify-between items-start gap-2 {{ $loop->last ? '' : 'border-b border-slate-100 pb-2' }}">
-                                    <span class="text-slate-500 whitespace-nowrap">{{ $row['label'] }}</span>
-                                    <span class="font-semibold text-slate-800 text-right">{{ $row['value'] }}</span>
+                                <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 {{ $loop->last ? '' : 'border-b border-slate-100 pb-2' }}">
+                                    <span class="text-slate-500">{{ $row['label'] }}</span>
+                                    <span class="ml-auto text-right font-semibold text-slate-800">{{ $row['value'] }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -757,19 +837,19 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         </div>
 
         {{-- AREA TOMBOL NAVIGASI BAWAH --}}
-        <div class="mt-8 border-t border-slate-200 bg-white p-4 shadow-sm sm:rounded-xl sm:px-6">
-            <div class="flex items-center justify-between">
+        <div class="mt-8 rounded-xl border-t border-slate-200 bg-white p-4 shadow-sm sm:px-6">
+            <div class="flex items-center justify-between gap-3">
 
                 {{-- Tombol Kembali --}}
                 @if ($this->step === 1)
-                    <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    <a href="{{ route('home') }}" wire:navigate class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
                         <span class="hidden sm:inline">{{ __('calculator.nav.back_home') }}</span>
                         <span class="sm:hidden">{{ __('calculator.nav.back') }}</span>
                     </a>
                 @else
                     @php($previous = $this->categories->get($this->step - 2))
-                    <button type="button" wire:click="previousStep" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    <button type="button" wire:click="previousStep" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
                         <span class="hidden sm:inline">{{ __('calculator.nav.back_to', ['step' => $previous?->tr('name') ?? __('calculator.personal.step_name')]) }}</span>
                         <span class="sm:hidden">{{ __('calculator.nav.back') }}</span>
@@ -778,19 +858,21 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Tombol Lanjut / Generate --}}
                 @if ($this->isPersonalStep)
-                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
-                        <span wire:loading.remove wire:target="submitLeads">{{ __('calculator.nav.see_result') }}</span>
+                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50 sm:px-5 sm:text-sm">
+                        <span wire:loading.remove wire:target="submitLeads" class="hidden sm:inline">{{ __('calculator.nav.see_result') }}</span>
+                        <span wire:loading.remove wire:target="submitLeads" class="sm:hidden">{{ __('calculator.nav.see_result_short') }}</span>
                         <span wire:loading wire:target="submitLeads">{{ __('calculator.nav.processing') }}</span>
                         <svg wire:loading.remove wire:target="submitLeads" class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
                     </button>
                 @else
                     @php($next = $this->categories->get($this->step))
-                    <button type="button" wire:click="nextStep" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
+                    <button type="button" wire:click="nextStep" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 sm:px-5 sm:text-sm">
                         @if ($next)
                             <span class="hidden sm:inline">{{ __('calculator.nav.continue_to', ['step' => $next->tr('name')]) }}</span>
                             <span class="sm:hidden">{{ __('calculator.nav.continue') }}</span>
                         @else
-                            {{ __('calculator.nav.to_personal_data') }}
+                            <span class="hidden sm:inline">{{ __('calculator.nav.to_personal_data') }}</span>
+                            <span class="sm:hidden">{{ __('calculator.nav.to_personal_data_short') }}</span>
                         @endif
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
                     </button>

@@ -20,7 +20,9 @@ return [
         'continue' => 'Continue',
         'continue_to' => 'Continue to :step',
         'to_personal_data' => 'Add Your Details & See Results',
+        'to_personal_data_short' => 'Your Details',
         'see_result' => 'See My Results',
+        'see_result_short' => 'See Results',
         'processing' => 'Processing...',
     ],
 
@@ -35,6 +37,9 @@ return [
         'email_placeholder' => 'e.g. ahmadjaelani@gmail.com',
         'whatsapp' => 'Enter your WhatsApp number',
         'whatsapp_placeholder' => 'e.g. 081234567896',
+        // The field already shows a +62 prefix, so the in-field example drops the 0.
+        'whatsapp_hint_placeholder' => '81234567890',
+        'whatsapp_hint' => 'Type it without the +62 prefix. Example: 81234567890',
         'dob' => 'Enter your date of birth',
         'dob_placeholder' => 'Pick a date',
         'gender' => 'Your gender',
@@ -50,7 +55,7 @@ return [
     ],
 
     'validation' => [
-        'form' => 'Please fill in the details that are still missing before continuing.',
+        'form' => 'A few details still need fixing:',
         'incomplete' => 'Please answer every question in this step first.',
     ],
 ];

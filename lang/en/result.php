@@ -29,8 +29,9 @@ return [
 
     'drop_off' => [
         'heading' => 'Find Your Nearest Sorting House',
-        'see_more' => 'See More',
-        'load_more' => 'Load More',
+        'count' => ':count locations — scroll to see them all',
+        'scroll_prev' => 'Previous locations',
+        'scroll_next' => 'More locations',
         'maps' => 'View on Maps',
         'whatsapp' => 'Chat on WhatsApp',
         'empty' => 'No sorting house locations have been listed yet.',

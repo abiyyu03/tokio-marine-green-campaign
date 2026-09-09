@@ -18,13 +18,9 @@ new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class exten
 {
     public string $uuid = '';
 
-    /** Jumlah kartu Rumah Pilah yang sedang tampil ("Lihat Lebih Banyak"). */
-    public int $visibleDropOffs = 3;
-
     public function mount(string $uuid): void
     {
         $this->uuid = $uuid;
-        $this->visibleDropOffs = config('carbon-calculator.drop_off_page_size');
 
         abort_if($this->report === null, 404);
     }
@@ -33,11 +29,6 @@ new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class exten
     public function report(): ?ResultReport
     {
         return ResultReport::forUuid($this->uuid);
-    }
-
-    public function loadMoreDropOffs(): void
-    {
-        $this->visibleDropOffs += config('carbon-calculator.drop_off_page_size');
     }
 };
 ?>
@@ -70,8 +61,11 @@ new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class exten
 
         <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
 
-            {{-- KOLOM KIRI UTAMA --}}
-            <div class="space-y-8">
+            {{-- KOLOM KIRI UTAMA.
+                 `min-w-0` wajib: tanpa itu rail Rumah Pilah yang bisa digeser
+                 melebarkan kolom ini dan seluruh halaman ikut bergeser ke samping
+                 di layar sempit. --}}
+            <div class="min-w-0 space-y-8">
 
                 {{-- Sapaan & Intro --}}
                 <div>
@@ -198,60 +192,117 @@ new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class exten
                     @endif
 
                     {{-- Direktori Rumah Pilah --}}
-                    <div>
-                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                            <h3 class="text-base font-bold text-slate-900">{{ __('result.drop_off.heading') }}</h3>
-                            @if ($report->dropOffPoints()->count() > $visibleDropOffs)
-                                <button type="button" wire:click="loadMoreDropOffs" class="inline-flex items-center gap-2 rounded-lg border border-[#0d9488] bg-white px-4 py-2 text-xs font-semibold text-[#0d9488] transition hover:bg-slate-50">
-                                    {{ __('result.drop_off.see_more') }}
-                                    <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
-                                </button>
+                    @php($dropOffs = $report->dropOffPoints())
+                    <div
+                        x-data="{
+                            atStart: true,
+                            atEnd: false,
+                            sync() {
+                                const rail = $refs.rail;
+                                this.atStart = rail.scrollLeft <= 4;
+                                this.atEnd = Math.ceil(rail.scrollLeft + rail.clientWidth) >= rail.scrollWidth - 4;
+                            },
+                            nudge(direction) {
+                                const rail = $refs.rail;
+                                rail.scrollBy({ left: direction * Math.round(rail.clientWidth * 0.9), behavior: 'smooth' });
+                            },
+                        }"
+                        x-init="$nextTick(() => sync())"
+                        @resize.window="sync()"
+                    >
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900">{{ __('result.drop_off.heading') }}</h3>
+                                @if ($dropOffs->isNotEmpty())
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        {{ __('result.drop_off.count', ['count' => $dropOffs->count()]) }}
+                                    </p>
+                                @endif
+                            </div>
+
+                            {{-- Tombol geser hanya berguna saat memakai tetikus;
+                                 di layar sentuh railnya digeser langsung. --}}
+                            @if ($dropOffs->count() > 1)
+                                <div class="hidden gap-2 sm:flex">
+                                    <button
+                                        type="button" @click="nudge(-1)" :disabled="atStart"
+                                        :class="atStart ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-50'"
+                                        aria-label="{{ __('result.drop_off.scroll_prev') }}"
+                                        class="grid size-9 place-items-center rounded-lg border border-[#0d9488] bg-white text-[#0d9488] transition"
+                                    >
+                                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                                    </button>
+                                    <button
+                                        type="button" @click="nudge(1)" :disabled="atEnd"
+                                        :class="atEnd ? 'cursor-not-allowed opacity-40' : 'hover:bg-slate-50'"
+                                        aria-label="{{ __('result.drop_off.scroll_next') }}"
+                                        class="grid size-9 place-items-center rounded-lg border border-[#0d9488] bg-white text-[#0d9488] transition"
+                                    >
+                                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                                    </button>
+                                </div>
                             @endif
                         </div>
 
-                        @if ($report->dropOffPoints()->isEmpty())
+                        @if ($dropOffs->isEmpty())
                             <p class="text-sm text-slate-500">{{ __('result.drop_off.empty') }}</p>
                         @else
-                            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($report->dropOffPoints()->take($visibleDropOffs) as $point)
-                                    <article class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white" wire:key="drop-off-{{ $point->id }}">
-                                        <x-asset-image :src="$point->image_file" :alt="$point->name" class="h-32 w-full" />
+                            <div class="relative">
+                                {{-- Rail horizontal: jumlah lokasi bisa bertambah tanpa
+                                     memanjangkan halaman. Padding negatif membuat kartu
+                                     bisa digeser sampai tepi layar di mobile. --}}
+                                <div
+                                    x-ref="rail" @scroll.passive="sync()"
+                                    tabindex="0"
+                                    role="group"
+                                    aria-label="{{ __('result.drop_off.heading') }}"
+                                    class="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-3 sm:-mx-8 sm:px-8"
+                                >
+                                    @foreach ($dropOffs as $point)
+                                        <article class="flex w-[16.5rem] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-slate-200 bg-white sm:w-[18.5rem]" wire:key="drop-off-{{ $point->id }}">
+                                            <x-asset-image :src="$point->image_file" :alt="$point->name" class="h-32 w-full shrink-0" />
 
-                                        <div class="flex flex-1 flex-col gap-3 p-4">
-                                            <h4 class="text-sm font-bold text-slate-900">{{ $point->name }}</h4>
+                                            <div class="flex flex-1 flex-col gap-3 p-4">
+                                                <h4 class="text-sm font-bold text-slate-900">{{ $point->name }}</h4>
 
-                                            <div class="space-y-2 mt-2">
-                                                <p class="flex items-start gap-2 text-[11px] text-slate-600">
-                                                    <svg class="size-3.5 shrink-0 text-[#0d9488] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                    {{ $point->address }}
-                                                </p>
-                                                @if ($point->opening_hours)
-                                                    <p class="flex items-center gap-2 text-[11px] text-slate-600">
-                                                        <svg class="size-3.5 shrink-0 text-[#0d9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                        {{ $point->opening_hours }}
+                                                <div class="space-y-2">
+                                                    <p class="flex items-start gap-2 text-[11px] text-slate-600">
+                                                        <svg class="size-3.5 shrink-0 text-[#0d9488] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                        <span>
+                                                            {{ $point->address }}
+                                                            @if ($point->city)
+                                                                <span class="block text-slate-500">{{ $point->city }}</span>
+                                                            @endif
+                                                        </span>
                                                     </p>
-                                                @endif
-                                                @if ($point->phone)
-                                                    <p class="flex items-center gap-2 text-[11px] text-slate-600">
-                                                        <svg class="size-3.5 shrink-0 text-[#0d9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                                                        {{ $point->phone }}
-                                                    </p>
-                                                @endif
-                                            </div>
+                                                    @if ($point->opening_hours)
+                                                        <p class="flex items-center gap-2 text-[11px] text-slate-600">
+                                                            <svg class="size-3.5 shrink-0 text-[#0d9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                            {{ $point->opening_hours }}
+                                                        </p>
+                                                    @endif
+                                                    @if ($point->phone)
+                                                        <p class="flex items-center gap-2 text-[11px] text-slate-600">
+                                                            <svg class="size-3.5 shrink-0 text-[#0d9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                                            {{ $point->phone }}
+                                                        </p>
+                                                    @endif
+                                                </div>
 
-                                            <div class="mt-auto grid {{ $point->whatsappUrl() ? 'grid-cols-2' : 'grid-cols-1' }} gap-2 pt-4">
-                                                <a href="{{ $point->mapsUrl() }}" target="_blank" rel="noopener" class="rounded-lg border border-[#0d9488] py-2 text-center text-[10px] font-bold text-[#0d9488] hover:bg-slate-50">
-                                                    {{ __('result.drop_off.maps') }}
-                                                </a>
-                                                @if ($point->whatsappUrl())
-                                                    <a href="{{ $point->whatsappUrl() }}" target="_blank" rel="noopener" class="rounded-lg bg-[#0d9488] py-2 text-center text-[10px] font-bold text-white hover:bg-teal-700">
-                                                        {{ __('result.drop_off.whatsapp') }}
+                                                <div class="mt-auto grid {{ $point->whatsappUrl() ? 'grid-cols-2' : 'grid-cols-1' }} gap-2 pt-4">
+                                                    <a href="{{ $point->mapsUrl() }}" target="_blank" rel="noopener" class="rounded-lg border border-[#0d9488] py-2 text-center text-[10px] font-bold text-[#0d9488] hover:bg-slate-50">
+                                                        {{ __('result.drop_off.maps') }}
                                                     </a>
-                                                @endif
+                                                    @if ($point->whatsappUrl())
+                                                        <a href="{{ $point->whatsappUrl() }}" target="_blank" rel="noopener" class="rounded-lg bg-[#0d9488] py-2 text-center text-[10px] font-bold text-white hover:bg-teal-700">
+                                                            {{ __('result.drop_off.whatsapp') }}
+                                                        </a>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
-                                    </article>
-                                @endforeach
+                                        </article>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
                     </div>
