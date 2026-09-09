@@ -25,6 +25,8 @@ class CarbonCalculator
 
     private const MONTHS_PER_YEAR = 12;
 
+    public function __construct(private readonly EmissionEstimator $estimator) {}
+
     /**
      * Skor berjalan untuk gauge di sidebar wizard. Menerima jawaban yang
      * belum lengkap, sehingga bisa dipanggil setiap kali user memilih opsi.
@@ -129,6 +131,11 @@ class CarbonCalculator
     /**
      * Membekukan hasil akhir: total emisi, skor, tier, dan rincian per
      * kategori. Dipanggil sekali saat submission diselesaikan.
+     *
+     * Dua angka emisi disimpan berdampingan: `raw_kg_co2e_year` murni hasil
+     * faktor emisi, sedangkan `kg_co2e_year` adalah angka yang ditayangkan —
+     * keduanya bisa berbeda karena halaman hasil mengikuti rentang tier
+     * (lihat App\Services\EmissionEstimator).
      */
     public function finalise(Submission $submission): SubmissionResult
     {
@@ -136,24 +143,30 @@ class CarbonCalculator
 
         $categories = EmissionCategory::query()->active()->ordered()->get();
 
-        $perCategory = $categories->mapWithKeys(fn (EmissionCategory $category) => [
-            $category->id => [
-                'score' => $this->scoreForCategory($submission, $category),
-                'kg' => $this->emissionForCategory($submission, $category),
-            ],
+        $scores = $categories->mapWithKeys(fn (EmissionCategory $category) => [
+            $category->id => $this->scoreForCategory($submission, $category),
         ]);
 
-        $totalKg = (float) $perCategory->sum('kg');
+        $rawKg = $categories->mapWithKeys(fn (EmissionCategory $category) => [
+            $category->id => $this->emissionForCategory($submission, $category),
+        ])->all();
+
         $score = $this->score($submission);
         $tier = ResultTier::forScore($score);
 
-        foreach ($perCategory as $categoryId => $row) {
+        $estimate = $this->estimator->estimate($score, $tier, $categories, $rawKg);
+        $totalKg = (float) $estimate['total'];
+
+        foreach ($categories as $category) {
+            $kg = (float) ($estimate['per_category'][$category->id] ?? 0);
+
             $submission->categoryResults()->updateOrCreate(
-                ['emission_category_id' => $categoryId],
+                ['emission_category_id' => $category->id],
                 [
-                    'score' => $row['score'],
-                    'kg_co2e_year' => $row['kg'],
-                    'percentage' => $totalKg > 0 ? round($row['kg'] / $totalKg * 100, 4) : 0,
+                    'score' => $scores[$category->id],
+                    'kg_co2e_year' => $kg,
+                    'raw_kg_co2e_year' => $rawKg[$category->id] ?? 0,
+                    'percentage' => $totalKg > 0 ? round($kg / $totalKg * 100, 4) : 0,
                 ]
             );
         }
@@ -164,6 +177,7 @@ class CarbonCalculator
                 'result_tier_id' => $tier?->id,
                 'score' => $score,
                 'total_kg_co2e_year' => $totalKg,
+                'raw_kg_co2e_year' => array_sum($rawKg),
                 'computed_at' => Carbon::now(),
             ]
         );

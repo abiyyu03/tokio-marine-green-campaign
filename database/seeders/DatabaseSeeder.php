@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             CalculatorSchemaSeeder::class,
             ResultReferenceSeeder::class,
             DropOffPointSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }
