@@ -7,6 +7,7 @@ use App\Models\Leads;
 use App\Models\ResultTier;
 use App\Models\Submission;
 use App\Services\CarbonCalculator;
+use App\Services\ResultEmailer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -405,6 +406,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         ])->save();
 
         app(CarbonCalculator::class)->finalise($submission->fresh(['values.field', 'values.option']));
+
+        // Email hasil dikirim di dalam request ini (queue `sync` di hosting
+        // kampanye). ResultEmailer menelan kegagalannya: hasil sudah tersimpan
+        // dan halaman hasil tetap dibuka walau SMTP sedang bermasalah.
+        app(ResultEmailer::class)->send($submission->fresh('lead'));
 
         // Draft selesai: sesi berikutnya memulai submission baru.
         $this->completedUuid = $submission->uuid;

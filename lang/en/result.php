@@ -39,7 +39,10 @@ return [
 
     'email_notice' => [
         'title' => 'Check Your Inbox!',
-        'body' => 'We have sent your full report and the list of nearby sorting houses to the email address you registered.',
+        'body' => 'We have sent your full report and the list of nearby sorting houses to :email. Keep that email — it holds the link back to this page.',
+        'your_email' => 'the address you registered',
+        'title_pending' => 'Email Not Sent Yet',
+        'body_pending' => 'We could not send the report to your email. Save this page link, or download the report with the "Download Result" button above.',
     ],
 
     'report' => [
