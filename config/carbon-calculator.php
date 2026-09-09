@@ -38,5 +38,10 @@ return [
     // Jumlah kartu Rumah Pilah yang tampil sebelum tombol "Load More".
     'drop_off_page_size' => 3,
 
+    // Zona waktu untuk menampilkan dan menyaring tanggal di area admin.
+    // config('app.timezone') sengaja dibiarkan UTC: mengubahnya akan
+    // menggeser makna seluruh kolom created_at yang sudah tersimpan.
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Jakarta'),
+
     'locales' => ['id', 'en'],
 ];
