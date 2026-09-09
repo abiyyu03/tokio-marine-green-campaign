@@ -214,19 +214,10 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     
                     {{-- Titik Penanda (Disesuaikan dengan persentase absolut) --}}
                     <div class="absolute inset-0">
-                        {{-- Titik 0% (Start) --}}
                         <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 0 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 0%;"></span>
-                        
-                        {{-- Titik 30% (Step 1) --}}
                         <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 30 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 30%;"></span>
-                        
-                        {{-- Titik 60% (Step 2) --}}
                         <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 60 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 60%;"></span>
-                        
-                        {{-- Titik 90% (Step 3) --}}
                         <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 90 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 90%;"></span>
-                        
-                        {{-- Titik 99% (Data Diri) --}}
                         <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 99 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 99%;"></span>
                     </div>
                 </div>
@@ -253,38 +244,41 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Step 1 Indicator --}}
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full border-[3px] border-[#0d9488] bg-white p-1 transition-all sm:size-16">
-                        <div class="flex size-full items-center justify-center rounded-full {{ $step > 1 ? 'bg-white border-2 border-[#0d9488]' : 'bg-[#0d9488]' }}">
-                            <svg class="size-5 sm:size-6 {{ $step > 1 ? 'text-[#0d9488]' : 'text-white' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H8.5a1 1 0 00-.8.4L5 11l-5.16.86a1 1 0 00-.84.99V16h3m12 0a2 2 0 100 4 2 2 0 000-4zm-12 0a2 2 0 100 4 2 2 0 000-4z"/>
-                            </svg>
+                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 1 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                            @php
+                                $iconTransportasi = $step === 1 ? 'Transportasi - passed.png' : 'Transportasi - passed.png';
+                            @endphp
+                            <img src="{{ asset('asset/icon/' . $iconTransportasi) }}" alt="Transportasi Darat" class="size-7 sm:size-9 object-contain">
                         </div>
                     </div>
-                    <span class="text-center text-[10px] font-bold leading-tight text-[#0d9488] sm:text-sm sm:leading-snug">Transportasi<br>darat</span>
+                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 1 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Transportasi<br>darat</span>
                 </div>
 
                 {{-- Step 2 Indicator --}}
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full {{ $step >= 2 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0]' }} transition-all sm:size-16">
-                        <div class="flex size-full items-center justify-center rounded-full {{ $step > 2 ? 'bg-white border-2 border-[#0d9488]' : ($step == 2 ? 'bg-[#0d9488]' : 'bg-transparent') }}">
-                            <svg class="size-5 sm:size-6 {{ $step > 2 ? 'text-[#0d9488]' : ($step == 2 ? 'text-white' : 'text-slate-400') }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                            </svg>
+                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 2 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                            @php
+                                $iconListrik = $step === 2 ? 'listrik - passed.png' : ($step > 2 ? 'listrik - passed.png' : 'listrik - disabled.png');
+                            @endphp
+                            <img src="{{ asset('asset/icon/' . $iconListrik) }}" alt="Listrik Rumah" class="size-7 sm:size-9 object-contain">
                         </div>
                     </div>
-                    <span class="text-center text-[10px] leading-tight {{ $step >= 2 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }} sm:text-sm sm:leading-snug">Listrik Rumah</span>
+                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 2 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Listrik Rumah</span>
                 </div>
 
                 {{-- Step 3 Indicator --}}
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full {{ $step >= 3 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0]' }} transition-all sm:size-16">
-                        <div class="flex size-full items-center justify-center rounded-full {{ $step >= 3 ? 'bg-[#0d9488]' : 'bg-transparent' }}">
-                            <svg class="size-5 sm:size-6 {{ $step >= 3 ? 'text-white' : 'text-slate-400' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 8V11m0-5.5v-1a1.5 1.5 0 113 0v1m0 4V11"/>
-                            </svg>
+                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 3 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                            @php
+                                $iconKonsumsi = $step === 3 ? 'konsumsi - active.png' : ($step > 3 ? 'konsumsi - passed.png' : 'konsumsi - disabled.png');
+                            @endphp
+                            <img src="{{ asset('asset/icon/' . $iconKonsumsi) }}" alt="Konsumsi & Sampah" class="size-7 sm:size-9 object-contain">
                         </div>
                     </div>
-                    <span class="text-center text-[10px] leading-tight {{ $step >= 3 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }} sm:text-sm sm:leading-snug">Konsumsi &<br>Sampah</span>
+                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 3 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Konsumsi &<br>Sampah</span>
                 </div>
             </div>
         </div>
@@ -311,24 +305,34 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             @php
                                 $transportOptions = [
-                                    ['id' => 'mobil_bensin', 'label' => 'Mobil Bensin (BBM)', 'svg' => '<path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H8.5a1 1 0 00-.8.4L5 11l-5.16.86a1 1 0 00-.84.99V16h3m12 0a2 2 0 100 4 2 2 0 000-4zm-12 0a2 2 0 100 4 2 2 0 000-4z"/>'],
-                                    ['id' => 'motor_bensin', 'label' => 'Motor Bensin (BBM)', 'svg' => '<circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M14 17h-4m-3.5-2.5L10 8h4l1.5 3H20l-1.5 3H17"/>'],
-                                    ['id' => 'mobil_listrik', 'label' => 'Mobil Listrik (EV)', 'svg' => '<path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.6a1 1 0 00-.8-.4H8.5a1 1 0 00-.8.4L5 11l-5.16.86a1 1 0 00-.84.99V16h3m12 0a2 2 0 100 4 2 2 0 000-4zm-12 0a2 2 0 100 4 2 2 0 000-4z"/><path d="M3 10v4h2"/><path d="M5 12h2l1-2"/>'],
-                                    ['id' => 'motor_listrik', 'label' => 'Motor Listrik (EV)', 'svg' => '<circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M14 17h-4m-3.5-2.5L10 8h4l1.5 3H20l-1.5 3H17"/><path d="M3 14v-2h2l1-2"/>'],
-                                    ['id' => 'umum', 'label' => 'Transportasi Umum', 'svg' => '<path d="M4 10h16M4 14h16m-2 4H6a2 2 0 01-2-2V8a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2z"/><path d="M8 22L6 18M16 22l2-4"/>'],
-                                    ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'svg' => '<path d="M4 8h10M4 12h10m4-4h2M18 12h2M6 16h12"/>'],
+                                    ['id' => 'mobil_bensin', 'label' => 'Mobil Bensin (BBM)', 'img' => 'icon-mobil.png'],
+                                    ['id' => 'motor_bensin', 'label' => 'Motor Bensin (BBM)', 'img' => 'icon-motor.png'],
+                                    ['id' => 'mobil_listrik', 'label' => 'Mobil Listrik (EV)', 'img' => 'icon-mobilEv.png'],
+                                    ['id' => 'motor_listrik', 'label' => 'Motor Listrik (EV)', 'img' => 'icon-motorListrik.png'],
+                                    ['id' => 'umum', 'label' => 'Transportasi Umum', 'img' => 'icon-transum.png'],
+                                    ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'img' => 'icon-kombinasi.png'],
                                 ];
                             @endphp
                             @foreach($transportOptions as $opt)
-                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488] bg-white shadow-sm' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}" class="sr-only">
+                                    
+                                    {{-- Radio Button Custom Indicator --}}
                                     <div class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $mainTransport === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if($mainTransport === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
-                                    <div class="mb-2 sm:mb-3 flex size-10 sm:size-14 items-center justify-center rounded-full bg-[#e6f4f1]">
-                                        <svg class="size-6 sm:size-8 text-[#0d9488]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $opt['svg'] !!}</svg>
+
+                                    {{-- Wrapper untuk Ikon dan Lingkaran Background --}}
+                                    <div class="relative mb-3 flex h-14 w-full items-center justify-center sm:h-16">
+                                        {{-- Lingkaran Biru Kecil --}}
+                                        <div class="absolute size-10 sm:size-12 rounded-full bg-[#e6f4f1]"></div>
+                                        
+                                        {{-- Gambar Ikon --}}
+                                        <img src="{{ asset('asset/icon/' . $opt['img']) }}" alt="{{ $opt['label'] }}" class="relative z-10 w-16 sm:w-20 object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-105">
                                     </div>
-                                    <span class="text-center text-[11px] sm:text-xs font-bold text-slate-700">{{ $opt['label'] }}</span>
+                                    
+                                    {{-- Label Text --}}
+                                    <span class="text-center text-[11px] sm:text-xs font-bold {{ $mainTransport === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -348,7 +352,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @foreach($distOptions as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $distance === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold {{ $distance === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                     <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $distance === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if($distance === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
@@ -379,7 +383,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @foreach($acOptions as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $acUsage === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold {{ $acUsage === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                     <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $acUsage === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if($acUsage === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
@@ -401,7 +405,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @foreach($fridgeOptions as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $fridgeType === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold {{ $fridgeType === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                     <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $fridgeType === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if($fridgeType === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
@@ -423,7 +427,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @foreach($powerOptions as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $powerLimit === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold {{ $powerLimit === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                     <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $powerLimit === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if($powerLimit === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
@@ -438,7 +442,6 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 3)
                     <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Konsumsi & Sampah</h2>
 
-                    {{-- Pertanyaan 3 (Singkat untuk efisiensi baris) --}}
                     @foreach([
                         ['model'=>'plasticUsage', 'label'=>'Seberapa sering kamu menggunakan plastik sekali pakai?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-2x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (3-5x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
                         ['model'=>'shoppingBag', 'label'=>'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'ops'=>[['id'=>'selalu', 'label'=>'Ya, Selalu'], ['id'=>'kadang', 'label'=>'Kadang-kadang'], ['id'=>'tidak', 'label'=>'Tidak Pernah']]],
@@ -453,7 +456,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 @foreach($q['ops'] as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="{{ $q['model'] }}" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold {{ ${$q['model']} === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                     <div class="flex size-4 items-center justify-center rounded-full border-2 {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if(${$q['model']} === $opt['id']) <div class="size-2 rounded-full bg-[#0d9488]"></div> @endif
                                     </div>
@@ -564,7 +567,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Gauge Skor --}}
                     <div class="relative mx-auto mt-4 flex size-40 items-center justify-center">
-                        <svg class="size-full -rotate-90" viewBox="0 0 36 36">
+                        <svg class="size-full" viewBox="0 0 36 36">
                             <path class="text-[#fce7f3]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="100, 100"/>
                             @php
                                 $ringColor = $score > 60 ? '#ef4444' : ($score > 30 ? '#f59e0b' : '#059669');
