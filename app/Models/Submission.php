@@ -26,6 +26,7 @@ class Submission extends Model
         return [
             'current_step' => 'integer',
             'completed_at' => 'datetime',
+            'result_email_sent_at' => 'datetime',
         ];
     }
 

@@ -386,13 +386,24 @@ new #[Title('Jejak Karbon Tahunanmu | Tokio Marine Green Campaign')] class exten
                     </dl>
                 </div>
 
-                {{-- Notice cek email --}}
-                <div class="rounded-xl bg-[#f0f9ff] p-4 border border-[#e0f2fe]">
+                {{-- Notice email. Isinya mengikuti kenyataan: kalimat "cek email
+                     kamu" hanya muncul kalau emailnya memang berhasil dikirim,
+                     kalau gagal peserta diarahkan menyimpan tautan halaman ini. --}}
+                @php($emailSent = $report->emailSentAt())
+                <div class="rounded-xl border p-4 {{ $emailSent ? 'bg-[#f0f9ff] border-[#e0f2fe]' : 'bg-amber-50 border-amber-200' }}">
                     <div class="flex items-center gap-2 mb-2">
-                        <svg class="size-4 text-[#0284c7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h4 class="text-xs font-bold text-[#0284c7]">{{ __('result.email_notice.title') }}</h4>
+                        <svg class="size-4 {{ $emailSent ? 'text-[#0284c7]' : 'text-amber-600' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <h4 class="text-xs font-bold {{ $emailSent ? 'text-[#0284c7]' : 'text-amber-700' }}">
+                            {{ $emailSent ? __('result.email_notice.title') : __('result.email_notice.title_pending') }}
+                        </h4>
                     </div>
-                    <p class="text-[11px] text-slate-600 leading-relaxed">{{ __('result.email_notice.body') }}</p>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        @if ($emailSent)
+                            {{ __('result.email_notice.body', ['email' => $report->maskedEmail() ?? __('result.email_notice.your_email')]) }}
+                        @else
+                            {{ __('result.email_notice.body_pending') }}
+                        @endif
+                    </p>
                 </div>
             </aside>
 

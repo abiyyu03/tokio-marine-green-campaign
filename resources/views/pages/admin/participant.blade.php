@@ -2,6 +2,7 @@
 
 use App\Models\Leads;
 use App\Models\Submission;
+use App\Services\ResultEmailer;
 use App\Support\ResultReport;
 use App\Support\ResultText;
 use Illuminate\Support\Collection;
@@ -24,6 +25,9 @@ new #[Title('Detail Peserta | Admin')] class extends Component
 
     /** Berisi uuid yang sedang dikonfirmasi penghapusannya, bukan sekadar bool. */
     public ?string $confirmingDelete = null;
+
+    /** Umpan balik tombol kirim ulang email: null, 'sent', atau 'failed'. */
+    public ?string $emailStatus = null;
 
     public function mount(string $uuid): void
     {
@@ -85,6 +89,33 @@ new #[Title('Detail Peserta | Admin')] class extends Component
     public function timezone(): string
     {
         return config('carbon-calculator.display_timezone', 'UTC');
+    }
+
+    /**
+     * Mengirim ulang email hasil ke peserta.
+     *
+     * Ini satu-satunya jalur pemulihan yang tersedia: hosting kampanye tanpa
+     * SSH dan tanpa cron, jadi email yang gagal berangkat saat peserta menekan
+     * tombol terakhir tidak bisa diulang lewat artisan maupun queue.
+     */
+    public function resendResultEmail(): void
+    {
+        $submission = $this->submission;
+
+        abort_if($submission?->status !== 'completed' || ! $submission->lead?->email, 403);
+
+        $sent = app(ResultEmailer::class)->send($submission, force: true);
+
+        Log::info('admin.submission.result_email_resent', [
+            'user_id' => auth()->id(),
+            'submission_uuid' => $submission->uuid,
+            'sent' => $sent,
+        ]);
+
+        $this->emailStatus = $sent ? 'sent' : 'failed';
+
+        // Computed di-reset supaya baris "Email hasil" membaca timestamp baru.
+        unset($this->submission);
     }
 
     public function delete()
@@ -322,6 +353,32 @@ new #[Title('Detail Peserta | Admin')] class extends Component
                             <dt class="text-slate-500">{{ __('admin.columns.completed_at') }}</dt>
                             <dd class="font-semibold text-slate-900 tabular-nums">
                                 {{ $submission->completed_at?->timezone($zone)->format('d/m/Y H:i') ?? __('admin.empty_value') }}
+                            </dd>
+                        </div>
+                        {{-- Pertanyaan pertama saat peserta lapor "email saya
+                             tidak masuk": memang berangkat atau tidak. --}}
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-slate-500">{{ __('admin.columns.result_email') }}</dt>
+                            <dd class="text-right">
+                                <span class="font-semibold tabular-nums {{ $submission->result_email_sent_at ? 'text-slate-900' : 'text-amber-600' }}">
+                                    {{ $submission->result_email_sent_at?->timezone($zone)->format('d/m/Y H:i') ?? __('admin.detail.email_not_sent') }}
+                                </span>
+
+                                @if ($submission->status === 'completed' && $lead?->email)
+                                    <button
+                                        type="button" wire:click="resendResultEmail" wire:loading.attr="disabled"
+                                        class="mt-1 block ml-auto text-[11px] font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-700 disabled:opacity-50"
+                                    >
+                                        <span wire:loading.remove wire:target="resendResultEmail">{{ __('admin.detail.email_resend') }}</span>
+                                        <span wire:loading wire:target="resendResultEmail">{{ __('admin.detail.email_resending') }}</span>
+                                    </button>
+
+                                    @if ($emailStatus)
+                                        <p class="mt-1 text-[11px] {{ $emailStatus === 'sent' ? 'text-emerald-600' : 'text-red-600' }}">
+                                            {{ $emailStatus === 'sent' ? __('admin.detail.email_resent') : __('admin.detail.email_resend_failed') }}
+                                        </p>
+                                    @endif
+                                @endif
                             </dd>
                         </div>
                     </dl>

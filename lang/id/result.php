@@ -39,7 +39,10 @@ return [
 
     'email_notice' => [
         'title' => 'Cek Email Kamu!',
-        'body' => 'Laporan hasil perhitungan dan daftar rekomendasi Bank Sampah terdekat telah kami kirimkan ke email yang kamu daftarkan.',
+        'body' => 'Laporan hasil perhitungan dan daftar rekomendasi Bank Sampah terdekat sudah kami kirim ke :email. Simpan emailnya — di situ ada tautan untuk membuka halaman ini lagi.',
+        'your_email' => 'email yang kamu daftarkan',
+        'title_pending' => 'Email Belum Terkirim',
+        'body_pending' => 'Kami belum berhasil mengirim laporan ke emailmu. Simpan tautan halaman ini, atau unduh laporannya lewat tombol "Download Result" di atas.',
     ],
 
     'report' => [

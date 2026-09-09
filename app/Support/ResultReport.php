@@ -86,6 +86,33 @@ class ResultReport
         return $this->submission->result?->computed_at ?? $this->submission->created_at;
     }
 
+    /** Kapan email hasil berangkat; null berarti belum pernah terkirim. */
+    public function emailSentAt(): ?Carbon
+    {
+        return $this->submission->result_email_sent_at;
+    }
+
+    /**
+     * Alamat email lead yang disamarkan: "ahm***@gmail.com".
+     *
+     * Halaman hasil bisa dibuka siapa pun yang memegang tautannya, jadi
+     * alamat lengkapnya tidak ditayangkan — cukup untuk pemiliknya mengenali
+     * kotak masuk mana yang harus dicek.
+     */
+    public function maskedEmail(): ?string
+    {
+        $email = $this->submission->lead?->email;
+
+        if (! $email || ! str_contains($email, '@')) {
+            return null;
+        }
+
+        [$local, $domain] = explode('@', $email, 2);
+        $visible = mb_substr($local, 0, mb_strlen($local) > 3 ? 3 : 1);
+
+        return $visible.'***@'.$domain;
+    }
+
     /**
      * Nomor dokumen laporan, diturunkan dari uuid submission.
      * Bukan pengaman apa pun — hanya penanda supaya laporan yang dicetak
