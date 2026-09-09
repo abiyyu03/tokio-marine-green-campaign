@@ -27,8 +27,7 @@ use Livewire\Component;
  * sidebar selalu berasal dari `points` yang sama dengan yang dipakai
  * App\Services\CarbonCalculator saat hasil dibekukan.
  */
-new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extends Component
-{
+new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extends Component {
     /** Kunci session penyimpan draft yang sedang dikerjakan. */
     private const DRAFT_KEY = 'calculator.draft_uuid';
 
@@ -83,9 +82,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             ->ordered()
             ->withTranslation()
             ->with([
-                'fields' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                'fields' => fn($q) => $q->where('is_active', true)->orderBy('sort_order'),
                 'fields.translations',
-                'fields.options' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                'fields.options' => fn($q) => $q->where('is_active', true)->orderBy('sort_order'),
                 'fields.options.translations',
             ])
             ->get();
@@ -123,17 +122,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     #[Computed]
     public function selectedOptions(): Collection
     {
-        $optionsById = $this->categories
-            ->flatMap->fields
-            ->flatMap->options
-            ->keyBy(fn (EmissionFieldOption $option) => $option->id);
+        $optionsById = $this->categories->flatMap->fields->flatMap->options->keyBy(fn(EmissionFieldOption $option) => $option->id);
 
-        return collect($this->answers)
-            ->mapWithKeys(function ($optionId, $fieldId) use ($optionsById) {
-                $option = $optionsById->get((int) $optionId);
+        return collect($this->answers)->mapWithKeys(function ($optionId, $fieldId) use ($optionsById) {
+            $option = $optionsById->get((int) $optionId);
 
-                return $option ? [(int) $fieldId => $option] : [];
-            });
+            return $option ? [(int) $fieldId => $option] : [];
+        });
     }
 
     #[Computed]
@@ -145,9 +140,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     #[Computed]
     public function currentTier(): ?ResultTier
     {
-        return $this->tiers->first(
-            fn (ResultTier $tier) => $this->score >= $tier->min_score && $this->score <= $tier->max_score
-        );
+        return $this->tiers->first(fn(ResultTier $tier) => $this->score >= $tier->min_score && $this->score <= $tier->max_score);
     }
 
     /** 30% - 60% - 90% untuk tiga langkah emisi, lalu 99% di langkah data diri. */
@@ -158,7 +151,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             return 99;
         }
 
-        return (int) round($this->step * 90 / max(1, $this->totalSteps - 1));
+        return (int) round(($this->step * 90) / max(1, $this->totalSteps - 1));
     }
 
     /**
@@ -173,7 +166,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         $markers = [];
 
         for ($i = 0; $i < $this->totalSteps; $i++) {
-            $markers[] = (int) round($i * 90 / max(1, $this->totalSteps - 1));
+            $markers[] = (int) round(($i * 90) / max(1, $this->totalSteps - 1));
         }
 
         $markers[] = 99;
@@ -201,7 +194,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             foreach ($category->fields as $field) {
                 $option = $this->selectedOptions->get($field->id);
 
-                if (! $option) {
+                if (!$option) {
                     continue;
                 }
 
@@ -250,7 +243,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         // Pasangan field/opsi yang tidak dikenal cukup dibuang dengan
         // mengembalikan seluruh jawaban ke isi draft, sehingga layar dan
         // submission_values tidak pernah berbeda isi.
-        if (! $field || ! $option) {
+        if (!$field || !$option) {
             $this->answers = $this->storedAnswers();
             $this->forgetAnswerState();
 
@@ -276,7 +269,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             $field = $this->fieldFor((int) $fieldId);
             $option = $field?->options->firstWhere('id', (int) $optionId);
 
-            if (! $field || ! $option) {
+            if (!$field || !$option) {
                 continue;
             }
 
@@ -291,7 +284,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
     public function nextStep(): void
     {
-        if (! $this->isPersonalStep && ! $this->stepComplete($this->currentCategory)) {
+        if (!$this->isPersonalStep && !$this->stepComplete($this->currentCategory)) {
             $this->stepError = __('calculator.validation.incomplete');
 
             return;
@@ -373,11 +366,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         // yang dipercaya state layar, hasil kosong bisa ikut dibekukan dan
         // terlihat sah di halaman hasil — skor 0 dengan badge "Dampak Ringan".
         $stored = $this->storedAnswers();
-        $unfinished = $this->categories->first(fn (EmissionCategory $category) => ! $this->stepComplete($category, $stored));
+        $unfinished = $this->categories->first(fn(EmissionCategory $category) => !$this->stepComplete($category, $stored));
 
         if ($unfinished) {
             $this->answers = $stored;
-            $index = $this->categories->search(fn (EmissionCategory $c) => $c->id === $unfinished->id);
+            $index = $this->categories->search(fn(EmissionCategory $c) => $c->id === $unfinished->id);
             $this->step = $index === false ? 1 : $index + 1;
             $this->stepError = __('calculator.validation.incomplete');
             $this->forgetAnswerState();
@@ -398,12 +391,14 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             'consent_version' => config('carbon-calculator.consent_version'),
         ]);
 
-        $submission->forceFill([
-            'lead_id' => $lead->id,
-            'locale' => app()->getLocale(),
-            'ip_address' => request()->ip(),
-            'user_agent' => substr((string) request()->userAgent(), 0, 255),
-        ])->save();
+        $submission
+            ->forceFill([
+                'lead_id' => $lead->id,
+                'locale' => app()->getLocale(),
+                'ip_address' => request()->ip(),
+                'user_agent' => substr((string) request()->userAgent(), 0, 255),
+            ])
+            ->save();
 
         app(CarbonCalculator::class)->finalise($submission->fresh(['values.field', 'values.option']));
 
@@ -431,7 +426,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         $answers ??= $this->answers;
         $required = $category?->fields->where('is_required', true) ?? collect();
 
-        return $required->every(fn ($field) => filled($answers[$field->id] ?? null));
+        return $required->every(fn($field) => filled($answers[$field->id] ?? null));
     }
 
     /** Field mana pun di seluruh langkah, dicari berdasarkan id. */
@@ -443,16 +438,18 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     /** Menulis satu jawaban ke draft; satu baris per field. */
     private function storeAnswer(EmissionField $field, EmissionFieldOption $option): void
     {
-        $this->submission()->values()->updateOrCreate(
-            ['emission_field_id' => $field->id],
-            [
-                'emission_category_id' => $field->emission_category_id,
-                'emission_field_option_id' => $option->id,
-                'points' => $option->points,
-                'value_numeric' => $option->numeric_value,
-                'kg_co2e_year' => $option->kg_co2e_year,
-            ]
-        );
+        $this->submission()
+            ->values()
+            ->updateOrCreate(
+                ['emission_field_id' => $field->id],
+                [
+                    'emission_category_id' => $field->emission_category_id,
+                    'emission_field_option_id' => $option->id,
+                    'points' => $option->points,
+                    'value_numeric' => $option->numeric_value,
+                    'kg_co2e_year' => $option->kg_co2e_year,
+                ],
+            );
     }
 
     /**
@@ -462,11 +459,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
      */
     private function storedAnswers(): array
     {
-        return $this->submission()->values()
-            ->whereNotNull('emission_field_option_id')
-            ->pluck('emission_field_option_id', 'emission_field_id')
-            ->map(fn ($optionId) => (int) $optionId)
-            ->all();
+        return $this->submission()->values()->whereNotNull('emission_field_option_id')->pluck('emission_field_option_id', 'emission_field_id')->map(fn($optionId) => (int) $optionId)->all();
     }
 
     private function forgetAnswerState(): void
@@ -476,17 +469,14 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
     private function forgetStepState(): void
     {
-        unset(
-            $this->currentCategory,
-            $this->isPersonalStep,
-            $this->progressPercent,
-            $this->summary,
-        );
+        unset($this->currentCategory, $this->isPersonalStep, $this->progressPercent, $this->summary);
     }
 
     private function persistStep(): void
     {
-        $this->submission()->forceFill(['current_step' => $this->step])->save();
+        $this->submission()
+            ->forceFill(['current_step' => $this->step])
+            ->save();
     }
 
     /** "08123456789" dan "8123456789" sama-sama disimpan sebagai "628123456789". */
@@ -498,7 +488,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             return $digits;
         }
 
-        return '62'.ltrim($digits, '0');
+        return '62' . ltrim($digits, '0');
     }
 
     /** Draft yang sedang dikerjakan; dibuat sekali lalu disimpan di session. */
@@ -506,11 +496,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     {
         $uuid = session(self::DRAFT_KEY);
 
-        $submission = $uuid
-            ? Submission::query()->draft()->where('uuid', $uuid)->first()
-            : null;
+        $submission = $uuid ? Submission::query()->draft()->where('uuid', $uuid)->first() : null;
 
-        if (! $submission) {
+        if (!$submission) {
             $submission = Submission::create([
                 'locale' => app()->getLocale(),
                 'status' => 'draft',
@@ -538,15 +526,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @php($progress = $this->progressPercent)
                 <div class="relative h-2 w-full rounded-full bg-slate-200">
                     {{-- Bar hijau yang berjalan --}}
-                    <div class="absolute left-0 top-0 h-2 rounded-full bg-[#0d9488] transition-all duration-500" style="width: {{ $progress }}%"></div>
+                    <div class="absolute left-0 top-0 h-2 rounded-full bg-[#0d9488] transition-all duration-500"
+                        style="width: {{ $progress }}%"></div>
 
                     {{-- Titik penanda tiap langkah --}}
                     <div class="absolute inset-0">
                         @foreach ($this->progressMarkers as $marker)
                             <span
                                 class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= $marker ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
-                                style="left: {{ $marker }}%;"
-                            ></span>
+                                style="left: {{ $marker }}%;"></span>
                         @endforeach
                     </div>
                 </div>
@@ -562,45 +550,49 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
         {{-- CARD INDIKATOR (hanya tampil di langkah emisi) --}}
         @unless ($this->isPersonalStep)
-        <div class="mb-8 overflow-hidden rounded-2xl bg-white px-4 py-8 shadow-sm sm:px-16 sm:py-10">
-            <div class="relative mx-auto flex max-w-4xl items-start justify-between">
+            <div class="mb-8 overflow-hidden rounded-2xl bg-white px-4 py-8 shadow-sm sm:px-16 sm:py-10">
+                <div class="relative mx-auto flex max-w-4xl items-start justify-between">
 
-                {{-- Garis Penghubung --}}
-                <div class="absolute left-10 right-10 top-7 h-[2px] bg-slate-200 sm:left-16 sm:right-16 sm:top-8"></div>
-                <div class="absolute left-10 top-7 h-[2px] bg-[#0d9488] transition-all duration-500 sm:left-16 sm:top-8"
-                     style="width: {{ ($this->step - 1) / max(1, $this->categories->count() - 1) * 100 }}%; max-width: calc(100% - 2.5rem);">
-                </div>
-
-                @foreach ($this->categories as $index => $category)
-                    @php($position = $index + 1)
-                    <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3" wire:key="indicator-{{ $category->id }}">
-                        <div class="flex size-14 items-center justify-center rounded-full {{ $this->step >= $position ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0]' }} transition-all sm:size-16">
-                            <div class="flex size-full items-center justify-center rounded-full {{ $this->step > $position ? 'bg-white border-2 border-[#0d9488]' : ($this->step === $position ? 'bg-[#0d9488]' : 'bg-transparent') }}">
-                                <x-option-icon
-                                    :name="$category->icon"
-                                    class="size-5 sm:size-6 {{ $this->step > $position ? 'text-[#0d9488]' : ($this->step === $position ? 'text-white' : 'text-slate-400') }}"
-                                />
-                            </div>
-                        </div>
-                        <span class="text-center text-[10px] leading-tight {{ $this->step >= $position ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }} sm:text-sm sm:leading-snug">
-                            {{ $category->tr('name') }}
-                        </span>
+                    {{-- Garis Penghubung --}}
+                    <div class="absolute left-10 right-10 top-7 h-[2px] bg-slate-200 sm:left-16 sm:right-16 sm:top-8"></div>
+                    <div class="absolute left-10 top-7 h-[2px] bg-[#0d9488] transition-all duration-500 sm:left-16 sm:top-8"
+                        style="width: {{ (($this->step - 1) / max(1, $this->categories->count() - 1)) * 100 }}%; max-width: calc(100% - 2.5rem);">
                     </div>
-                @endforeach
+
+                    @foreach ($this->categories as $index => $category)
+                        @php($position = $index + 1)
+                        <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3"
+                            wire:key="indicator-{{ $category->id }}">
+                            <div
+                                class="flex size-14 items-center justify-center rounded-full {{ $this->step >= $position ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0]' }} transition-all sm:size-16">
+                                <div
+                                    class="flex size-full items-center justify-center rounded-full {{ $this->step > $position ? 'bg-white border-2 border-[#0d9488]' : ($this->step === $position ? 'bg-[#0d9488]' : 'bg-transparent') }}">
+                                    <x-option-icon :name="$category->icon"
+                                        class="size-5 sm:size-6 {{ $this->step > $position ? 'text-[#0d9488]' : ($this->step === $position ? 'text-white' : 'text-slate-400') }}" />
+                                </div>
+                            </div>
+                            <span
+                                class="text-center text-[10px] leading-tight {{ $this->step >= $position ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }} sm:text-sm sm:leading-snug">
+                                {{ $category->tr('name') }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
         @endunless
 
         {{-- LAYOUT UTAMA --}}
         <div class="grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
 
             {{-- KOLOM KIRI: FORMULIR WIZARD --}}
-            <div class="{{ $this->isPersonalStep ? 'rounded-2xl bg-white p-6 shadow-sm border border-slate-100' : 'space-y-6' }}">
+            <div
+                class="{{ $this->isPersonalStep ? 'rounded-2xl bg-white p-6 shadow-sm border border-slate-100' : 'space-y-6' }}">
 
                 {{-- Ringkasan error: di layar sempit field yang bermasalah bisa
                      berada jauh di bawah lipatan, jadi pesannya diulang di atas. --}}
                 @if ($stepError || $errors->any())
-                    <div role="alert" class="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200 mb-6">
+                    <div role="alert"
+                        class="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200 mb-6">
                         <p class="font-semibold">{{ $stepError ?? __('calculator.validation.form') }}</p>
                         @if ($errors->any())
                             <ul class="mt-2 list-disc space-y-1 pl-5 text-xs">
@@ -619,42 +611,53 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     </h2>
 
                     @foreach ($this->currentCategory->fields as $index => $field)
-                        <fieldset class="{{ $index > 0 ? 'pt-6 ' : '' }}space-y-4" wire:key="field-{{ $field->id }}">
-                            <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">{{ $field->tr('label') }}</legend>
+                        <fieldset class="{{ $index > 0 ? 'pt-6 ' : '' }}space-y-4"
+                            wire:key="field-{{ $field->id }}">
+                            <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">
+                                {{ $field->tr('label') }}</legend>
 
                             @if ($field->isCardStyle())
                                 {{-- Kartu bergambar: moda transportasi --}}
                                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                     @foreach ($field->options as $option)
                                         @php($checked = ($answers[$field->id] ?? null) == $option->id)
-                                        <label
-                                            wire:key="option-{{ $option->id }}"
-                                            class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $checked ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}"
-                                        >
-                                            <input type="radio" wire:model.live="answers.{{ $field->id }}" value="{{ $option->id }}" class="sr-only">
-                                            <div class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $checked ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                                @if ($checked) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                        <label wire:key="option-{{ $option->id }}"
+                                            class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $checked ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                            <input type="radio" wire:model.live="answers.{{ $field->id }}"
+                                                value="{{ $option->id }}" class="sr-only">
+                                            <div
+                                                class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $checked ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                                @if ($checked)
+                                                    <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                                @endif
                                             </div>
-                                            <div class="mb-2 sm:mb-3 flex size-10 sm:size-14 items-center justify-center rounded-full bg-[#e6f4f1]">
-                                                <x-option-icon :name="$option->icon" class="size-6 sm:size-8 text-[#0d9488]" />
+                                            <div
+                                                class="mb-2 sm:mb-3 flex size-10 sm:size-14 items-center justify-center rounded-full bg-[#e6f4f1]">
+                                                <x-option-icon :name="$option->icon"
+                                                    class="size-6 sm:size-8 text-[#0d9488]" />
                                             </div>
-                                            <span class="text-center text-[11px] sm:text-xs font-bold text-slate-700">{{ $option->tr('label') }}</span>
+                                            <span
+                                                class="text-center text-[11px] sm:text-xs font-bold text-slate-700">{{ $option->tr('label') }}</span>
                                         </label>
                                     @endforeach
                                 </div>
                             @else
                                 {{-- Tombol teks: 3 kolom untuk pertanyaan pendek, 2 kolom untuk sisanya --}}
-                                <div class="grid grid-cols-1 {{ $field->display_style === 'pill_compact' ? 'sm:grid-cols-3 gap-3' : 'sm:grid-cols-2 gap-3 sm:gap-4' }}">
+                                <div
+                                    class="grid grid-cols-1 {{ $field->display_style === 'pill_compact' ? 'sm:grid-cols-3 gap-3' : 'sm:grid-cols-2 gap-3 sm:gap-4' }}">
                                     @foreach ($field->options as $option)
                                         @php($checked = ($answers[$field->id] ?? null) == $option->id)
-                                        <label
-                                            wire:key="option-{{ $option->id }}"
-                                            class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 {{ $field->display_style === 'pill_compact' ? 'p-3' : 'p-3 sm:p-4' }} transition-all {{ $checked ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}"
-                                        >
-                                            <input type="radio" wire:model.live="answers.{{ $field->id }}" value="{{ $option->id }}" class="sr-only">
-                                            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $option->tr('label') }}</span>
-                                            <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $checked ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                                @if ($checked) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                        <label wire:key="option-{{ $option->id }}"
+                                            class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 {{ $field->display_style === 'pill_compact' ? 'p-3' : 'p-3 sm:p-4' }} transition-all {{ $checked ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                            <input type="radio" wire:model.live="answers.{{ $field->id }}"
+                                                value="{{ $option->id }}" class="sr-only">
+                                            <span
+                                                class="text-xs sm:text-sm font-semibold text-slate-700">{{ $option->tr('label') }}</span>
+                                            <div
+                                                class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $checked ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                                @if ($checked)
+                                                    <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                                @endif
                                             </div>
                                         </label>
                                     @endforeach
@@ -667,7 +670,8 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 {{-- ==================== LANGKAH DATA DIRI ==================== --}}
                 @if ($this->isPersonalStep)
                     <div class="border-b pb-5 border-slate-100 mb-6">
-                        <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488]">{{ __('calculator.personal.title') }}</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488]">{{ __('calculator.personal.title') }}
+                        </h2>
                         <p class="mt-1.5 text-sm text-slate-600">{{ __('calculator.personal.panel_description') }}</p>
                     </div>
 
@@ -681,40 +685,43 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     {{-- Row 1: Nama & Email --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-5 sm:mb-6">
                         <fieldset>
-                            <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.name') }}</label>
-                            <input
-                                type="text" wire:model.blur="name" id="name" autocomplete="name"
+                            <label for="name"
+                                class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.name') }}</label>
+                            <input type="text" wire:model.blur="name" id="name" autocomplete="name"
                                 placeholder="{{ __('calculator.personal.name_placeholder') }}"
                                 @error('name') aria-invalid="true" aria-describedby="name-error" @enderror
-                                class="px-4 {{ $inputBase }} {{ $errors->has('name') ? $inputBad : $inputOk }}"
-                            >
-                            @error('name') <p id="name-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                                class="px-4 {{ $inputBase }} {{ $errors->has('name') ? $inputBad : $inputOk }}">
+                            @error('name')
+                                <p id="name-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
 
                         <fieldset>
-                            <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.email') }}</label>
-                            <input
-                                type="email" wire:model.blur="email" id="email" autocomplete="email" inputmode="email"
-                                placeholder="{{ __('calculator.personal.email_placeholder') }}"
+                            <label for="email"
+                                class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.email') }}</label>
+                            <input type="email" wire:model.blur="email" id="email" autocomplete="email"
+                                inputmode="email" placeholder="{{ __('calculator.personal.email_placeholder') }}"
                                 @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
-                                class="px-4 {{ $inputBase }} {{ $errors->has('email') ? $inputBad : $inputOk }}"
-                            >
-                            @error('email') <p id="email-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                                class="px-4 {{ $inputBase }} {{ $errors->has('email') ? $inputBad : $inputOk }}">
+                            @error('email')
+                                <p id="email-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-5 sm:mb-6">
                         <fieldset>
-                            <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.whatsapp') }}</label>
+                            <label for="whatsapp"
+                                class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.whatsapp') }}</label>
                             <div class="relative">
-                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500">+62</span>
-                                <input
-                                    type="tel" wire:model.blur="whatsapp" id="whatsapp" autocomplete="tel-national" inputmode="numeric"
+                                <span
+                                    class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500">+62</span>
+                                <input type="tel" wire:model.blur="whatsapp" id="whatsapp"
+                                    autocomplete="tel-national" inputmode="numeric"
                                     placeholder="{{ __('calculator.personal.whatsapp_hint_placeholder') }}"
                                     @error('whatsapp') aria-invalid="true" aria-describedby="whatsapp-error" @enderror
-                                    class="pl-14 pr-4 {{ $inputBase }} {{ $errors->has('whatsapp') ? $inputBad : $inputOk }}"
-                                >
+                                    class="pl-14 pr-4 {{ $inputBase }} {{ $errors->has('whatsapp') ? $inputBad : $inputOk }}">
                             </div>
                             @error('whatsapp')
                                 <p id="whatsapp-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
@@ -724,63 +731,92 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </fieldset>
 
                         <fieldset>
-                            <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.dob') }}</label>
-                            <input
-                                type="date" wire:model.blur="dob" id="dob" autocomplete="bday"
+                            <label for="dob"
+                                class="block text-sm font-semibold text-slate-800 mb-2">{{ __('calculator.personal.dob') }}</label>
+                            <input type="date" wire:model.blur="dob" id="dob" autocomplete="bday"
                                 max="{{ now()->subDay()->toDateString() }}"
                                 @error('dob') aria-invalid="true" aria-describedby="dob-error" @enderror
-                                class="px-4 text-slate-700 {{ $inputBase }} {{ $errors->has('dob') ? $inputBad : $inputOk }}"
-                            >
-                            @error('dob') <p id="dob-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                                class="px-4 text-slate-700 {{ $inputBase }} {{ $errors->has('dob') ? $inputBad : $inputOk }}">
+                            @error('dob')
+                                <p id="dob-error" class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 3: Jenis Kelamin --}}
                     <fieldset class="mb-5 sm:mb-6">
-                        <legend class="text-sm font-semibold text-slate-800 mb-3">{{ __('calculator.personal.gender') }}</legend>
+                        <legend class="text-sm font-semibold text-slate-800 mb-3">
+                            {{ __('calculator.personal.gender') }}</legend>
                         <div class="grid grid-cols-2 gap-3 sm:gap-4">
                             @foreach (['male' => __('calculator.personal.gender_male'), 'female' => __('calculator.personal.gender_female')] as $value => $label)
-                                <label class="relative flex cursor-pointer items-center justify-between gap-2 rounded-xl border-2 bg-white p-3 transition-all sm:p-4 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
-                                    <input type="radio" wire:model.live="gender" value="{{ $value }}" class="sr-only">
-                                    <span class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ $label }}</span>
-                                    <div class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($gender === $value) <div class="size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between gap-2 rounded-xl border-2 bg-white p-3 transition-all sm:p-4 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
+                                    <input type="radio" wire:model.live="gender" value="{{ $value }}"
+                                        class="sr-only">
+                                    <span
+                                        class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ $label }}</span>
+                                    <div
+                                        class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ $gender === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($gender === $value)
+                                            <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
-                        @error('gender') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @error('gender')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
                     </fieldset>
 
                     {{-- Row 4: Intent --}}
                     <fieldset class="mb-5 sm:mb-6">
-                        <legend class="text-sm font-semibold text-slate-800 mb-3">{{ __('calculator.personal.intent') }}</legend>
+                        <legend class="text-sm font-semibold text-slate-800 mb-3">
+                            {{ __('calculator.personal.intent') }}</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             @foreach (['belum_tahu', 'mungkin', 'tentu'] as $value)
-                                <label class="relative flex cursor-pointer items-center justify-between gap-2 rounded-lg border-2 bg-white p-3 transition-all {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
-                                    <input type="radio" wire:model.live="intent" value="{{ $value }}" class="sr-only">
-                                    <span class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ __('calculator.personal.intent_'.$value) }}</span>
-                                    <div class="flex size-4 shrink-0 items-center justify-center rounded-full border-2 {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($intent === $value) <div class="size-2 rounded-full bg-[#0d9488]"></div> @endif
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between gap-2 rounded-lg border-2 bg-white p-3 transition-all {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
+                                    <input type="radio" wire:model.live="intent" value="{{ $value }}"
+                                        class="sr-only">
+                                    <span
+                                        class="min-w-0 text-xs font-semibold text-slate-700 sm:text-sm">{{ __('calculator.personal.intent_' . $value) }}</span>
+                                    <div
+                                        class="flex size-4 shrink-0 items-center justify-center rounded-full border-2 {{ $intent === $value ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($intent === $value)
+                                            <div class="size-2 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
-                        @error('intent') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @error('intent')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
                     <fieldset>
-                        <div class="flex items-start gap-3 rounded-xl border bg-slate-50 p-3 sm:p-4 {{ $errors->has('consent') ? 'border-red-400 bg-red-50/60' : 'border-slate-200' }}">
-                            <input id="consent" type="checkbox" wire:model.live="consent" class="size-5 mt-0.5 shrink-0 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
+                        <div
+                            class="flex items-start gap-3 rounded-xl border bg-slate-50 p-3 sm:p-4 {{ $errors->has('consent') ? 'border-red-400 bg-red-50/60' : 'border-slate-200' }}">
+                            <input id="consent" type="checkbox" wire:model.live="consent"
+                                class="size-5 mt-0.5 shrink-0 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
                                 {!! __('calculator.personal.consent', [
-                                    'terms' => '<a href="#" class="font-semibold text-[#0d9488] hover:underline">'.e(__('calculator.personal.consent_terms')).'</a>',
-                                    'privacy' => '<a href="#" class="font-semibold text-[#0d9488] hover:underline">'.e(__('calculator.personal.consent_privacy')).'</a>',
+                                    'terms' =>
+                                        '<a href="#" class="font-semibold text-[#0d9488] hover:underline">' .
+                                        e(__('calculator.personal.consent_terms')) .
+                                        '</a>',
+                                    'privacy' =>
+                                        '<a href="#" class="font-semibold text-[#0d9488] hover:underline">' .
+                                        e(__('calculator.personal.consent_privacy')) .
+                                        '</a>',
                                 ]) !!}
                             </label>
                         </div>
-                        @error('consent') <p class="text-xs text-red-600 mt-2">{{ $message }}</p> @enderror
+                        @error('consent')
+                            <p class="text-xs text-red-600 mt-2">{{ $message }}</p>
+                        @enderror
                     </fieldset>
                 @endif
 
@@ -792,13 +828,19 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Score Card --}}
                 <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-center text-sm font-bold text-slate-900">{{ __('calculator.score_card.title') }}</h3>
+                    <h3 class="text-center text-sm font-bold text-slate-900">{{ __('calculator.score_card.title') }}
+                    </h3>
 
                     {{-- Gauge Skor --}}
                     <div class="relative mx-auto mt-4 flex size-40 items-center justify-center">
                         <svg class="size-full -rotate-90" viewBox="0 0 36 36">
-                            <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="100, 100"/>
-                            <path stroke="{{ $this->currentTier?->color ?? '#cbd5e1' }}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-dasharray="{{ max($this->score, 2) }}, 100" stroke-linecap="round"/>
+                            <path class="text-slate-100"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="100, 100" />
+                            <path stroke="{{ $this->currentTier?->color ?? '#cbd5e1' }}"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke-width="3" stroke-dasharray="{{ max($this->score, 2) }}, 100"
+                                stroke-linecap="round" />
                         </svg>
                         <div class="absolute text-center flex flex-col items-center">
                             <span class="text-3xl font-bold text-slate-900">{{ $this->score }}</span>
@@ -812,7 +854,8 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     <div class="mt-8 space-y-2 pt-4 border-t border-slate-100">
                         @foreach ($this->tiers as $tier)
                             <div class="flex items-center gap-2" wire:key="legend-{{ $tier->id }}">
-                                <span class="size-2 rounded-full" style="background-color: {{ $tier->color }}"></span>
+                                <span class="size-2 rounded-full"
+                                    style="background-color: {{ $tier->color }}"></span>
                                 <span class="text-[10px] font-semibold text-slate-600">
                                     {{ $tier->tr('label') }} ({{ $tier->scoreRangeLabel() }})
                                 </span>
@@ -823,16 +866,19 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Ringkasan kategori yang sudah dilewati --}}
                 @foreach ($this->summary as $block)
-                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" wire:key="summary-{{ $loop->index }}">
+                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                        wire:key="summary-{{ $loop->index }}">
                         <h4 class="mb-4 text-xs font-bold text-slate-800">{{ $block['name'] }}</h4>
                         <div class="space-y-3 text-[11px] sm:text-xs">
                             {{-- Label dan jawabannya boleh membungkus: di layar sempit
                                  pasangan seperti "Konsumsi Daging Merah / Sedang (2-4x
                                  per minggu)" tidak muat dalam satu baris. --}}
                             @foreach ($block['rows'] as $row)
-                                <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 {{ $loop->last ? '' : 'border-b border-slate-100 pb-2' }}">
+                                <div
+                                    class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 {{ $loop->last ? '' : 'border-b border-slate-100 pb-2' }}">
                                     <span class="text-slate-500">{{ $row['label'] }}</span>
-                                    <span class="ml-auto text-right font-semibold text-slate-800">{{ $row['value'] }}</span>
+                                    <span
+                                        class="ml-auto text-right font-semibold text-slate-800">{{ $row['value'] }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -848,39 +894,64 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Tombol Kembali --}}
                 @if ($this->step === 1)
-                    <a href="{{ route('home') }}" wire:navigate class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
+                    <a href="{{ route('home') }}" wire:navigate
+                        class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                         <span class="hidden sm:inline">{{ __('calculator.nav.back_home') }}</span>
                         <span class="sm:hidden">{{ __('calculator.nav.back') }}</span>
                     </a>
                 @else
                     @php($previous = $this->categories->get($this->step - 2))
-                    <button type="button" wire:click="previousStep" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
-                        <span class="hidden sm:inline">{{ __('calculator.nav.back_to', ['step' => $previous?->tr('name') ?? __('calculator.personal.step_name')]) }}</span>
+                    <button type="button" wire:click="previousStep"
+                        class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-4 sm:text-sm">
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span
+                            class="hidden sm:inline">{{ __('calculator.nav.back_to', ['step' => $previous?->tr('name') ?? __('calculator.personal.step_name')]) }}</span>
                         <span class="sm:hidden">{{ __('calculator.nav.back') }}</span>
                     </button>
                 @endif
 
                 {{-- Tombol Lanjut / Generate --}}
                 @if ($this->isPersonalStep)
-                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50 sm:px-5 sm:text-sm">
-                        <span wire:loading.remove wire:target="submitLeads" class="hidden sm:inline">{{ __('calculator.nav.see_result') }}</span>
-                        <span wire:loading.remove wire:target="submitLeads" class="sm:hidden">{{ __('calculator.nav.see_result_short') }}</span>
+                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled"
+                        class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50 sm:px-5 sm:text-sm">
+                        <span wire:loading.remove wire:target="submitLeads"
+                            class="hidden sm:inline">{{ __('calculator.nav.see_result') }}</span>
+                        <span wire:loading.remove wire:target="submitLeads"
+                            class="sm:hidden">{{ __('calculator.nav.see_result_short') }}</span>
                         <span wire:loading wire:target="submitLeads">{{ __('calculator.nav.processing') }}</span>
-                        <svg wire:loading.remove wire:target="submitLeads" class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg wire:loading.remove wire:target="submitLeads" class="size-4 sm:size-5"
+                            viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @else
                     @php($next = $this->categories->get($this->step))
-                    <button type="button" wire:click="nextStep" class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 sm:px-5 sm:text-sm">
+                    <button type="button" wire:click="nextStep"
+                        class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#0d9488] px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-700 sm:px-5 sm:text-sm">
                         @if ($next)
-                            <span class="hidden sm:inline">{{ __('calculator.nav.continue_to', ['step' => $next->tr('name')]) }}</span>
+                            <span
+                                class="hidden sm:inline">{{ __('calculator.nav.continue_to', ['step' => $next->tr('name')]) }}</span>
                             <span class="sm:hidden">{{ __('calculator.nav.continue') }}</span>
                         @else
                             <span class="hidden sm:inline">{{ __('calculator.nav.to_personal_data') }}</span>
                             <span class="sm:hidden">{{ __('calculator.nav.to_personal_data_short') }}</span>
                         @endif
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @endif
             </div>

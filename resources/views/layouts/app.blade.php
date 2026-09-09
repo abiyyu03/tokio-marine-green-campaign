@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+{{-- Tambahkan scroll-smooth di tag html ini --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
 
         @livewireStyles
     </head>
+    {{-- Hapus scroll-smooth dari tag body --}}
     <body class="min-h-screen bg-white font-sans text-slate-800 antialiased">
         {{ $slot }}
 
