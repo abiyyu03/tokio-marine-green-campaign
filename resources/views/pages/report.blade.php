@@ -147,7 +147,7 @@ new class extends Component
                     <span class="grid size-10 shrink-0 place-items-center rounded-full bg-[#0b3b36] text-[13px] font-bold text-white">TM</span>
                     <div class="leading-tight">
                         <p class="text-[13px] font-bold text-[#0b3b36]">Tokio Marine Insurance Group</p>
-                        <p class="text-[11px] text-[#5f7370]">{{ __('result.report.campaign') }}</p>
+                        <p class="text-[11px] text-[#5f7370]">{{ __('result.report.campaign', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
                     </div>
                 </div>
 
@@ -378,7 +378,7 @@ new class extends Component
             {{-- Penutup --}}
             <footer class="mt-auto border-t-2 pt-4" style="border-color: var(--pine)">
                 <p class="max-w-[74ch] text-[10px] leading-relaxed text-[#5f7370]">
-                    {{ __('result.report.closing', ['name' => $report->firstName()]) }}
+                    {{ __('result.report.closing', ['name' => $report->firstName(), 'brand' => config('carbon-calculator.brand.name')]) }}
                 </p>
                 <p class="figure mt-2 flex items-center justify-between gap-4 text-[10px]">
                     <span class="font-semibold text-[#0b3b36]">{{ route('calculator.result', ['uuid' => $uuid]) }}</span>

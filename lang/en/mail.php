@@ -9,7 +9,6 @@ return [
         'subject' => 'Your carbon footprint results are ready, :name!',
         'preheader' => 'Your score, annual emission estimate, and the links to open or download your report.',
 
-        'brand' => 'Tokio Marine Green Campaign',
         'greeting' => 'Hi, :name! 👋',
         'intro' => 'Thanks for calculating your carbon footprint. Here is the summary:',
 

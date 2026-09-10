@@ -13,7 +13,7 @@ use Livewire\Component;
  * Sengaja tanpa pendaftaran, tanpa reset password, dan tanpa tautan dari
  * halaman publik mana pun.
  */
-new #[Title('Masuk Admin | Tokio Marine Green Campaign')] class extends Component
+new #[Title('Masuk Admin')] class extends Component
 {
     /** Percobaan gagal yang diizinkan sebelum dikunci sementara. */
     private const MAX_ATTEMPTS = 5;
@@ -85,7 +85,7 @@ new #[Title('Masuk Admin | Tokio Marine Green Campaign')] class extends Componen
             <span class="grid size-10 shrink-0 place-items-center rounded-full bg-navy-900 text-sm font-bold text-white">TM</span>
             <div class="leading-tight">
                 <p class="text-sm font-bold text-navy-900">{{ __('admin.title') }}</p>
-                <p class="text-xs text-slate-500">{{ __('admin.brand') }}</p>
+                <p class="text-xs text-slate-500">{{ __('admin.brand', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
             </div>
         </div>
 

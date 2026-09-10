@@ -1,0 +1,29 @@
+# =============================================================================
+# .htaccess akar repositori -> mendarat di /home/USER/laravel/.htaccess
+#
+# Folder aplikasi berada DI LUAR document root, jadi normalnya berkas ini tidak
+# pernah terpakai. Gunanya untuk satu skenario yang benar-benar terjadi di
+# shared hosting: subdomain atau addon domain salah diarahkan ke folder
+# aplikasi, sehingga .env, database, dan seluruh kode mendadak bisa diunduh
+# lewat URL.
+#
+# Isinya sengaja cuma satu hal: tolak semuanya.
+# =============================================================================
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
+
+# Jangan pernah eksekusi PHP dari sini, bahkan bila aturan di atas dilewati
+# karena modulnya tidak aktif.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+Options -Indexes

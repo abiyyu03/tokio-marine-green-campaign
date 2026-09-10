@@ -9,7 +9,6 @@ return [
         'subject' => 'Hasil jejak karbonmu sudah siap, :name!',
         'preheader' => 'Skor, estimasi emisi tahunan, dan tautan untuk membuka atau mengunduh laporanmu.',
 
-        'brand' => 'Tokio Marine Green Campaign',
         'greeting' => 'Halo, :name! 👋',
         'intro' => 'Terima kasih sudah menghitung jejak karbonmu. Ini ringkasan hasilnya:',
 

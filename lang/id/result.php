@@ -47,7 +47,7 @@ return [
 
     'report' => [
         'title' => 'Laporan Jejak Karbon Tahunan',
-        'campaign' => 'Tokio Marine Green Campaign',
+        'campaign' => ':brand',
         'document' => 'Nomor dokumen',
         'issued' => 'Diterbitkan',
         'prepared_for' => 'Disusun untuk',
@@ -69,7 +69,7 @@ return [
         'action_heading' => 'Langkah yang bisa kamu ambil',
         'drop_off_note' => 'Setorkan sampah terpilahmu ke salah satu lokasi berikut.',
         'page' => 'Halaman :number dari :total',
-        'closing' => 'Laporan ini disusun otomatis dari jawaban :name pada Kalkulator Karbon Tokio Marine Green Campaign. Versi terbarunya selalu tersedia di tautan berikut.',
+        'closing' => 'Laporan ini disusun otomatis dari jawaban :name pada Kalkulator Karbon :brand. Versi terbarunya selalu tersedia di tautan berikut.',
     ],
 
     'community' => [

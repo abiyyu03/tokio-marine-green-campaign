@@ -12,18 +12,18 @@
  * - share_title : lebih pendek dari title karena WhatsApp memotong lebih awal.
  */
 return [
-    'site_name' => 'Tokio Marine Jaga Bumi',
+    'site_name' => ':brand',
 
     'default' => [
-        'title' => 'Kalkulator Karbon Tokio Marine Jaga Bumi',
-        'description' => 'Hitung jejak karbon harianmu dalam 3 menit lewat kalkulator karbon Tokio Marine Jaga Bumi, lalu mulai aksi nyata dari rumah.',
+        'title' => 'Kalkulator Karbon :brand',
+        'description' => 'Hitung jejak karbon harianmu dalam 3 menit lewat kalkulator karbon :brand, lalu mulai aksi nyata dari rumah.',
         'keywords' => 'tokio marine jaga bumi, jaga bumi, kalkulator karbon, carbon calculator, jejak karbon, hitung emisi karbon, kalkulator emisi karbon, bank sampah',
     ],
 
     'home' => [
-        'title' => 'Kalkulator Karbon | Tokio Marine Jaga Bumi',
-        'share_title' => 'Kalkulator Karbon Tokio Marine Jaga Bumi',
-        'description' => 'Kalkulator karbon Tokio Marine Jaga Bumi: hitung jejak karbon dari transportasi, listrik, dan sampah rumah tanggamu dalam 3 menit — gratis, tanpa daftar akun.',
+        'title' => 'Kalkulator Karbon | :brand',
+        'share_title' => 'Kalkulator Karbon :brand',
+        'description' => 'Kalkulator karbon :brand: hitung jejak karbon dari transportasi, listrik, dan sampah rumah tanggamu dalam 3 menit — gratis, tanpa daftar akun.',
         'keywords' => 'tokio marine jaga bumi, jaga bumi, kalkulator karbon, carbon calculator, hitung jejak karbon, kalkulator jejak karbon indonesia, emisi karbon harian',
     ],
 
@@ -41,24 +41,24 @@ return [
      * sendiri, dan kartu pratinjau yang kosong terlihat seperti tautan palsu.
      */
     'result' => [
-        'title' => 'Hasil Jejak Karbon Tahunanmu | Tokio Marine Jaga Bumi',
+        'title' => 'Hasil Jejak Karbon Tahunanmu | :brand',
         'share_title' => 'Hasil Jejak Karbonku',
-        'description' => 'Ini hasil perhitungan jejak karbon tahunanku di kalkulator karbon Tokio Marine Jaga Bumi. Hitung punyamu juga, cuma butuh 3 menit.',
+        'description' => 'Ini hasil perhitungan jejak karbon tahunanku di kalkulator karbon :brand. Hitung punyamu juga, cuma butuh 3 menit.',
     ],
 
     'report' => [
-        'title' => 'Laporan Jejak Karbon | Tokio Marine Jaga Bumi',
+        'title' => 'Laporan Jejak Karbon | :brand',
         'share_title' => 'Laporan Jejak Karbon',
-        'description' => 'Laporan lengkap hasil perhitungan jejak karbon tahunan dari kalkulator karbon Tokio Marine Jaga Bumi.',
+        'description' => 'Laporan lengkap hasil perhitungan jejak karbon tahunan dari kalkulator karbon :brand.',
     ],
 
     'admin' => [
-        'title' => 'Admin | Tokio Marine Jaga Bumi',
+        'title' => 'Admin | :brand',
         'description' => '',
     ],
 
     /** Teks alternatif gambar pratinjau; ikut dibaca pembaca layar. */
-    'image_alt' => 'Kalkulator Karbon Tokio Marine Jaga Bumi — hitung jejak karbonmu dalam 3 menit',
+    'image_alt' => 'Kalkulator Karbon :brand — hitung jejak karbonmu dalam 3 menit',
 
     /**
      * Isi blok FAQ di beranda.

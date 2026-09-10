@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            // Ditaruh setelah SetLocale supaya halaman penahannya ikut
+            // berbahasa sesuai pilihan pengunjung.
+            \App\Http\Middleware\ComingSoon::class,
         ]);
 
         // Halaman masuk admin sengaja TIDAK bernama `login`: nama itu akan

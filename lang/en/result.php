@@ -47,7 +47,7 @@ return [
 
     'report' => [
         'title' => 'Annual Carbon Footprint Report',
-        'campaign' => 'Tokio Marine Green Campaign',
+        'campaign' => ':brand',
         'document' => 'Document number',
         'issued' => 'Issued',
         'prepared_for' => 'Prepared for',
@@ -69,7 +69,7 @@ return [
         'action_heading' => 'What you can do next',
         'drop_off_note' => 'Drop your sorted waste at one of these locations.',
         'page' => 'Page :number of :total',
-        'closing' => 'This report was generated from the answers :name gave in the Tokio Marine Green Campaign carbon calculator. The latest version is always available at the link below.',
+        'closing' => 'This report was generated from the answers :name gave in the :brand carbon calculator. The latest version is always available at the link below.',
     ],
 
     'community' => [

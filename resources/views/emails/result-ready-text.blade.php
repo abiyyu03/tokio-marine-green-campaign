@@ -30,4 +30,4 @@
 
 --
 {!! __('mail.result.footer_auto') !!}
-{!! __('mail.result.footer_reason', ['app' => __('mail.result.brand')]) !!}
+{!! __('mail.result.footer_reason', ['app' => config('carbon-calculator.brand.name')]) !!}

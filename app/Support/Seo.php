@@ -42,12 +42,30 @@ class Seo
         $routeName = (string) (Route::currentRouteName() ?? '');
         $key = self::PAGES[$routeName] ?? 'default';
 
-        return new self($routeName, (array) __("seo.$key"));
+        return new self($routeName, self::text("seo.$key"));
+    }
+
+    /**
+     * Satu blok teks dari lang/{locale}/seo.php dengan :brand terisi.
+     *
+     * __() hanya mengganti penanda untuk string tunggal, sedangkan di sini yang
+     * dibaca satu array sekaligus — jadi penggantiannya dilakukan sendiri.
+     *
+     * @return array<string, mixed>
+     */
+    private static function text(string $key): array
+    {
+        $brand = config('carbon-calculator.brand.name');
+
+        return array_map(
+            fn ($value) => is_string($value) ? str_replace(':brand', $brand, $value) : $value,
+            (array) __($key),
+        );
     }
 
     public function title(): string
     {
-        return $this->page['title'] ?? __('seo.default.title');
+        return $this->page['title'] ?? self::text('seo.default')['title'];
     }
 
     /** Judul untuk kartu WhatsApp/sosmed; dipotong lebih awal dari title. */
@@ -58,7 +76,7 @@ class Seo
 
     public function description(): string
     {
-        return $this->page['description'] ?? __('seo.default.description');
+        return $this->page['description'] ?? self::text('seo.default')['description'];
     }
 
     public function keywords(): string
@@ -68,12 +86,12 @@ class Seo
 
     public function siteName(): string
     {
-        return __('seo.site_name');
+        return config('carbon-calculator.brand.name');
     }
 
     public function imageAlt(): string
     {
-        return __('seo.image_alt');
+        return str_replace(':brand', $this->siteName(), __('seo.image_alt'));
     }
 
     /**
@@ -143,7 +161,7 @@ class Seo
                 '@id' => url('/').'#website',
                 'url' => url('/'),
                 'name' => $this->siteName(),
-                'description' => __('seo.default.description'),
+                'description' => self::text('seo.default')['description'],
                 'publisher' => ['@id' => url('/').'#organization'],
                 'inLanguage' => app()->getLocale(),
             ],
@@ -152,12 +170,12 @@ class Seo
         if ($this->isHome()) {
             $graph[] = [
                 '@type' => 'WebApplication',
-                'name' => __('seo.default.title'),
+                'name' => self::text('seo.default')['title'],
                 'url' => route('calculator'),
                 'applicationCategory' => 'UtilitiesApplication',
                 'operatingSystem' => 'Web',
                 'inLanguage' => app()->getLocale(),
-                'description' => __('seo.home.description'),
+                'description' => self::text('seo.home')['description'],
                 'publisher' => ['@id' => url('/').'#organization'],
                 // Kalkulatornya gratis dan tanpa akun; offer bernilai 0
                 // adalah cara schema.org menyatakan itu.

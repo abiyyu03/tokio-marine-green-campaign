@@ -25,7 +25,12 @@ new class extends Component
             {{-- ==================== HERO SECTION ==================== --}}
             <div 
                 class="relative flex w-full min-h-[500px] sm:min-h-[600px] flex-col items-center justify-center overflow-hidden rounded-[2rem] bg-slate-300 bg-cover bg-center px-4 py-20 shadow-xl"
-                style="background-image: url('{{ asset('asset/images/group-asian-diverse-people-volunteer-teamwork-environment-conservationvolunteer-help-picking-plastic-foam-garbage-park-areavolunteering-world-environment-day (1).jpg') }}');"
+                style="
+                    background-image: url('{{ asset('asset/images/opt/hero-relawan-1600.jpg') }}');
+                    background-image: image-set(
+                        url('{{ asset('asset/images/opt/hero-relawan-1600.webp') }}') type('image/webp'),
+                        url('{{ asset('asset/images/opt/hero-relawan-1600.jpg') }}') type('image/jpeg')
+                    );"
             >
                 {{-- Overlay Gelap Tipis agar kontras dasarnya rata --}}
                 <div class="absolute inset-0 bg-slate-900/20"></div>
@@ -35,7 +40,7 @@ new class extends Component
 
                 <div class="relative z-10 flex max-w-3xl flex-col items-center text-center">
                     <p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-white/90 sm:text-sm">
-                        Tokio Marine &times; Jaga Bumi
+                        {{ config('carbon-calculator.brand.lockup') }}
                     </p>
 
                     <h1 class="text-3xl font-black leading-tight text-white sm:text-4xl md:text-5xl">
@@ -59,7 +64,7 @@ new class extends Component
                 {{-- Floating Card Desktop --}}
                 <div class="absolute bottom-6 left-6 z-20 hidden max-w-[320px] items-center gap-4 rounded-2xl bg-white p-4 shadow-xl sm:flex lg:bottom-10 lg:left-10">
                     <div class="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200">
-                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Jaringan listrik sebagai sumber jejak karbon rumah tangga" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        <x-photo name="listrik-thumb" alt="Panel surya di atap sebagai sumber listrik rendah emisi" :widths="[320, 160]" sizes="80px" class="h-full w-full object-cover" />
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-900 leading-tight">Mengapa Ini Penting?</h3>
@@ -72,7 +77,7 @@ new class extends Component
                 {{-- Floating Card Mobile --}}
                 <div class="relative z-10 mt-12 flex w-full max-w-xs items-center gap-4 rounded-2xl bg-white p-4 shadow-lg sm:hidden">
                     <div class="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200">
-                        <img src="{{ asset('asset/images/american-public-power-association-XGAZzyLzn18-unsplash.jpg') }}" alt="Jaringan listrik sebagai sumber jejak karbon rumah tangga" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        <x-photo name="listrik-thumb" alt="Panel surya di atap sebagai sumber listrik rendah emisi" :widths="[320, 160]" sizes="80px" class="h-full w-full object-cover" />
                     </div>
                     <div class="text-left">
                         <h3 class="text-sm font-bold text-slate-900 leading-tight">Mengapa Ini Penting?</h3>
@@ -88,7 +93,7 @@ new class extends Component
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div class="w-full">
                         <div class="rounded-3xl w-full aspect-[4/3] overflow-hidden shadow-sm">
-                            <img src="{{ asset('asset/images/abdi-rahman-h-kRFzTZVN-Fc-unsplash.jpg') }}" alt="Relawan program Jaga Bumi memilah sampah bersama warga" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                            <x-photo name="tentang-kami" alt="Lanskap kota dengan lalu lintas padat di jam sibuk" :widths="[1200, 600]" sizes="(min-width: 1024px) 50vw, 100vw" class="w-full h-full object-cover" />
                         </div>
                     </div>
 
@@ -136,7 +141,7 @@ new class extends Component
                     {{-- Card 1 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/manki-kim-21xwHD7XZmM-unsplash.jpg') }}" alt="Transportasi darat, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                            <x-photo name="sektor-transportasi" alt="Transportasi darat, salah satu sektor yang dihitung kalkulator karbon" :widths="[800, 400]" sizes="(min-width: 1024px) 33vw, 100vw" class="w-full h-full object-cover" />
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Transportasi Darat</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -147,7 +152,7 @@ new class extends Component
                     {{-- Card 2 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/kurasitama-2jXw1nqdGpk-unsplash.jpg') }}" alt="Daya listrik rumah tangga, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                            <x-photo name="sektor-daya" alt="Daya listrik rumah tangga, salah satu sektor yang dihitung kalkulator karbon" :widths="[800, 400]" sizes="(min-width: 1024px) 33vw, 100vw" class="w-full h-full object-cover" />
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Daya Rumah Tangga</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -158,7 +163,7 @@ new class extends Component
                     {{-- Card 3 --}}
                     <div class="bg-white rounded-[2rem] p-6 shadow-lg hover:-translate-y-1 transition-transform duration-300">
                         <div class="aspect-video w-full rounded-2xl bg-slate-200 mb-6 overflow-hidden">
-                            <img src="{{ asset('asset/images/lisa-anna-ZkWMfHPNWpw-unsplash.jpg') }}" alt="Peralatan rumah tangga, salah satu sektor yang dihitung kalkulator karbon" loading="lazy" decoding="async" class="w-full h-full object-cover">
+                            <x-photo name="sektor-peralatan" alt="Peralatan rumah tangga, salah satu sektor yang dihitung kalkulator karbon" :widths="[800, 400]" sizes="(min-width: 1024px) 33vw, 100vw" class="w-full h-full object-cover" />
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-3">Peralatan Rumah Tangga</h3>
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -230,7 +235,7 @@ new class extends Component
             {{-- ==================== BANNER CTA ==================== --}}
             <section class="py-8">
                 <div class="relative w-full rounded-[2rem] overflow-hidden min-h-[300px] flex flex-col items-center justify-center text-center px-4 py-12 bg-slate-100 shadow-md">
-                    <img src="{{ asset('asset/images/group-asian-diverse-people-volunteer-teamwork-environment-conservationvolunteer-help-picking-plastic-foam-garbage-park-areavolunteering-world-environment-day (2).jpg') }}" alt="Relawan mengumpulkan sampah plastik di taman kota" class="absolute inset-0 w-full h-full object-cover">
+                    <x-photo name="ajakan-relawan" alt="Relawan mengumpulkan sampah plastik di taman kota" :widths="[1600, 800]" sizes="100vw" class="absolute inset-0 w-full h-full object-cover" />
                     
                     {{-- Overlay gelap tipis agar teks putih mudah dibaca --}}
                     <div class="absolute inset-0 bg-slate-900/40"></div>

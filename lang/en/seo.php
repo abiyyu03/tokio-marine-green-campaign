@@ -9,18 +9,18 @@
  * not as a second indexable page — see the SEO notes in deploy/DEPLOY.md.
  */
 return [
-    'site_name' => 'Tokio Marine Jaga Bumi',
+    'site_name' => ':brand',
 
     'default' => [
-        'title' => 'Carbon Calculator | Tokio Marine Jaga Bumi',
-        'description' => 'Measure your daily carbon footprint in 3 minutes with the Tokio Marine Jaga Bumi carbon calculator, then start acting on it from home.',
+        'title' => 'Carbon Calculator | :brand',
+        'description' => 'Measure your daily carbon footprint in 3 minutes with the :brand carbon calculator, then start acting on it from home.',
         'keywords' => 'tokio marine jaga bumi, jaga bumi, carbon calculator, kalkulator karbon, carbon footprint calculator, household emissions',
     ],
 
     'home' => [
-        'title' => 'Carbon Calculator | Tokio Marine Jaga Bumi',
-        'share_title' => 'Tokio Marine Jaga Bumi Carbon Calculator',
-        'description' => 'Tokio Marine Jaga Bumi carbon calculator: measure the footprint of your transport, household electricity, and waste habits in 3 minutes — free, no account needed.',
+        'title' => 'Carbon Calculator | :brand',
+        'share_title' => ':brand Carbon Calculator',
+        'description' => ':brand carbon calculator: measure the footprint of your transport, household electricity, and waste habits in 3 minutes — free, no account needed.',
         'keywords' => 'tokio marine jaga bumi, jaga bumi, carbon calculator, kalkulator karbon, carbon footprint indonesia, daily carbon emissions',
     ],
 
@@ -32,23 +32,23 @@ return [
     ],
 
     'result' => [
-        'title' => 'Your Annual Carbon Footprint | Tokio Marine Jaga Bumi',
+        'title' => 'Your Annual Carbon Footprint | :brand',
         'share_title' => 'My Carbon Footprint',
-        'description' => 'Here is my annual carbon footprint from the Tokio Marine Jaga Bumi carbon calculator. Measure yours too — it only takes 3 minutes.',
+        'description' => 'Here is my annual carbon footprint from the :brand carbon calculator. Measure yours too — it only takes 3 minutes.',
     ],
 
     'report' => [
-        'title' => 'Carbon Footprint Report | Tokio Marine Jaga Bumi',
+        'title' => 'Carbon Footprint Report | :brand',
         'share_title' => 'Carbon Footprint Report',
-        'description' => 'The full annual carbon footprint report from the Tokio Marine Jaga Bumi carbon calculator.',
+        'description' => 'The full annual carbon footprint report from the :brand carbon calculator.',
     ],
 
     'admin' => [
-        'title' => 'Admin | Tokio Marine Jaga Bumi',
+        'title' => 'Admin | :brand',
         'description' => '',
     ],
 
-    'image_alt' => 'Tokio Marine Jaga Bumi carbon calculator — measure your footprint in 3 minutes',
+    'image_alt' => ':brand carbon calculator — measure your footprint in 3 minutes',
 
     /** Same single source as the Indonesian file; see the note there. */
     'faq' => [

@@ -5,6 +5,44 @@
  * data master: nilainya jarang berubah dan tidak perlu tabel sendiri.
  */
 return [
+    // Nama kampanye, satu sumber untuk seluruh aplikasi: judul & deskripsi SEO,
+    // kartu pratinjau WhatsApp, structured data, eyebrow di beranda, kop email
+    // hasil, kop laporan cetak, dan header area admin. Kalau penyebutan
+    // resminya berubah, cukup ubah di sini (atau lewat .env).
+    //
+    // `lockup` dipakai saat kedua pihak ditulis berdampingan sebagai kolaborasi.
+    'brand' => [
+        'name' => env('APP_BRAND_NAME', 'Tokio Marine Jaga Bumi'),
+        'lockup' => env('APP_BRAND_LOCKUP', 'Tokio Marine × Jaga Bumi'),
+    ],
+
+    // Halaman "sedang dalam pengembangan" selama situs belum diluncurkan.
+    //
+    // Daftarnya sengaja daftar IZIN, bukan daftar blokir: yang tidak terdaftar
+    // ditahan. Kalau logikanya dibalik, setiap host yang belum terpikirkan —
+    // subdomain cPanel, wildcard DNS, akses lewat alamat IP, hostname bawaan
+    // server — akan menyajikan situs asli tanpa disadari.
+    //
+    // localhost dan 127.0.0.1 ikut diizinkan supaya pengembangan lokal dan
+    // `php artisan serve` tidak pernah tertahan.
+    'coming_soon' => [
+        // Saklar peluncuran: isi COMING_SOON=false di .env untuk membuka
+        // situs bagi semua domain. Tidak ada kode yang perlu diubah.
+        'enabled' => filter_var(env('COMING_SOON', true), FILTER_VALIDATE_BOOL),
+
+        'allowed_hosts' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env(
+                'COMING_SOON_ALLOWED_HOSTS',
+                'ujicoba.jejakbumi.id,localhost,127.0.0.1',
+            )),
+        ))),
+
+        // Pintu pratinjau: buka ?lihat=<kunci> sekali dari host yang ditahan,
+        // lalu situs terbuka di peramban itu selama 8 jam.
+        'secret' => env('COMING_SOON_SECRET'),
+    ],
+
     // Versi teks Syarat & Ketentuan + Kebijakan Privasi yang disetujui lead.
     // Naikkan setiap kali isi dokumennya berubah.
     'consent_version' => '2026-08',

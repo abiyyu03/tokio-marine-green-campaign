@@ -35,7 +35,7 @@
                     <tr>
                         <td style="background-color:{{ $navy }}; padding:20px 28px;">
                             <p style="margin:0; font-size:13px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#ffffff;">
-                                {{ __('mail.result.brand') }}
+                                {{ config('carbon-calculator.brand.name') }}
                             </p>
                         </td>
                     </tr>
@@ -172,7 +172,7 @@
                         <td style="padding:26px 28px 30px 28px;">
                             <p style="margin:22px 0 0 0; padding-top:18px; border-top:1px solid #e6ecea; font-size:11px; line-height:1.6; color:#8a9a97;">
                                 {{ __('mail.result.footer_auto') }}<br>
-                                {{ __('mail.result.footer_reason', ['app' => __('mail.result.brand')]) }}
+                                {{ __('mail.result.footer_reason', ['app' => config('carbon-calculator.brand.name')]) }}
                             </p>
                         </td>
                     </tr>

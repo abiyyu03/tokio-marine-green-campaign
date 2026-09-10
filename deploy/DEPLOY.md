@@ -67,6 +67,12 @@ cp deploy/index.php deploy/build/public_html/index.php
 # memuat CSS/JS dari 127.0.0.1:5173 dan tampil tanpa gaya sama sekali.
 rm -f deploy/build/public_html/hot
 
+# Foto asli dari fotografer (1,5-14 MB per berkas, total ~39 MB). Halaman
+# memakai hasil olahannya di asset/images/opt/, jadi yang asli tidak perlu ikut
+# naik — cukup tetap tersimpan di repositori untuk ekspor ulang nanti.
+find deploy/build/public_html/asset/images -maxdepth 1 -type f -name '*.jpg' \
+  ! -name 'og-cover.jpg' -delete
+
 # e. Dua zip terpisah supaya upload File Manager tidak timeout
 cd deploy/build
 zip -rq ../laravel.zip laravel
@@ -146,6 +152,51 @@ pastikan tidak ada error, lalu kembalikan ke `false`.
    dan kedua tombolnya (**Lihat Hasil Lengkap**, **Unduh Laporan**) harus
    membuka halaman yang benar. Cek juga folder spam.
 7. Pastikan `storage/logs/laravel-*.log` bersih.
+
+---
+
+## Menahan situs sampai peluncuran
+
+Selama situs belum resmi dibuka, **hanya host di daftar izin** yang membuka
+situs penuh. Sisanya — termasuk domain publiknya sendiri — dijawab halaman
+"sedang dalam pengembangan".
+
+```dotenv
+COMING_SOON=true
+COMING_SOON_ALLOWED_HOSTS=ujicoba.jejakbumi.id
+COMING_SOON_SECRET=kunci-panjang-yang-sulit-ditebak
+```
+
+| Host | Hasil |
+| --- | --- |
+| `ujicoba.jejakbumi.id` | situs penuh |
+| `jejakbumi.id`, `www.jejakbumi.id` | halaman penahan (503) |
+| subdomain lain, akses lewat alamat IP, hostname bawaan server | halaman penahan (503) |
+| `*/admin/*` dari host mana pun | tetap terbuka |
+
+Beberapa keputusan yang perlu diketahui sebelum menyentuh setelan ini:
+
+- **Daftar izin, bukan daftar blokir.** Kalau logikanya dibalik, host yang
+  belum terpikirkan (subdomain cPanel, wildcard DNS, alamat IP) akan
+  menyajikan situs asli tanpa disadari. Dengan daftar izin, kesalahan setelan
+  berujung pada situs yang tertutup — bukan yang bocor.
+- **Jawabannya 503 + `Retry-After` + `noindex`,** bukan 200. Mesin pencari
+  membacanya sebagai "belum siap, datang lagi nanti" dan tidak mengindeks
+  halaman penahan sebagai isi situs. Halaman 200 justru bisa nyangkut di hasil
+  pencarian dan sulit dihapus setelah peluncuran.
+- **Maintenance mode bawaan (`php artisan down`) sengaja tidak dipakai:** itu
+  mematikan semua host sekaligus, termasuk subdomain uji coba dan area admin,
+  dan butuh akses artisan di server yang memang tidak ada di hosting ini.
+- **`localhost` dan `127.0.0.1`** ada di nilai bawaan config supaya
+  pengembangan lokal tidak pernah tertahan.
+
+**Meninjau situs dari domain yang ditahan:** buka
+`https://jejakbumi.id/?lihat=<kunci>` sekali. Kuncinya ditukar cookie dan
+dibuang dari URL, lalu situs terbuka di peramban itu selama 8 jam. Yang
+tersimpan di cookie adalah turunan HMAC-nya, bukan kuncinya sendiri.
+
+**Peluncuran:** ubah `COMING_SOON=false` di `.env`. Satu baris, tanpa upload
+ulang kode.
 
 ---
 

@@ -1,9 +1,131 @@
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
+# =============================================================================
+# public_html/.htaccess — pengamanan untuk shared hosting (Rumahweb/LiteSpeed)
+#
+# Prosedur ujinya ada di deploy/DEPLOY.md bagian "Verifikasi pengamanan
+# .htaccess" — jalankan setelah upload, karena LiteSpeed menafsirkan sebagian
+# direktif berbeda dari Apache.
+#
+# Semua blok dibungkus <IfModule>: kalau modulnya tidak aktif di hosting,
+# aturannya dilewati diam-diam alih-alih membuat seluruh situs HTTP 500.
+# =============================================================================
 
+<IfModule mod_negotiation.c>
+    Options -MultiViews
+</IfModule>
+Options -Indexes
+
+
+# -----------------------------------------------------------------------------
+# 1. Berkas yang tidak boleh pernah terbaca dari web
+#
+# Dokumen root memang public/, jadi berkas ini normalnya tidak ada di sini.
+# Aturannya tetap dipasang untuk skenario yang justru sering terjadi di shared
+# hosting: dokumen root salah diarahkan ke folder aplikasi.
+# -----------------------------------------------------------------------------
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "(?i)\.(env|sql|sqlite|db|bak|backup|old|log|ini|sh|bash|yml|yaml|lock|dist|example|md|twig|tpl)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Berkas proyek yang ekstensinya wajar tapi isinya membocorkan struktur
+# aplikasi. Manifest Vite (build/manifest.json) sengaja TIDAK ikut diblokir.
+<FilesMatch "(?i)^(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|vite\.config\.js|server\.php|webpack\.mix\.js|readme|license|changelog)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+
+# -----------------------------------------------------------------------------
+# 2. Kunci eksekusi PHP
+#
+# Satu-satunya PHP yang boleh dieksekusi di dokumen root adalah front
+# controller. Kalau suatu saat ada berkas .php terunggah ke sini — lewat celah
+# apa pun — berkas itu tidak akan pernah jalan.
+# -----------------------------------------------------------------------------
+<FilesMatch "(?i)\.(php|php3|php4|php5|php7|php8|phtml|phar)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<Files "index.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+
+
+# -----------------------------------------------------------------------------
+# 3. Header keamanan
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # CSP disesuaikan dengan yang benar-benar dimuat aplikasi:
+    #   - font & CSS font dari fonts.bunny.net (layouts/app.blade.php)
+    #   - 'unsafe-inline' untuk atribut style dan skrip inline Livewire
+    #   - 'unsafe-eval' karena Alpine (dibundel Livewire) mengevaluasi ekspresi
+    #     x-* saat runtime; tanpa ini seluruh interaksi wizard mati
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src 'self' https://fonts.bunny.net data:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
+
+    # Area admin tidak boleh masuk indeks mesin pencari.
+    #
+    # SetEnvIf tidak dipakai di sini: kondisi Request_URI dievaluasi pada fase
+    # header-parser yang berjalan SEBELUM .htaccess per-direktori dibaca,
+    # sehingga tidak pernah cocok. Penanda dipasang lewat mod_rewrite di blok
+    # bawah, dan karena rewrite-nya internal, namanya berawalan REDIRECT_.
+    Header always set X-Robots-Tag "noindex, nofollow" env=REDIRECT_ADMIN_AREA
+    Header always set X-Robots-Tag "noindex, nofollow" env=ADMIN_AREA
+</IfModule>
+
+
+# -----------------------------------------------------------------------------
+# 4. Front controller Laravel + paksa HTTPS
+# -----------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # HTTPS. Cek kedua-duanya: di balik proxy/LiteSpeed, %{HTTPS} bisa "off"
+    # walau pengunjung sebenarnya sudah lewat https.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Penanda area admin untuk header X-Robots-Tag di blok 3.
+    RewriteRule ^admin(/|$) - [E=ADMIN_AREA:1]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -22,4 +144,27 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+
+# -----------------------------------------------------------------------------
+# 5. Cache aset statis
+#
+# Berkas di build/ bernama dengan hash isi, jadi aman disimpan lama; ganti isi
+# berarti ganti nama berkas.
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresDefault "access plus 1 day"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml image/svg+xml
 </IfModule>

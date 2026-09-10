@@ -12,7 +12,7 @@
  */
 return [
     'title' => 'Admin',
-    'brand' => 'Tokio Marine Green Campaign',
+    'brand' => ':brand',
 
     'auth' => [
         'heading' => 'Masuk ke Admin',
