@@ -119,7 +119,7 @@ new class extends Component
                             <div class="flex items-center justify-between gap-3">
                                 <p class="text-sm font-bold text-slate-800 leading-tight">{{ $row->category->tr('name') }}</p>
                                 <span class="grid size-8 shrink-0 place-items-center rounded-lg text-white" style="background-color: {{ $accent }}">
-                                    <x-emission-icon :name="$row->category->icon" class="size-4" />
+                                    <x-brand-icon set="result" :name="$row->category->icon" class="size-4" />
                                 </span>
                             </div>
                             <p class="mt-6 text-xl font-bold" style="color: {{ $accent }}">

@@ -566,8 +566,13 @@ new class extends Component {
                                 class="flex size-14 items-center justify-center rounded-full {{ $this->step >= $position ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0]' }} transition-all sm:size-16">
                                 <div
                                     class="flex size-full items-center justify-center rounded-full {{ $this->step > $position ? 'bg-white border-2 border-[#0d9488]' : ($this->step === $position ? 'bg-[#0d9488]' : 'bg-transparent') }}">
-                                    <x-option-icon :name="$category->icon"
-                                        class="size-5 sm:size-6 {{ $this->step > $position ? 'text-[#0d9488]' : ($this->step === $position ? 'text-white' : 'text-slate-400') }}" />
+                                    {{-- Ikon kiriman desain: warnanya sudah dibakar per
+                                         keadaan, jadi tidak ada kelas warna di sini. --}}
+                                    <x-brand-icon
+                                        set="step"
+                                        :name="$category->icon"
+                                        :state="$this->step > $position ? 'passed' : ($this->step === $position ? 'active' : 'disabled')"
+                                        class="size-7 sm:size-8" />
                                 </div>
                             </div>
                             <span
@@ -630,11 +635,12 @@ new class extends Component {
                                                     <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
                                                 @endif
                                             </div>
-                                            <div
-                                                class="mb-2 sm:mb-3 flex size-10 sm:size-14 items-center justify-center rounded-full bg-[#e6f4f1]">
-                                                <x-option-icon :name="$option->icon"
-                                                    class="size-6 sm:size-8 text-[#0d9488]" />
-                                            </div>
+                                            {{-- Gambar moda sudah membawa lingkaran pucatnya
+                                                 sendiri, jadi tidak dibungkus lingkaran lagi. --}}
+                                            <x-brand-icon
+                                                set="option"
+                                                :name="$option->icon"
+                                                class="mb-2 h-11 w-16 sm:mb-3 sm:h-14 sm:w-20" />
                                             <span
                                                 class="text-center text-[11px] sm:text-xs font-bold text-slate-700">{{ $option->tr('label') }}</span>
                                         </label>
