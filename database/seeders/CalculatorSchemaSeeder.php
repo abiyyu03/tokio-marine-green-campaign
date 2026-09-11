@@ -106,6 +106,12 @@ class CalculatorSchemaSeeder extends Seeder
                 }
             }
 
+            // Opsi yang dikeluarkan dari desain dinonaktifkan, bukan dihapus:
+            // jawaban lama di submission_values tetap bisa merujuknya.
+            $field->options()
+                ->whereNotIn('code', array_column($fieldData['options'], 'code'))
+                ->update(['is_active' => false]);
+
             $fields[$fieldData['code']] = $field;
         }
 
@@ -237,7 +243,7 @@ class CalculatorSchemaSeeder extends Seeder
                             'code' => 'kombinasi', 'points' => 13, 'factor_key' => 'kombinasi',
                             'icon' => 'shuffle', 'image_file' => 'images/calculator/moda/kombinasi.png',
                             'translations' => [
-                                'id' => ['label' => 'Kombinasi', 'summary_label' => 'Kombinasi'],
+                                'id' => ['label' => 'Kombinasi Transportasi', 'summary_label' => 'Kombinasi Transportasi'],
                                 'en' => ['label' => 'A Mix of Modes', 'summary_label' => 'Mixed'],
                             ],
                         ],
@@ -268,15 +274,15 @@ class CalculatorSchemaSeeder extends Seeder
                         [
                             'code' => '10_25', 'points' => 5, 'numeric_value' => 17.5,
                             'translations' => [
-                                'id' => ['label' => '10 - 25 km / hari', 'summary_label' => '10 - 25 km / hari'],
-                                'en' => ['label' => '10 - 25 km / day', 'summary_label' => '10 - 25 km / day'],
+                                'id' => ['label' => '10 – 25 km / hari', 'summary_label' => '10 – 25 km / hari'],
+                                'en' => ['label' => '10 – 25 km / day', 'summary_label' => '10 – 25 km / day'],
                             ],
                         ],
                         [
                             'code' => '26_50', 'points' => 10, 'numeric_value' => 38,
                             'translations' => [
-                                'id' => ['label' => '26 - 50 km / hari', 'summary_label' => '26 - 50 km / hari'],
-                                'en' => ['label' => '26 - 50 km / day', 'summary_label' => '26 - 50 km / day'],
+                                'id' => ['label' => '26 – 50 km / hari', 'summary_label' => '26 – 50 km / hari'],
+                                'en' => ['label' => '26 – 50 km / day', 'summary_label' => '26 – 50 km / day'],
                             ],
                         ],
                         [
@@ -357,36 +363,44 @@ class CalculatorSchemaSeeder extends Seeder
                         [
                             'code' => 'satu_unit_5jam_standar', 'points' => 10, 'numeric_value' => 1230,
                             'translations' => [
-                                'id' => ['label' => '1 Unit (< 5 jam / hari) - Standar', 'summary_label' => '1 Unit (< 5 jam / hari) - Standar'],
+                                'id' => ['label' => '1 Unit (< 5 Jam / hari) - Standar', 'summary_label' => '1 Unit (< 5 Jam / hari) - Standar'],
                                 'en' => ['label' => '1 unit (< 5 hrs / day) - Standard', 'summary_label' => '1 unit (< 5 hrs) - Standard'],
                             ],
                         ],
                         [
                             'code' => 'satu_unit_8jam_standar', 'points' => 13, 'numeric_value' => 2760,
                             'translations' => [
-                                'id' => ['label' => '1 Unit (> 8 jam / hari) - Standar', 'summary_label' => '1 Unit (> 8 jam / hari) - Standar'],
+                                'id' => ['label' => '1 Unit (> 8 Jam / hari) - Standar', 'summary_label' => '1 Unit (> 8 Jam / hari) - Standar'],
                                 'en' => ['label' => '1 unit (> 8 hrs / day) - Standard', 'summary_label' => '1 unit (> 8 hrs) - Standard'],
                             ],
                         ],
                         [
                             'code' => 'satu_unit_5jam_inverter', 'points' => 6, 'numeric_value' => 850,
                             'translations' => [
-                                'id' => ['label' => '1 Unit (< 5 jam / hari) - Inverter', 'summary_label' => '1 Unit (< 5 jam / hari) - Inverter'],
+                                'id' => ['label' => '1 Unit (< 5 Jam / hari) - Inverter', 'summary_label' => '1 Unit (< 5 Jam / hari) - Inverter'],
                                 'en' => ['label' => '1 unit (< 5 hrs / day) - Inverter', 'summary_label' => '1 unit (< 5 hrs) - Inverter'],
                             ],
                         ],
                         [
                             'code' => 'satu_unit_8jam_inverter', 'points' => 11, 'numeric_value' => 1910,
                             'translations' => [
-                                'id' => ['label' => '1 Unit (> 8 jam / hari) - Inverter', 'summary_label' => '1 Unit (> 8 jam / hari) - Inverter'],
+                                'id' => ['label' => '1 Unit (> 8 Jam / hari) - Inverter', 'summary_label' => '1 Unit (> 8 Jam / hari) - Inverter'],
                                 'en' => ['label' => '1 unit (> 8 hrs / day) - Inverter', 'summary_label' => '1 unit (> 8 hrs) - Inverter'],
                             ],
                         ],
+                        // Menggantikan opsi lama 'lebih_dari_satu_unit' (dinonaktifkan loader).
                         [
-                            'code' => 'lebih_dari_satu_unit', 'points' => 14, 'numeric_value' => 4200,
+                            'code' => 'dua_unit', 'points' => 13, 'numeric_value' => 3300,
                             'translations' => [
-                                'id' => ['label' => 'Lebih dari 1 Unit AC', 'summary_label' => '> 1 Unit AC'],
-                                'en' => ['label' => 'More than 1 AC unit', 'summary_label' => '> 1 AC unit'],
+                                'id' => ['label' => '2 Unit AC (Pemakaian Standar/Malam Hari)', 'summary_label' => '2 Unit AC (Standar/Malam Hari)'],
+                                'en' => ['label' => '2 AC units (standard/night-time use)', 'summary_label' => '2 AC units (standard/night)'],
+                            ],
+                        ],
+                        [
+                            'code' => 'tiga_unit_atau_intensif', 'points' => 14, 'numeric_value' => 5500,
+                            'translations' => [
+                                'id' => ['label' => '≥ 3 Unit AC atau Pemakaian Intensif', 'summary_label' => '≥ 3 Unit AC / Intensif'],
+                                'en' => ['label' => '≥ 3 AC units or heavy use', 'summary_label' => '≥ 3 AC units / heavy use'],
                             ],
                         ],
                     ],
@@ -452,8 +466,11 @@ class CalculatorSchemaSeeder extends Seeder
                                 'en' => ['label' => '≤ 900 VA', 'summary_label' => '≤ 900 VA'],
                             ],
                         ],
+                        // ≤ 900 VA sengaja tetap 5 poin supaya skenario mockup
+                        // (25 -> 46 -> 71) tidak bergeser; opsi di atasnya
+                        // dipadatkan agar jatah daya tetap maksimal 10.
                         [
-                            'code' => '1300', 'points' => 8, 'numeric_value' => 1200,
+                            'code' => '1300', 'points' => 6, 'numeric_value' => 1200,
                             'meta' => ['va' => 1300],
                             'translations' => [
                                 'id' => ['label' => '1300 VA', 'summary_label' => '1300 VA'],
@@ -461,11 +478,27 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => '2200', 'points' => 10, 'numeric_value' => 2000,
+                            'code' => '2200', 'points' => 8, 'numeric_value' => 2000,
                             'meta' => ['va' => 2200],
                             'translations' => [
                                 'id' => ['label' => '2200 VA', 'summary_label' => '2200 VA'],
                                 'en' => ['label' => '2200 VA', 'summary_label' => '2200 VA'],
+                            ],
+                        ],
+                        [
+                            'code' => '3500_5500', 'points' => 9, 'numeric_value' => 3600,
+                            'meta' => ['va_min' => 3500, 'va_max' => 5500],
+                            'translations' => [
+                                'id' => ['label' => '3.500 VA – 5.500 VA', 'summary_label' => '3.500 – 5.500 VA'],
+                                'en' => ['label' => '3,500 VA – 5,500 VA', 'summary_label' => '3,500 – 5,500 VA'],
+                            ],
+                        ],
+                        [
+                            'code' => 'gte_6600', 'points' => 10, 'numeric_value' => 6000,
+                            'meta' => ['va' => 6600],
+                            'translations' => [
+                                'id' => ['label' => '≥ 6.600 VA', 'summary_label' => '≥ 6.600 VA'],
+                                'en' => ['label' => '≥ 6,600 VA', 'summary_label' => '≥ 6,600 VA'],
                             ],
                         ],
                     ],
@@ -520,15 +553,15 @@ class CalculatorSchemaSeeder extends Seeder
                         [
                             'code' => 'jarang', 'points' => 1, 'kg_co2e_year' => 15,
                             'translations' => [
-                                'id' => ['label' => 'Jarang (0-2x / minggu)', 'summary_label' => 'Jarang (0-2x / minggu)'],
-                                'en' => ['label' => 'Rarely (0-2x / week)', 'summary_label' => 'Rarely (0-2x / week)'],
+                                'id' => ['label' => 'Jarang (0–2x / minggu)', 'summary_label' => 'Jarang (0–2x / minggu)'],
+                                'en' => ['label' => 'Rarely (0–2x / week)', 'summary_label' => 'Rarely (0–2x / week)'],
                             ],
                         ],
                         [
                             'code' => 'sedang', 'points' => 5, 'kg_co2e_year' => 40,
                             'translations' => [
-                                'id' => ['label' => 'Sedang (3-5x / minggu)', 'summary_label' => 'Sedang (3-5x / minggu)'],
-                                'en' => ['label' => 'Moderate (3-5x / week)', 'summary_label' => 'Moderate (3-5x / week)'],
+                                'id' => ['label' => 'Sedang (3–5x / minggu)', 'summary_label' => 'Sedang (3–5x / minggu)'],
+                                'en' => ['label' => 'Moderate (3–5x / week)', 'summary_label' => 'Moderate (3–5x / week)'],
                             ],
                         ],
                         [
@@ -599,7 +632,7 @@ class CalculatorSchemaSeeder extends Seeder
                     'code' => 'galon_isi_ulang',
                     'display_style' => 'pill_compact',
                     'translations' => [
-                        'id' => ['label' => 'Apakah kamu menggunakan galon isi ulang untuk kebutuhan minum?', 'summary_label' => 'Penggunaan Galon Isi Ulang'],
+                        'id' => ['label' => 'Apakah kamu menggunakan air galon isi ulang untuk kebutuhan minum?', 'summary_label' => 'Penggunaan Galon Isi Ulang'],
                         'en' => ['label' => 'Do you use refillable water gallons for drinking?', 'summary_label' => 'Refill Gallon'],
                     ],
                     'options' => [
@@ -630,15 +663,15 @@ class CalculatorSchemaSeeder extends Seeder
                         [
                             'code' => 'jarang', 'points' => 2, 'kg_co2e_year' => 120,
                             'translations' => [
-                                'id' => ['label' => 'Jarang (0-1x / minggu)', 'summary_label' => 'Jarang (0-1x / minggu)'],
-                                'en' => ['label' => 'Rarely (0-1x / week)', 'summary_label' => 'Rarely (0-1x / week)'],
+                                'id' => ['label' => 'Jarang (0–1x / minggu)', 'summary_label' => 'Jarang (0–1x / minggu)'],
+                                'en' => ['label' => 'Rarely (0–1x / week)', 'summary_label' => 'Rarely (0–1x / week)'],
                             ],
                         ],
                         [
                             'code' => 'sedang', 'points' => 4, 'kg_co2e_year' => 320,
                             'translations' => [
-                                'id' => ['label' => 'Sedang (2-4x / minggu)', 'summary_label' => 'Sedang (2-4x / minggu)'],
-                                'en' => ['label' => 'Moderate (2-4x / week)', 'summary_label' => 'Moderate (2-4x / week)'],
+                                'id' => ['label' => 'Sedang (2–4x / minggu)', 'summary_label' => 'Sedang (2–4x / minggu)'],
+                                'en' => ['label' => 'Moderate (2–4x / week)', 'summary_label' => 'Moderate (2–4x / week)'],
                             ],
                         ],
                         [

@@ -48,7 +48,7 @@ return [
         'intent' => 'Kalau ada cara sederhana untuk mengurangi dampak emisimu, apakah kamu mau mencobanya?',
         'intent_belum_tahu' => 'Belum Tahu',
         'intent_mungkin' => 'Mungkin',
-        'intent_tentu' => 'Tentu!!!',
+        'intent_tentu' => 'Tentu!!',
         'consent' => 'Saya menyetujui :terms dan :privacy. Data diri Anda hanya digunakan untuk kalkulasi emisi dan tidak akan dibagikan ke pihak ketiga.',
         'consent_terms' => '[Syarat & Ketentuan]',
         'consent_privacy' => '[Kebijakan Privasi]',
