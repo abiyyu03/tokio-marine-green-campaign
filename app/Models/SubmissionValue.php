@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Satu jawaban pengguna. `points` dan `kg_co2e_year` disalin dari opsi saat
- * disimpan supaya hasil yang sudah selesai tidak berubah ketika angka
- * referensi diperbarui.
+ * Satu jawaban pengguna. `points`, `score_multiplier`, dan `kg_co2e_year`
+ * disalin dari opsi saat disimpan supaya hasil yang sudah selesai tidak
+ * berubah ketika angka referensi diperbarui.
  */
 class SubmissionValue extends Model
 {
     protected $fillable = [
         'submission_id', 'emission_category_id', 'emission_field_id',
-        'emission_field_option_id', 'points', 'value_numeric',
+        'emission_field_option_id', 'points', 'score_multiplier', 'value_numeric',
         'kg_co2e_year', 'value_text',
     ];
 
@@ -22,6 +22,7 @@ class SubmissionValue extends Model
     {
         return [
             'points' => 'integer',
+            'score_multiplier' => 'float',
             'value_numeric' => 'float',
             'kg_co2e_year' => 'float',
         ];

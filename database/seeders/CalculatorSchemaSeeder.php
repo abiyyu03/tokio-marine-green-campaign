@@ -13,10 +13,14 @@ use Illuminate\Database\Seeder;
  * Seluruh struktur dideklarasikan sebagai array; loader di bawahnya generik,
  * sehingga menambah pertanyaan baru cukup menambah entri array.
  *
- * ANGGARAN POIN (gauge "Skor Kamu", total 100):
- *   Transportasi      35  = moda 20 + jarak 15
- *   Listrik Rumah     30  = AC 14 + kulkas 6 + daya 10
- *   Konsumsi & Sampah 35  = plastik 6 + tas 6 + pilah 7 + galon 6 + daging 6 + belanja 4
+ * SKOR (gauge "Skor Kamu", total 100) mengikuti dokumen "Skoring Kalkulator
+ * Karbon". `max_points` adalah batas atas skor kategori:
+ *   Transportasi      40  = skor kendaraan x pengali jarak (score_multiplier)
+ *   Listrik Rumah     35  = AC (0-18) + kulkas (0-8) + daya (3-15)
+ *   Konsumsi & Sampah 25  = plastik + tas + pilah + galon + daging + belanja;
+ *                           boleh negatif (tas -5, pilah -8, galon -5)
+ * Jumlah mentah bisa melewati batas (mis. mobil bensin x 2 = 50), di situ
+ * App\Services\CarbonCalculator memotongnya ke `max_points`.
  *
  * GAYA TAMPILAN FIELD (`display_style`, dipakai wizard):
  *   card         kartu bergambar 4 kolom (moda transportasi)
@@ -25,11 +29,12 @@ use Illuminate\Database\Seeder;
  *
  * PORSI EMISI PER SEKTOR (`emission_share`, dipakai halaman hasil):
  *   Transportasi 40% | Listrik Rumah 35% | Konsumsi & Sampah 25%
- * Angka ini ditetapkan dokumen logic Result Page dan sengaja berbeda dari
- * anggaran poin di atas — poin mengukur perilaku, share membagi ton emisi.
+ * Angka ini ditetapkan dokumen logic Result Page. Kebetulan sama dengan batas
+ * skor di atas, tapi maknanya berbeda — poin mengukur perilaku, share membagi
+ * ton emisi — jadi keduanya tetap disimpan terpisah.
  *
- * PERHATIAN: seluruh angka `points`, `kg_co2e_year`, `numeric_value`, dan
- * `factors` masih PLACEHOLDER yang perlu dikonfirmasi ke sumber resmi sebelum
+ * PERHATIAN: angka `kg_co2e_year`, `numeric_value`, dan `factors` masih
+ * PLACEHOLDER yang perlu dikonfirmasi ke sumber resmi sebelum
  * rilis. Kolom `source` dan `reference_year` pada emission_factors disediakan
  * untuk itu.
  */
@@ -91,6 +96,7 @@ class CalculatorSchemaSeeder extends Seeder
                         'image_file' => $optionData['image_file'] ?? null,
                         'icon' => $optionData['icon'] ?? null,
                         'points' => $optionData['points'] ?? 0,
+                        'score_multiplier' => $optionData['score_multiplier'] ?? null,
                         'numeric_value' => $optionData['numeric_value'] ?? null,
                         'numeric_unit' => $optionData['numeric_unit'] ?? ($fieldData['unit'] ?? null),
                         'kg_co2e_year' => $optionData['kg_co2e_year'] ?? null,
@@ -157,7 +163,8 @@ class CalculatorSchemaSeeder extends Seeder
 
     /**
      * Langkah 1 - Transportasi.
-     * Hitung: faktor(moda) x jarak(km/hari) x 365.
+     * Skor: poin kendaraan x pengali jarak, maksimum 40.
+     * Emisi: faktor(moda) x jarak(km/hari) x 365.
      */
     private function transportasi(): array
     {
@@ -168,7 +175,7 @@ class CalculatorSchemaSeeder extends Seeder
             'icon' => 'car',
             'image_file' => 'images/calculator/transportasi.jpg',
             'accent_color' => '#F59E0B',
-            'max_points' => 35,
+            'max_points' => 40,
             'emission_share' => 0.40,
             'sort_order' => 1,
             'translations' => [
@@ -200,7 +207,7 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'mobil_bbm', 'points' => 20, 'factor_key' => 'mobil_bbm',
+                            'code' => 'mobil_bbm', 'points' => 25, 'factor_key' => 'mobil_bbm',
                             'icon' => 'car', 'image_file' => 'images/calculator/moda/mobil-bensin.png',
                             'translations' => [
                                 'id' => ['label' => 'Mobil Bensin (BBM)', 'summary_label' => 'Mobil Bensin'],
@@ -208,7 +215,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'motor_bbm', 'points' => 10, 'factor_key' => 'motor_bbm',
+                            'code' => 'motor_bbm', 'points' => 7, 'factor_key' => 'motor_bbm',
                             'icon' => 'motorcycle', 'image_file' => 'images/calculator/moda/motor-bensin.png',
                             'translations' => [
                                 'id' => ['label' => 'Motor Bensin (BBM)', 'summary_label' => 'Motor Bensin'],
@@ -216,7 +223,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'mobil_ev', 'points' => 12, 'factor_key' => 'mobil_ev',
+                            'code' => 'mobil_ev', 'points' => 13, 'factor_key' => 'mobil_ev',
                             'icon' => 'car-electric', 'image_file' => 'images/calculator/moda/mobil-listrik.png',
                             'translations' => [
                                 'id' => ['label' => 'Mobil Listrik (EV)', 'summary_label' => 'Mobil Listrik'],
@@ -224,7 +231,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'motor_ev', 'points' => 5, 'factor_key' => 'motor_ev',
+                            'code' => 'motor_ev', 'points' => 4, 'factor_key' => 'motor_ev',
                             'icon' => 'motorcycle-electric', 'image_file' => 'images/calculator/moda/motor-listrik.png',
                             'translations' => [
                                 'id' => ['label' => 'Motor Listrik (EV)', 'summary_label' => 'Motor Listrik'],
@@ -240,7 +247,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'kombinasi', 'points' => 13, 'factor_key' => 'kombinasi',
+                            'code' => 'kombinasi', 'points' => 11, 'factor_key' => 'kombinasi',
                             'icon' => 'shuffle', 'image_file' => 'images/calculator/moda/kombinasi.png',
                             'translations' => [
                                 'id' => ['label' => 'Kombinasi Transportasi', 'summary_label' => 'Kombinasi Transportasi'],
@@ -265,28 +272,28 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'lt_10', 'points' => 2, 'numeric_value' => 6,
+                            'code' => 'lt_10', 'points' => 0, 'score_multiplier' => 0.5, 'numeric_value' => 6,
                             'translations' => [
                                 'id' => ['label' => 'Kurang dari 10 km / hari', 'summary_label' => '< 10 km / hari'],
                                 'en' => ['label' => 'Less than 10 km / day', 'summary_label' => '< 10 km / day'],
                             ],
                         ],
                         [
-                            'code' => '10_25', 'points' => 5, 'numeric_value' => 17.5,
+                            'code' => '10_25', 'points' => 0, 'score_multiplier' => 1, 'numeric_value' => 17.5,
                             'translations' => [
                                 'id' => ['label' => '10 – 25 km / hari', 'summary_label' => '10 – 25 km / hari'],
                                 'en' => ['label' => '10 – 25 km / day', 'summary_label' => '10 – 25 km / day'],
                             ],
                         ],
                         [
-                            'code' => '26_50', 'points' => 10, 'numeric_value' => 38,
+                            'code' => '26_50', 'points' => 0, 'score_multiplier' => 1.5, 'numeric_value' => 38,
                             'translations' => [
                                 'id' => ['label' => '26 – 50 km / hari', 'summary_label' => '26 – 50 km / hari'],
                                 'en' => ['label' => '26 – 50 km / day', 'summary_label' => '26 – 50 km / day'],
                             ],
                         ],
                         [
-                            'code' => 'gt_50', 'points' => 15, 'numeric_value' => 65,
+                            'code' => 'gt_50', 'points' => 0, 'score_multiplier' => 2, 'numeric_value' => 65,
                             'translations' => [
                                 'id' => ['label' => 'Lebih dari 50 km / hari', 'summary_label' => '> 50 km / hari'],
                                 'en' => ['label' => 'More than 50 km / day', 'summary_label' => '> 50 km / day'],
@@ -322,7 +329,7 @@ class CalculatorSchemaSeeder extends Seeder
             'icon' => 'bolt',
             'image_file' => 'images/calculator/listrik-rumah.jpg',
             'accent_color' => '#10B981',
-            'max_points' => 30,
+            'max_points' => 35,
             'emission_share' => 0.35,
             'sort_order' => 2,
             'translations' => [
@@ -361,28 +368,28 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'satu_unit_5jam_standar', 'points' => 10, 'numeric_value' => 1230,
+                            'code' => 'satu_unit_5jam_standar', 'points' => 8, 'numeric_value' => 1230,
                             'translations' => [
                                 'id' => ['label' => '1 Unit (< 5 Jam / hari) - Standar', 'summary_label' => '1 Unit (< 5 Jam / hari) - Standar'],
                                 'en' => ['label' => '1 unit (< 5 hrs / day) - Standard', 'summary_label' => '1 unit (< 5 hrs) - Standard'],
                             ],
                         ],
                         [
-                            'code' => 'satu_unit_8jam_standar', 'points' => 13, 'numeric_value' => 2760,
+                            'code' => 'satu_unit_8jam_standar', 'points' => 15, 'numeric_value' => 2760,
                             'translations' => [
                                 'id' => ['label' => '1 Unit (> 8 Jam / hari) - Standar', 'summary_label' => '1 Unit (> 8 Jam / hari) - Standar'],
                                 'en' => ['label' => '1 unit (> 8 hrs / day) - Standard', 'summary_label' => '1 unit (> 8 hrs) - Standard'],
                             ],
                         ],
                         [
-                            'code' => 'satu_unit_5jam_inverter', 'points' => 6, 'numeric_value' => 850,
+                            'code' => 'satu_unit_5jam_inverter', 'points' => 5, 'numeric_value' => 850,
                             'translations' => [
                                 'id' => ['label' => '1 Unit (< 5 Jam / hari) - Inverter', 'summary_label' => '1 Unit (< 5 Jam / hari) - Inverter'],
                                 'en' => ['label' => '1 unit (< 5 hrs / day) - Inverter', 'summary_label' => '1 unit (< 5 hrs) - Inverter'],
                             ],
                         ],
                         [
-                            'code' => 'satu_unit_8jam_inverter', 'points' => 11, 'numeric_value' => 1910,
+                            'code' => 'satu_unit_8jam_inverter', 'points' => 12, 'numeric_value' => 1910,
                             'translations' => [
                                 'id' => ['label' => '1 Unit (> 8 Jam / hari) - Inverter', 'summary_label' => '1 Unit (> 8 Jam / hari) - Inverter'],
                                 'en' => ['label' => '1 unit (> 8 hrs / day) - Inverter', 'summary_label' => '1 unit (> 8 hrs) - Inverter'],
@@ -390,14 +397,14 @@ class CalculatorSchemaSeeder extends Seeder
                         ],
                         // Menggantikan opsi lama 'lebih_dari_satu_unit' (dinonaktifkan loader).
                         [
-                            'code' => 'dua_unit', 'points' => 13, 'numeric_value' => 3300,
+                            'code' => 'dua_unit', 'points' => 16, 'numeric_value' => 3300,
                             'translations' => [
                                 'id' => ['label' => '2 Unit AC (Pemakaian Standar/Malam Hari)', 'summary_label' => '2 Unit AC (Standar/Malam Hari)'],
                                 'en' => ['label' => '2 AC units (standard/night-time use)', 'summary_label' => '2 AC units (standard/night)'],
                             ],
                         ],
                         [
-                            'code' => 'tiga_unit_atau_intensif', 'points' => 14, 'numeric_value' => 5500,
+                            'code' => 'tiga_unit_atau_intensif', 'points' => 18, 'numeric_value' => 5500,
                             'translations' => [
                                 'id' => ['label' => '≥ 3 Unit AC atau Pemakaian Intensif', 'summary_label' => '≥ 3 Unit AC / Intensif'],
                                 'en' => ['label' => '≥ 3 AC units or heavy use', 'summary_label' => '≥ 3 AC units / heavy use'],
@@ -428,14 +435,14 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'standar', 'points' => 6, 'numeric_value' => 480,
+                            'code' => 'standar', 'points' => 8, 'numeric_value' => 480,
                             'translations' => [
                                 'id' => ['label' => 'Kulkas Standar (Non-Inverter)', 'summary_label' => 'Kulkas Standar (Non-Inverter)'],
                                 'en' => ['label' => 'Standard refrigerator (non-inverter)', 'summary_label' => 'Standard (non-inverter)'],
                             ],
                         ],
                         [
-                            'code' => 'inverter', 'points' => 3, 'numeric_value' => 250,
+                            'code' => 'inverter', 'points' => 5, 'numeric_value' => 250,
                             'translations' => [
                                 'id' => ['label' => 'Kulkas Hemat Energi (Inverter)', 'summary_label' => 'Kulkas Inverter'],
                                 'en' => ['label' => 'Energy-saving refrigerator (inverter)', 'summary_label' => 'Inverter'],
@@ -459,16 +466,13 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'lte_900', 'points' => 5, 'numeric_value' => 720,
+                            'code' => 'lte_900', 'points' => 3, 'numeric_value' => 720,
                             'meta' => ['va' => 900],
                             'translations' => [
                                 'id' => ['label' => '≤ 900 VA', 'summary_label' => '≤ 900 VA'],
                                 'en' => ['label' => '≤ 900 VA', 'summary_label' => '≤ 900 VA'],
                             ],
                         ],
-                        // ≤ 900 VA sengaja tetap 5 poin supaya skenario mockup
-                        // (25 -> 46 -> 71) tidak bergeser; opsi di atasnya
-                        // dipadatkan agar jatah daya tetap maksimal 10.
                         [
                             'code' => '1300', 'points' => 6, 'numeric_value' => 1200,
                             'meta' => ['va' => 1300],
@@ -478,7 +482,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => '2200', 'points' => 8, 'numeric_value' => 2000,
+                            'code' => '2200', 'points' => 9, 'numeric_value' => 2000,
                             'meta' => ['va' => 2200],
                             'translations' => [
                                 'id' => ['label' => '2200 VA', 'summary_label' => '2200 VA'],
@@ -486,7 +490,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => '3500_5500', 'points' => 9, 'numeric_value' => 3600,
+                            'code' => '3500_5500', 'points' => 12, 'numeric_value' => 3600,
                             'meta' => ['va_min' => 3500, 'va_max' => 5500],
                             'translations' => [
                                 'id' => ['label' => '3.500 VA – 5.500 VA', 'summary_label' => '3.500 – 5.500 VA'],
@@ -494,7 +498,7 @@ class CalculatorSchemaSeeder extends Seeder
                             ],
                         ],
                         [
-                            'code' => 'gte_6600', 'points' => 10, 'numeric_value' => 6000,
+                            'code' => 'gte_6600', 'points' => 15, 'numeric_value' => 6000,
                             'meta' => ['va' => 6600],
                             'translations' => [
                                 'id' => ['label' => '≥ 6.600 VA', 'summary_label' => '≥ 6.600 VA'],
@@ -515,7 +519,9 @@ class CalculatorSchemaSeeder extends Seeder
 
     /**
      * Langkah 3 - Konsumsi & Sampah.
-     * Hitung: penjumlahan kg CO2e/tahun tiap opsi terpilih.
+     * Skor: penjumlahan poin (proxy perilaku), maksimum 25; poin negatif
+     * adalah insentif untuk kebiasaan ramah lingkungan.
+     * Emisi: penjumlahan kg CO2e/tahun tiap opsi terpilih.
      */
     private function konsumsiSampah(): array
     {
@@ -526,7 +532,7 @@ class CalculatorSchemaSeeder extends Seeder
             'icon' => 'recycle',
             'image_file' => 'images/calculator/konsumsi-sampah.jpg',
             'accent_color' => '#EF4444',
-            'max_points' => 35,
+            'max_points' => 25,
             'emission_share' => 0.25,
             'sort_order' => 3,
             'translations' => [
@@ -551,21 +557,21 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'jarang', 'points' => 1, 'kg_co2e_year' => 15,
+                            'code' => 'jarang', 'points' => 3, 'kg_co2e_year' => 15,
                             'translations' => [
                                 'id' => ['label' => 'Jarang (0–2x / minggu)', 'summary_label' => 'Jarang (0–2x / minggu)'],
                                 'en' => ['label' => 'Rarely (0–2x / week)', 'summary_label' => 'Rarely (0–2x / week)'],
                             ],
                         ],
                         [
-                            'code' => 'sedang', 'points' => 5, 'kg_co2e_year' => 40,
+                            'code' => 'sedang', 'points' => 6, 'kg_co2e_year' => 40,
                             'translations' => [
                                 'id' => ['label' => 'Sedang (3–5x / minggu)', 'summary_label' => 'Sedang (3–5x / minggu)'],
                                 'en' => ['label' => 'Moderate (3–5x / week)', 'summary_label' => 'Moderate (3–5x / week)'],
                             ],
                         ],
                         [
-                            'code' => 'sering', 'points' => 6, 'kg_co2e_year' => 75,
+                            'code' => 'sering', 'points' => 10, 'kg_co2e_year' => 75,
                             'translations' => [
                                 'id' => ['label' => 'Sering (>5x / minggu)', 'summary_label' => 'Sering (>5x / minggu)'],
                                 'en' => ['label' => 'Often (>5x / week)', 'summary_label' => 'Often (>5x / week)'],
@@ -582,21 +588,21 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'selalu', 'points' => 0, 'kg_co2e_year' => 0,
+                            'code' => 'selalu', 'points' => -5, 'kg_co2e_year' => 0,
                             'translations' => [
                                 'id' => ['label' => 'Ya, Selalu', 'summary_label' => 'Selalu'],
                                 'en' => ['label' => 'Yes, always', 'summary_label' => 'Always'],
                             ],
                         ],
                         [
-                            'code' => 'kadang', 'points' => 3, 'kg_co2e_year' => 12,
+                            'code' => 'kadang', 'points' => 0, 'kg_co2e_year' => 12,
                             'translations' => [
                                 'id' => ['label' => 'Kadang-kadang', 'summary_label' => 'Kadang-kadang'],
                                 'en' => ['label' => 'Sometimes', 'summary_label' => 'Sometimes'],
                             ],
                         ],
                         [
-                            'code' => 'tidak_pernah', 'points' => 6, 'kg_co2e_year' => 25,
+                            'code' => 'tidak_pernah', 'points' => 5, 'kg_co2e_year' => 25,
                             'translations' => [
                                 'id' => ['label' => 'Tidak Pernah', 'summary_label' => 'Tidak Pernah'],
                                 'en' => ['label' => 'Never', 'summary_label' => 'Never'],
@@ -613,14 +619,14 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'ya', 'points' => 0, 'kg_co2e_year' => 0,
+                            'code' => 'ya', 'points' => -8, 'kg_co2e_year' => 0,
                             'translations' => [
                                 'id' => ['label' => 'Ya', 'summary_label' => 'Ya'],
                                 'en' => ['label' => 'Yes', 'summary_label' => 'Yes'],
                             ],
                         ],
                         [
-                            'code' => 'tidak', 'points' => 7, 'kg_co2e_year' => 120,
+                            'code' => 'tidak', 'points' => 8, 'kg_co2e_year' => 120,
                             'translations' => [
                                 'id' => ['label' => 'Tidak', 'summary_label' => 'Tidak'],
                                 'en' => ['label' => 'No', 'summary_label' => 'No'],
@@ -637,14 +643,14 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'ya', 'points' => 0, 'kg_co2e_year' => 0,
+                            'code' => 'ya', 'points' => -5, 'kg_co2e_year' => 0,
                             'translations' => [
                                 'id' => ['label' => 'Ya', 'summary_label' => 'Ya'],
                                 'en' => ['label' => 'Yes', 'summary_label' => 'Yes'],
                             ],
                         ],
                         [
-                            'code' => 'tidak', 'points' => 6, 'kg_co2e_year' => 60,
+                            'code' => 'tidak', 'points' => 5, 'kg_co2e_year' => 60,
                             'translations' => [
                                 'id' => ['label' => 'Tidak', 'summary_label' => 'Tidak'],
                                 'en' => ['label' => 'No', 'summary_label' => 'No'],
@@ -661,21 +667,21 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'jarang', 'points' => 2, 'kg_co2e_year' => 120,
+                            'code' => 'jarang', 'points' => 5, 'kg_co2e_year' => 120,
                             'translations' => [
                                 'id' => ['label' => 'Jarang (0–1x / minggu)', 'summary_label' => 'Jarang (0–1x / minggu)'],
                                 'en' => ['label' => 'Rarely (0–1x / week)', 'summary_label' => 'Rarely (0–1x / week)'],
                             ],
                         ],
                         [
-                            'code' => 'sedang', 'points' => 4, 'kg_co2e_year' => 320,
+                            'code' => 'sedang', 'points' => 10, 'kg_co2e_year' => 320,
                             'translations' => [
                                 'id' => ['label' => 'Sedang (2–4x / minggu)', 'summary_label' => 'Sedang (2–4x / minggu)'],
                                 'en' => ['label' => 'Moderate (2–4x / week)', 'summary_label' => 'Moderate (2–4x / week)'],
                             ],
                         ],
                         [
-                            'code' => 'sering', 'points' => 6, 'kg_co2e_year' => 620,
+                            'code' => 'sering', 'points' => 15, 'kg_co2e_year' => 620,
                             'translations' => [
                                 'id' => ['label' => 'Sering (>5x / minggu)', 'summary_label' => 'Sering (>5x / minggu)'],
                                 'en' => ['label' => 'Often (>5x / week)', 'summary_label' => 'Often (>5x / week)'],
@@ -692,14 +698,14 @@ class CalculatorSchemaSeeder extends Seeder
                     ],
                     'options' => [
                         [
-                            'code' => 'lte_5', 'points' => 2, 'kg_co2e_year' => 45,
+                            'code' => 'lte_5', 'points' => 5, 'kg_co2e_year' => 45,
                             'translations' => [
                                 'id' => ['label' => '≤ 5 kali / bulan', 'summary_label' => '≤ 5 kali / bulan'],
                                 'en' => ['label' => '≤ 5 times / month', 'summary_label' => '≤ 5 / month'],
                             ],
                         ],
                         [
-                            'code' => 'gt_5', 'points' => 4, 'kg_co2e_year' => 110,
+                            'code' => 'gt_5', 'points' => 10, 'kg_co2e_year' => 110,
                             'translations' => [
                                 'id' => ['label' => '> 5 kali / bulan', 'summary_label' => '> 5 kali / bulan'],
                                 'en' => ['label' => 'More than 5 times / month', 'summary_label' => 'More than 5 / month'],

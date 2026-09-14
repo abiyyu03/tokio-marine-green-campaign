@@ -304,7 +304,9 @@ new #[Title('Detail Peserta | Admin')] class extends Component
                                                 <td class="py-2.5 pr-4 font-medium text-slate-900">
                                                     {{ $value->option?->tr('label') ?? $value->value_text ?? __('admin.empty_value') }}
                                                 </td>
-                                                <td class="w-16 py-2.5 text-right text-slate-500 tabular-nums">{{ $value->points }}</td>
+                                                <td class="w-16 py-2.5 text-right text-slate-500 tabular-nums">
+                                                    {{ $value->score_multiplier !== null ? '×'.ResultText::compact($value->score_multiplier, 1) : $value->points }}
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

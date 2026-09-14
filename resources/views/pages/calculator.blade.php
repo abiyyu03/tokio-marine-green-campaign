@@ -23,8 +23,8 @@ use Livewire\Component;
  *
  * Jawaban ditulis ke submission_values begitu user memilih opsi, sehingga
  * draft tetap utuh bila halaman ditutup di tengah pengisian, dan skor di
- * sidebar selalu berasal dari `points` yang sama dengan yang dipakai
- * App\Services\CarbonCalculator saat hasil dibekukan.
+ * sidebar selalu berasal dari `points` dan `score_multiplier` yang sama
+ * dengan yang dipakai App\Services\CarbonCalculator saat hasil dibekukan.
  */
 new class extends Component {
     /** Kunci session penyimpan draft yang sedang dikerjakan. */
@@ -133,7 +133,7 @@ new class extends Component {
     #[Computed]
     public function score(): int
     {
-        return app(CarbonCalculator::class)->scoreForOptions($this->selectedOptions->values());
+        return app(CarbonCalculator::class)->scoreForOptions($this->categories, $this->selectedOptions);
     }
 
     #[Computed]
@@ -445,6 +445,7 @@ new class extends Component {
                     'emission_category_id' => $field->emission_category_id,
                     'emission_field_option_id' => $option->id,
                     'points' => $option->points,
+                    'score_multiplier' => $option->score_multiplier,
                     'value_numeric' => $option->numeric_value,
                     'kg_co2e_year' => $option->kg_co2e_year,
                 ],

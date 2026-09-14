@@ -4,17 +4,28 @@ namespace App\Services;
 
 use App\Models\EmissionCategory;
 use App\Models\EmissionFactor;
+use App\Models\EmissionFieldOption;
 use App\Models\ResultTier;
 use App\Models\Submission;
 use App\Models\SubmissionResult;
+use App\Models\SubmissionValue;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
  * Menghitung skor poin dan emisi tahunan dari jawaban sebuah submission.
  *
- * Skor adalah penjumlahan sederhana `points` tiap jawaban, dibatasi 0-100 —
- * inilah angka yang tampil di gauge "Skor Kamu" dan yang menentukan tier.
+ * Skor mengikuti dokumen "Skoring Kalkulator Karbon" (behavior-based scoring):
+ *
+ *   skor kategori = (jumlah `points` jawaban) x (hasil kali `score_multiplier`
+ *                   jawaban), dibulatkan, lalu dibatasi `max_points` kategori
+ *   skor total    = jumlah skor kategori, dibatasi 0-100
+ *
+ * Contoh: Transportasi = skor kendaraan x pengali jarak, maksimum 40.
+ * Skor kategori sengaja tidak dibatasi di bawah nol — poin negatif Konsumsi &
+ * Sampah adalah insentif yang memang mengurangi total. Skor total inilah yang
+ * tampil di gauge "Skor Kamu" dan menentukan tier.
+ *
  * Emisi dihitung terpisah per kategori sesuai `calculator_key`-nya.
  */
 class CarbonCalculator
@@ -28,36 +39,47 @@ class CarbonCalculator
     public function __construct(private readonly EmissionEstimator $estimator) {}
 
     /**
-     * Skor berjalan untuk gauge di sidebar wizard. Menerima jawaban yang
-     * belum lengkap, sehingga bisa dipanggil setiap kali user memilih opsi.
+     * Skor satu kategori dari jawaban-jawabannya.
+     *
+     * Jawaban boleh berupa SubmissionValue (hasil yang dibekukan) atau
+     * EmissionFieldOption (pilihan di layar) — keduanya membawa `points` dan
+     * `score_multiplier`, jadi gauge wizard dan hasil akhir memakai rumus
+     * yang sama persis. Jawaban yang belum lengkap tetap dihitung: kendaraan
+     * tanpa jarak memakai pengali 1, jarak tanpa kendaraan bernilai 0.
+     *
+     * @param  Collection<int, SubmissionValue|EmissionFieldOption>  $answers
      */
-    public function score(Submission $submission): int
+    public function categoryScore(EmissionCategory $category, Collection $answers): int
     {
-        return $this->clamp((int) $submission->values->sum('points'));
+        $multiplier = $answers->reduce(
+            fn (float $carry, $answer) => $carry * ($answer->score_multiplier ?? 1.0),
+            1.0
+        );
+
+        $score = (int) round($answers->sum('points') * $multiplier);
+
+        return $category->max_points > 0 ? min($score, $category->max_points) : $score;
     }
 
     /**
-     * Skor dari opsi yang sedang dipilih di layar, sebelum jawaban ditulis
-     * ulang dari database. Dipakai wizard agar gauge langsung bergerak.
+     * Skor berjalan dari opsi yang sedang dipilih di layar. Dipakai wizard
+     * agar gauge langsung bergerak setiap kali user memilih opsi.
      *
-     * @param  Collection<int, \App\Models\EmissionFieldOption>  $options
+     * @param  Collection<int, EmissionCategory>  $categories  dengan relasi fields
+     * @param  Collection<int, EmissionFieldOption>  $optionsByField  id field => opsi
      */
-    public function scoreForOptions(Collection $options): int
+    public function scoreForOptions(Collection $categories, Collection $optionsByField): int
     {
-        return $this->clamp((int) $options->sum('points'));
+        return $this->total($categories->map(fn (EmissionCategory $category) => $this->categoryScore(
+            $category,
+            $optionsByField->only($category->fields->pluck('id')->all())
+        )));
     }
 
-    private function clamp(int $points): int
+    /** @param  Collection<int, int>|array<int, int>  $categoryScores */
+    public function total(Collection|array $categoryScores): int
     {
-        return max(0, min(self::MAX_SCORE, $points));
-    }
-
-    /** Skor parsial satu kategori, untuk kartu hasil per kategori. */
-    public function scoreForCategory(Submission $submission, EmissionCategory $category): int
-    {
-        return (int) $submission->values
-            ->where('emission_category_id', $category->id)
-            ->sum('points');
+        return max(0, min(self::MAX_SCORE, (int) collect($categoryScores)->sum()));
     }
 
     /**
@@ -144,14 +166,17 @@ class CarbonCalculator
         $categories = EmissionCategory::query()->active()->ordered()->get();
 
         $scores = $categories->mapWithKeys(fn (EmissionCategory $category) => [
-            $category->id => $this->scoreForCategory($submission, $category),
+            $category->id => $this->categoryScore(
+                $category,
+                $submission->values->where('emission_category_id', $category->id)
+            ),
         ]);
 
         $rawKg = $categories->mapWithKeys(fn (EmissionCategory $category) => [
             $category->id => $this->emissionForCategory($submission, $category),
         ])->all();
 
-        $score = $this->score($submission);
+        $score = $this->total($scores);
         $tier = ResultTier::forScore($score);
 
         $estimate = $this->estimator->estimate($score, $tier, $categories, $rawKg);

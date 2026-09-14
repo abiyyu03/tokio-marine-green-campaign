@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Pilihan sebuah field. Membawa poin untuk gauge skor sekaligus angka
  * untuk perhitungan emisi (basis lewat `numeric_value`, atau emisi tahunan
  * langsung lewat `kg_co2e_year`).
+ *
+ * `points` boleh negatif (insentif perilaku ramah lingkungan).
+ * `score_multiplier` mengalikan poin kategorinya alih-alih menambah —
+ * dipakai jarak harian terhadap skor kendaraan.
  */
 class EmissionFieldOption extends Model
 {
@@ -20,14 +24,15 @@ class EmissionFieldOption extends Model
 
     protected $fillable = [
         'emission_field_id', 'code', 'image_file', 'icon', 'points',
-        'numeric_value', 'numeric_unit', 'kg_co2e_year', 'factor_key',
-        'meta', 'sort_order', 'is_active',
+        'score_multiplier', 'numeric_value', 'numeric_unit', 'kg_co2e_year',
+        'factor_key', 'meta', 'sort_order', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'points' => 'integer',
+            'score_multiplier' => 'float',
             'numeric_value' => 'float',
             'kg_co2e_year' => 'float',
             'meta' => 'array',
