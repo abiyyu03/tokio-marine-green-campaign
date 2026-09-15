@@ -72,7 +72,7 @@
                 Mulai Hitung Emisi
             </a>
 
-            <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
+            {{-- <div class="hidden sm:block h-8 w-px bg-slate-200"></div>
 
             <div class="flex items-center gap-2 sm:gap-3">
 
@@ -105,7 +105,7 @@
                     </svg>
                 </button>
 
-            </div>
+            </div> --}}
         </div>
     </div>
 
@@ -136,10 +136,10 @@
                     class="block w-full rounded-md bg-[#00AEC7] px-5 py-2.5 text-center text-sm font-bold text-white transition hover:bg-[#0096B8]">
                     Mulai Hitung Emisi
                 </a>
-                <a href="{{ Route::has('login') ? route('login') : url('/') }}"
+                {{-- <a href="{{ Route::has('login') ? route('login') : url('/') }}"
                     class="block sm:hidden w-full rounded-md border border-[#00AEC7] px-5 py-2.5 text-center text-sm font-bold text-[#00AEC7] transition hover:bg-slate-50">
                     {{ __('nav.login') }}
-                </a>
+                </a> --}}
             </div>
         </div>
     </div>

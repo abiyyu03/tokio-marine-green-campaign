@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-10 lg:flex-row lg:justify-between">
             <div class="max-w-md space-y-4">
-                <p class="text-xl font-semibold text-white">Tokio Marine Group</p>
+                {{-- <p class="text-xl font-semibold text-white">Tokio Marine Group</p> --}}
 
                 <p class="flex gap-3 text-xs leading-relaxed">
                     <svg class="mt-0.5 size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -31,9 +31,9 @@
 
             <div class="flex flex-col gap-8 lg:items-end">
                 <nav class="flex gap-8 text-sm">
-                    <a href="{{ url('/') }}" class="transition hover:text-white">{{ __('nav.home') }}</a>
-                    <a href="{{ url('/#about') }}" class="transition hover:text-white">{{ __('nav.about_us') }}</a>
-                    <a href="{{ route('calculator') }}" class="transition hover:text-white">{{ __('nav.calculator') }}</a>
+                    <a href="{{ url('/') }}" class="transition hover:text-white">Beranda</a>
+                    <a href="{{ url('/#about') }}" class="transition hover:text-white">Tentang Kami</a>
+                    <a href="{{ route('calculator') }}" class="transition hover:text-white">Kalkulator Karbon</a>
                 </nav>
 
                 <div class="flex gap-4">

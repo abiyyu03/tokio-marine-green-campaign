@@ -100,7 +100,7 @@ new class extends Component
                     <div class="flex flex-col space-y-6">
                         <div class="flex items-center gap-3 text-sm font-bold text-slate-700">
                             <span class="w-2.5 h-2.5 bg-[#00AEC7] rounded-full"></span>
-                            <span>About Us</span>
+                            <span>Tentang Kami</span>
                         </div>
                         <h2 class="text-3xl sm:text-4xl font-black text-slate-900 leading-tight">
                             Kenali Jejakmu. Mulai Aksimu. Ciptakan Dampaknya.
@@ -125,13 +125,12 @@ new class extends Component
         </div>
 
         {{-- ==================== SCOPE OF CALCULATION ==================== --}}
-        {{-- Menambahkan ID sektor-emisi --}}
         <section class="w-full bg-[#00AEC7] py-16 sm:py-24" id="sektor-emisi">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col items-center">
                 
                 <div class="flex items-center gap-3 text-sm font-bold text-white mb-4">
                     <span class="w-2.5 h-2.5 bg-white rounded-full"></span>
-                    <span class="tracking-wider uppercase">SCOPE OF CALCULATION</span>
+                    <span class="tracking-wider uppercase">RUANG LINGKUP PERHITUNGAN</span>
                 </div>
                 <h2 class="text-3xl sm:text-4xl font-black text-white text-center mb-12">
                     3 Area Utama yang Kami Hitung
@@ -181,7 +180,7 @@ new class extends Component
                 <div class="flex flex-col mb-10">
                     <div class="flex items-center gap-3 text-sm font-bold text-[#00AEC7] mb-2">
                         <span class="w-2.5 h-2.5 bg-[#00AEC7] rounded-full"></span>
-                        <span class="tracking-wider uppercase">HOW IT WORKS</span>
+                        <span class="tracking-wider uppercase">CARA KERJANYA</span>
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-black text-slate-900">
                         Cukup 5 Langkah Mudah
@@ -260,11 +259,10 @@ new class extends Component
             </section>
 
             {{-- ==================== FAQ SECTION ==================== --}}
-            {{-- Menambahkan ID faq --}}
             <section class="py-16 sm:py-24 grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-12 lg:gap-20 items-start" id="faq">
                 
                 {{-- Kiri: Teks Pendahuluan FAQ --}}
-                <div class="flex flex-col sticky top-24">
+                <div class="flex flex-col lg:sticky lg:top-28">
                     <div class="flex items-center gap-3 text-sm font-bold text-[#00AEC7] mb-4">
                         <span class="w-2.5 h-2.5 bg-[#00AEC7] rounded-full"></span>
                         <span class="tracking-wider uppercase">FAQ</span>
@@ -303,7 +301,6 @@ new class extends Component
                             </div>
                         </div>
                     @endforeach
-
                 </div>
             </section>
 
