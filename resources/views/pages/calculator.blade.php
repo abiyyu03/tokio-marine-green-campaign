@@ -41,10 +41,6 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     public $intent = ''; 
     public $consent = false;
 
-    // --- Skor sementara (Visual Dummy) ---
-    public $score = 0;
-    public $level = 'Dampak Ringan';
-
     public function mount()
     {
         $draft = session(self::DRAFT_CALC_KEY);
@@ -67,18 +63,6 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     public function updated()
     {
         session([self::DRAFT_CALC_KEY => $this->allInput()]);
-        
-        // Simulasi skor statis untuk tampilan visual sesuai step
-        if ($this->step == 2) {
-            $this->score = 25;
-            $this->level = 'Dampak Ringan';
-        } elseif ($this->step == 3) {
-            $this->score = 46; 
-            $this->level = 'Dampak Sedang';
-        } elseif ($this->step == 4) {
-            $this->score = 71; // Sesuai skor di gambar hasil
-            $this->level = 'Dampak Tinggi';
-        }
     }
 
     private function allInput()
@@ -180,7 +164,27 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             ],
             'power' => [
                 'va_900' => '≤ 900 VA', 'va_1300' => '1300 VA', 'va_2200' => '2200 VA'
-            ]
+            ],
+            'plastic' => [
+                'jarang' => 'Jarang (0-2x / minggu)', 'sedang' => 'Sedang (3-5x / minggu)',
+                'sering' => 'Sering (>5x / minggu)'
+            ],
+            'bag' => [
+                'selalu' => 'Ya, Selalu', 'kadang' => 'Kadang-kadang', 'tidak' => 'Tidak Pernah'
+            ],
+            'sort' => [
+                'ya' => 'Ya, Dipilah', 'tidak' => 'Tidak Dipilah'
+            ],
+            'gallon' => [
+                'ya' => 'Ya, Isi Ulang', 'tidak' => 'Tidak'
+            ],
+            'meat' => [
+                'jarang' => 'Jarang (0-1x / minggu)', 'sedang' => 'Sedang (2-4x / minggu)',
+                'sering' => 'Sering (>5x / minggu)'
+            ],
+            'shopping' => [
+                'less_5' => '≤ 5 kali / bulan', 'more_5' => '> 5 kali / bulan'
+            ],
         ];
         return $labels[$type][$value] ?? '-';
     }
@@ -573,44 +577,29 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             {{-- KOLOM KANAN: PANEL SKOR & SUMMARY (Sticky) --}}
             <aside class="sticky top-24 space-y-4">
                 
-                {{-- Score Card --}}
-                <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-center text-sm font-bold text-slate-900">Skor Kamu</h3>
+                {{-- Ringkasan Jawaban. Menggantikan gauge skor dummy yang sempat
+                     dipasang di rewrite kemarin — angkanya hardcoded per step
+                     (25/46/71), bukan hasil hitungan sungguhan, jadi berisiko
+                     menyesatkan atau justru membuat peserta "main aman" demi
+                     angka yang kelihatan bagus. Ringkasan ini netral: cuma
+                     menunjukkan balik apa yang sudah dijawab, muncul begitu
+                     satu kelompok pertanyaan lengkap terisi. --}}
+                <h3 class="px-1 text-sm font-bold text-slate-900">{{ __('calculator.summary.heading') }}</h3>
 
-                    {{-- Gauge Skor --}}
-                    <div class="relative mx-auto mt-4 flex size-40 items-center justify-center">
-                        <svg class="size-full" viewBox="0 0 36 36">
-                            <path class="text-[#fce7f3]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="100, 100"/>
-                            @php
-                                $ringColor = $score > 60 ? '#ef4444' : ($score > 30 ? '#f59e0b' : '#059669');
-                            @endphp
-                            <path stroke="{{ $ringColor }}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-dasharray="{{ max($score, 2) }}, 100" stroke-linecap="round"/>
-                        </svg>
-                        <div class="absolute text-center flex flex-col items-center">
-                            <span class="text-3xl font-bold text-slate-900">{{ $score }}</span>
-                            <p class="text-[10px] font-medium text-slate-500">{{ $level }}</p>
-                        </div>
-                    </div>
+                @php
+                    $hasTransportSummary = $mainTransport && $distance;
+                    $hasElectricSummary = $acUsage && $fridgeType && $powerLimit;
+                    $hasConsumptionSummary = $plasticUsage && $shoppingBag && $wasteSort && $gallonWater && $redMeat && $onlineShopping;
+                @endphp
 
-                    {{-- Legenda Dampak --}}
-                    <div class="mt-8 space-y-2 pt-4 border-t border-slate-100">
-                        <div class="flex items-center gap-2">
-                            <span class="size-2 rounded-full bg-[#059669]"></span>
-                            <span class="text-[10px] font-semibold text-slate-600">Dampak Ringan (0-30)</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="size-2 rounded-full bg-[#f59e0b]"></span>
-                            <span class="text-[10px] font-semibold text-slate-600">Dampak Sedang (31-60)</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="size-2 rounded-full bg-[#ef4444]"></span>
-                            <span class="text-[10px] font-semibold text-slate-600">Dampak Tinggi (61-100)</span>
-                        </div>
-                    </div>
-                </div>
+                @if (! $hasTransportSummary && ! $hasElectricSummary && ! $hasConsumptionSummary)
+                    <p class="rounded-xl border border-dashed border-slate-200 bg-white p-5 text-center text-xs text-slate-500">
+                        {{ __('calculator.summary.empty') }}
+                    </p>
+                @endif
 
-                {{-- Summary Transportasi (Tampil Mulai Step 2) --}}
-                @if ($step >= 2 && $mainTransport && $distance)
+                {{-- Summary Transportasi --}}
+                @if ($hasTransportSummary)
                 <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <h4 class="mb-4 text-xs font-bold text-slate-800">Transportasi Darat</h4>
                     <div class="space-y-3 text-[11px] sm:text-xs">
@@ -626,8 +615,8 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 </div>
                 @endif
 
-                {{-- Summary Listrik (Tampil Mulai Step 3) --}}
-                @if ($step >= 3 && $acUsage && $fridgeType && $powerLimit)
+                {{-- Summary Listrik --}}
+                @if ($hasElectricSummary)
                 <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                     <h4 class="mb-4 text-xs font-bold text-slate-800">Listrik Rumah</h4>
                     <div class="space-y-3 text-[11px] sm:text-xs">
@@ -642,6 +631,39 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="flex justify-between items-start gap-2">
                             <span class="text-slate-500 whitespace-nowrap">Daya Listrik</span>
                             <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('power', $powerLimit) }}</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                {{-- Summary Konsumsi & Sampah --}}
+                @if ($hasConsumptionSummary)
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <h4 class="mb-4 text-xs font-bold text-slate-800">Konsumsi & Sampah</h4>
+                    <div class="space-y-3 text-[11px] sm:text-xs">
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Plastik Sekali Pakai</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('plastic', $plasticUsage) }}</span>
+                        </div>
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Tas Belanja Sendiri</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('bag', $shoppingBag) }}</span>
+                        </div>
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Pilah Sampah</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('sort', $wasteSort) }}</span>
+                        </div>
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Galon Isi Ulang</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('gallon', $gallonWater) }}</span>
+                        </div>
+                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Daging Merah</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('meat', $redMeat) }}</span>
+                        </div>
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="text-slate-500 whitespace-nowrap">Belanja Online</span>
+                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('shopping', $onlineShopping) }}</span>
                         </div>
                     </div>
                 </div>

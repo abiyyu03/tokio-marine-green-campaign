@@ -11,6 +11,7 @@ return [
 
     'summary' => [
         'heading' => 'Ringkasan Jawaban',
+        'empty' => 'Jawabanmu akan muncul di sini begitu kamu mulai mengisi.',
     ],
 
     'nav' => [

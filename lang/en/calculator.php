@@ -11,6 +11,7 @@ return [
 
     'summary' => [
         'heading' => 'Your Answers',
+        'empty' => 'Your answers will appear here as you fill them in.',
     ],
 
     'nav' => [
