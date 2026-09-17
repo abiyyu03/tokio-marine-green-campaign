@@ -24,6 +24,10 @@ return [
         'see_result' => 'See My Results',
         'see_result_short' => 'See Results',
         'processing' => 'Processing...',
+        'leave_confirm_title' => 'Leave the calculator?',
+        'leave_confirm_text' => 'Your answers so far haven\'t been saved and will be lost.',
+        'leave_confirm_confirm' => 'Yes, leave',
+        'leave_confirm_cancel' => 'Keep Filling In',
     ],
 
     'personal' => [

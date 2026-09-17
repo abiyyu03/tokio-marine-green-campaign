@@ -188,7 +188,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 ?>
 
 <div class="flex min-h-screen flex-col bg-[#f4f7f9]">
-    <x-site-header active="calculator" />
+    <x-site-header active="calculator" :minimal="true" :auto-hide="true" />
 
     {{-- HEADER ATAS WIZARD --}}
     <div class="bg-white w-full border-b border-slate-200">
@@ -233,7 +233,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
             {{-- Kanan: Tombol Keluar --}}
             <div class="shrink-0 self-start sm:self-center">
-                <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-2 rounded-md bg-red-50 px-5 py-2 text-sm font-bold text-red-500 transition hover:bg-red-100 hover:text-red-600 border border-red-100">
+                <a href="{{ route('home') }}"
+                    data-confirm-title="{{ __('calculator.nav.leave_confirm_title') }}"
+                    data-confirm-text="{{ __('calculator.nav.leave_confirm_text') }}"
+                    data-confirm-yes="{{ __('calculator.nav.leave_confirm_confirm') }}"
+                    data-confirm-no="{{ __('calculator.nav.leave_confirm_cancel') }}"
+                    x-on:click.prevent="confirmCalculatorExit($el)"
+                    class="inline-flex items-center gap-2 rounded-md bg-red-50 px-5 py-2 text-sm font-bold text-red-500 transition hover:bg-red-100 hover:text-red-600 border border-red-100">
                     <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
@@ -650,7 +656,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 
                 {{-- Tombol Kembali --}}
                 @if ($step == 1)
-                    <a href="{{ route('home') }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    <a href="{{ route('home') }}"
+                        data-confirm-title="{{ __('calculator.nav.leave_confirm_title') }}"
+                        data-confirm-text="{{ __('calculator.nav.leave_confirm_text') }}"
+                        data-confirm-yes="{{ __('calculator.nav.leave_confirm_confirm') }}"
+                        data-confirm-no="{{ __('calculator.nav.leave_confirm_cancel') }}"
+                        x-on:click.prevent="confirmCalculatorExit($el)"
+                        class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
                         <span class="hidden sm:inline">Kembali ke Beranda</span>
                         <span class="sm:hidden">Kembali</span>

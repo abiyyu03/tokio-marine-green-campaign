@@ -24,6 +24,10 @@ return [
         'see_result' => 'Lihat Hasil Perhitungan',
         'see_result_short' => 'Lihat Hasil',
         'processing' => 'Memproses...',
+        'leave_confirm_title' => 'Keluar dari kalkulator?',
+        'leave_confirm_text' => 'Jawaban yang sudah kamu isi belum tersimpan dan akan hilang.',
+        'leave_confirm_confirm' => 'Ya, keluar',
+        'leave_confirm_cancel' => 'Lanjutkan Mengisi',
     ],
 
     'personal' => [
