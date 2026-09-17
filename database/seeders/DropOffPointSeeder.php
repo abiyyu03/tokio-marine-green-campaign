@@ -9,11 +9,15 @@ use Illuminate\Support\Str;
 /**
  * Isi direktori "Temukan Rumah Pilah Terdekat!".
  *
- * Daftar lokasi dari tim kampanye (Jakarta Timur). Jam operasional, telepon,
- * dan nomor WhatsApp belum diberikan, jadi dibiarkan null — kartu di halaman
- * hasil menyembunyikan baris yang kosong, termasuk tombol "Hubungi WhatsApp",
- * sehingga tidak ada nomor karangan yang tayang. Isi kolomnya di sini begitu
- * datanya turun.
+ * Daftar lokasi dari tim kampanye (Jakarta Timur). Foto kartunya diambil dari
+ * public/asset/images/rumah-pilah/ (nama berkasnya sesuai nama lokasi), lalu
+ * dipotong 640x300 ke asset/images/opt/{slug}-640.jpg + .webp supaya ringan;
+ * lokasi yang fotonya belum ada tetap tampil dengan gambar pengganti.
+ *
+ * Jam operasional, telepon, dan nomor WhatsApp belum diberikan, jadi dibiarkan
+ * null — kartu di halaman hasil menyembunyikan baris yang kosong, termasuk
+ * tombol "Hubungi WhatsApp", sehingga tidak ada nomor karangan yang tayang.
+ * Isi kolomnya di sini begitu datanya turun.
  *
  * Seeder ini juga menonaktifkan lokasi yang sudah tidak ada di daftar (mis.
  * baris contoh Bogor dari versi sebelumnya) — barisnya sengaja tidak dihapus
@@ -46,7 +50,7 @@ class DropOffPointSeeder extends Seeder
                 ['slug' => $slug],
                 [
                     'name' => $data['name'],
-                    'image_file' => null,
+                    'image_file' => "asset/images/opt/{$slug}-640.jpg",
                     'address' => $data['address'],
                     'city' => 'Jakarta Timur',
                     'province' => 'DKI Jakarta',

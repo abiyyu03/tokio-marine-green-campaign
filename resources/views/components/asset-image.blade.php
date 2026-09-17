@@ -1,16 +1,26 @@
 {{--
-    Gambar dari /public dengan penampung cadangan bila filenya belum diunggah.
-    Seluruh path gambar di seeder masih placeholder, jadi halaman harus tetap
-    rapi meski asetnya belum ada.
+    Gambar dari /public dengan penampung cadangan bila filenya belum diunggah,
+    supaya halaman tetap rapi meski asetnya belum ada.
+
+    Bila di sebelah berkasnya ada versi .webp dengan nama yang sama (mis.
+    opt/foto-640.jpg + opt/foto-640.webp), versi itu yang dipakai peramban dan
+    JPG/PNG-nya jadi cadangan.
 --}}
 @props(['src' => null, 'alt' => ''])
 
 @php
     $exists = $src && is_file(public_path($src));
+    $webp = $exists ? preg_replace('/\.(jpe?g|png)$/i', '.webp', $src) : null;
+    $hasWebp = $webp && $webp !== $src && is_file(public_path($webp));
 @endphp
 
 @if ($exists)
-    <img src="{{ asset($src) }}" alt="{{ $alt }}" loading="lazy" {{ $attributes->merge(['class' => 'object-cover']) }}>
+    <picture class="contents">
+        @if ($hasWebp)
+            <source type="image/webp" srcset="{{ asset($webp) }}">
+        @endif
+        <img src="{{ asset($src) }}" alt="{{ $alt }}" loading="lazy" decoding="async" {{ $attributes->merge(['class' => 'object-cover']) }}>
+    </picture>
 @else
     <div {{ $attributes->merge(['class' => 'grid place-items-center bg-linear-to-br from-brand-100 to-brand-200 text-brand-400']) }} role="img" aria-label="{{ $alt }}">
         <svg class="size-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
