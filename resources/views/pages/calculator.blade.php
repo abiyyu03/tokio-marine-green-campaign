@@ -261,10 +261,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
                     <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 1 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
                         <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            @php
-                                $iconTransportasi = $step === 1 ? 'Transportasi - passed.png' : 'Transportasi - passed.png';
-                            @endphp
-                            <img src="{{ asset('asset/icon/' . $iconTransportasi) }}" alt="Transportasi Darat" class="size-7 sm:size-9 object-contain">
+                            <x-brand-icon set="step" name="car" :state="$step >= 1 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
                         </div>
                     </div>
                     <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 1 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Transportasi<br>darat</span>
@@ -274,10 +271,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
                     <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 2 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
                         <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            @php
-                                $iconListrik = $step === 2 ? 'listrik - passed.png' : ($step > 2 ? 'listrik - passed.png' : 'listrik - disabled.png');
-                            @endphp
-                            <img src="{{ asset('asset/icon/' . $iconListrik) }}" alt="Listrik Rumah" class="size-7 sm:size-9 object-contain">
+                            <x-brand-icon set="step" name="bolt" :state="$step >= 2 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
                         </div>
                     </div>
                     <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 2 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Listrik Rumah</span>
@@ -287,10 +281,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
                     <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 3 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
                         <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            @php
-                                $iconKonsumsi = $step === 3 ? 'konsumsi - active.png' : ($step > 3 ? 'konsumsi - passed.png' : 'konsumsi - disabled.png');
-                            @endphp
-                            <img src="{{ asset('asset/icon/' . $iconKonsumsi) }}" alt="Konsumsi & Sampah" class="size-7 sm:size-9 object-contain">
+                            <x-brand-icon set="step" name="recycle" :state="$step >= 3 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
                         </div>
                     </div>
                     <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 3 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Konsumsi &<br>Sampah</span>
@@ -320,12 +311,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             @php
                                 $transportOptions = [
-                                    ['id' => 'mobil_bensin', 'label' => 'Mobil Bensin (BBM)', 'img' => 'icon-mobil.png'],
-                                    ['id' => 'motor_bensin', 'label' => 'Motor Bensin (BBM)', 'img' => 'icon-motor.png'],
-                                    ['id' => 'mobil_listrik', 'label' => 'Mobil Listrik (EV)', 'img' => 'icon-mobilEv.png'],
-                                    ['id' => 'motor_listrik', 'label' => 'Motor Listrik (EV)', 'img' => 'icon-motorListrik.png'],
-                                    ['id' => 'umum', 'label' => 'Transportasi Umum', 'img' => 'icon-transum.png'],
-                                    ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'img' => 'icon-kombinasi.png'],
+                                    ['id' => 'mobil_bensin', 'label' => 'Mobil Bensin (BBM)', 'icon' => 'car'],
+                                    ['id' => 'motor_bensin', 'label' => 'Motor Bensin (BBM)', 'icon' => 'motorcycle'],
+                                    ['id' => 'mobil_listrik', 'label' => 'Mobil Listrik (EV)', 'icon' => 'car-electric'],
+                                    ['id' => 'motor_listrik', 'label' => 'Motor Listrik (EV)', 'icon' => 'motorcycle-electric'],
+                                    ['id' => 'umum', 'label' => 'Transportasi Umum', 'icon' => 'bus'],
+                                    ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'icon' => 'shuffle'],
                                 ];
                             @endphp
                             @foreach($transportOptions as $opt)
@@ -343,7 +334,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                         <div class="absolute size-10 sm:size-12 rounded-full bg-[#e6f4f1]"></div>
                                         
                                         {{-- Gambar Ikon (di-set lebih besar dari lingkaran agar menjorok keluar) --}}
-                                        <img src="{{ asset('asset/icon/' . $opt['img']) }}" alt="{{ $opt['label'] }}" class="relative z-10 w-16 sm:w-20 object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-105">
+                                        <x-brand-icon set="option" :name="$opt['icon']" class="relative z-10 w-16 sm:w-20 drop-shadow-sm transition-transform duration-300 group-hover:scale-105" />
                                     </div>
                                     
                                     {{-- Label Text dengan perubahan warna saat aktif --}}
