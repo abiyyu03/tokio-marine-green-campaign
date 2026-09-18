@@ -9,6 +9,14 @@ return [
         'empty' => 'Not answered yet',
     ],
 
+    // Call-to-action card above the answer summary while the wizard is being
+    // filled in — not a real score card (see score_card above, kept ready
+    // for once it's wired up to the real calculation).
+    'cta' => [
+        'heading' => "Let's Finish This Together!",
+        'body' => 'Answer every question so we can calculate your carbon footprint and give you the most relevant action recommendations.',
+    ],
+
     'summary' => [
         'heading' => 'Your Answers',
         'empty' => 'Your answers will appear here as you fill them in.',

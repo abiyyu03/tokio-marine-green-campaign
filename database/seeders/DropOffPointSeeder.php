@@ -7,12 +7,16 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 /**
- * Isi direktori "Temukan Rumah Pilah Terdekat!".
+ * Isi direktori "Temukan Rumah Pilah Terdekat!" — sekarang berisi dua jenis
+ * lokasi: 10 "Rumah Pilah" dari daftar awal, ditambah "Bank Sampah" dari
+ * tabel "DATA BANK SAMPAH" yang dikirim tim kampanye (17 September 2026).
+ * Keduanya sama-sama titik setor sampah terpilah, jadi dipakai model dan
+ * tabel yang sama, dibedakan lewat namanya masing-masing.
  *
- * Daftar lokasi dari tim kampanye (Jakarta Timur). Foto kartunya diambil dari
- * public/asset/images/rumah-pilah/ (nama berkasnya sesuai nama lokasi), lalu
- * dipotong 640x300 ke asset/images/opt/{slug}-640.jpg + .webp supaya ringan;
- * lokasi yang fotonya belum ada tetap tampil dengan gambar pengganti.
+ * Foto kartunya diambil dari public/asset/images/rumah-pilah/ (nama
+ * berkasnya sesuai nama lokasi), lalu dipotong 640x300 ke
+ * asset/images/opt/{slug}-640.jpg + .webp supaya ringan; lokasi yang
+ * fotonya belum ada tetap tampil dengan gambar pengganti.
  *
  * Jam operasional, telepon, dan nomor WhatsApp belum diberikan, jadi dibiarkan
  * null — kartu di halaman hasil menyembunyikan baris yang kosong, termasuk
@@ -38,6 +42,26 @@ class DropOffPointSeeder extends Seeder
             ['name' => 'Rumah Pilah RW 05 Kayu Putih', 'address' => 'Jl. Logam RW 05 Kayu Putih'],
             ['name' => 'Rumah Pilah Tunas Beringin', 'address' => 'Taman Segitiga Beringin Jl. Bunga Rampai Raya 17'],
             ['name' => 'Rumah Pilah Pedaengan', 'address' => 'Kp. Pedaengan Penggilingan Cakung'],
+
+            // "DATA BANK SAMPAH", tim kampanye (17 September 2026).
+            [
+                'name' => 'Bank Sampah Anugerah Alam Semesta (ASA)',
+                'address' => 'Gereja Santa Anna, Jl. Laut Arafuru Blok A7/7',
+                'city' => 'Duren Sawit, Jakarta Timur',
+            ],
+            [
+                'name' => 'Bank Sampah Gunung Emas',
+                'address' => 'Jl. Kamboja 3 No. 9A, RT.9/RW.11, Rawamangun, Kec. Pulo Gadung',
+                'city' => 'Jakarta Timur',
+            ],
+            [
+                'name' => 'Bank Sampah Harapan',
+                // Slipi ada di Jakarta Barat, beda kota dari lokasi lain di
+                // daftar ini — makanya city/province ditulis per baris,
+                // bukan disamaratakan seperti sebelumnya.
+                'address' => 'Jl. K.S. Tubun Raya',
+                'city' => 'Slipi, Jakarta Barat',
+            ],
         ];
 
         $slugs = [];
@@ -52,7 +76,7 @@ class DropOffPointSeeder extends Seeder
                     'name' => $data['name'],
                     'image_file' => "asset/images/opt/{$slug}-640.jpg",
                     'address' => $data['address'],
-                    'city' => 'Jakarta Timur',
+                    'city' => $data['city'] ?? 'Jakarta Timur',
                     'province' => 'DKI Jakarta',
                     'opening_hours' => null,
                     'phone' => null,

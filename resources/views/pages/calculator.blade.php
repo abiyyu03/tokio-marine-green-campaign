@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\EmissionFieldOption;
+use App\Models\Leads;
+use App\Models\Submission;
 use App\Services\CarbonCalculator;
-use Illuminate\Support\Facades\Auth;
+use App\Services\ResultEmailer;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -96,13 +99,6 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 'wasteSort' => 'required', 'gallonWater' => 'required',
                 'redMeat' => 'required', 'onlineShopping' => 'required'
             ]);
-
-            // Jika Step 3 lolos validasi, cek login
-            if (Auth::check()) {
-                // User sudah login, langsung generate hasil tanpa ke Step 4
-                return redirect()->route('calculator.result', ['uuid' => 'dummy-uuid']);
-            }
-            // Jika belum login, biarkan lanjut ke Step 4
         }
 
         if ($this->step < $this->totalSteps) {
@@ -119,6 +115,32 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         }
     }
 
+    /**
+     * Peta jawaban layar (id yang ditulis di atas) ke kode asli di
+     * emission_categories/emission_fields/emission_field_options. Wizard ini
+     * belum membaca opsi dari database (lihat catatan di kelas), jadi
+     * pemetaan manual ini WAJIB disamakan tangan setiap kali seeder berubah —
+     * baris nextStep() di atas sengaja divalidasi terhadap id yang sama.
+     *
+     * @return array<int, array{0: string, 1: string, 2: mixed}> [kode kategori, kode field, jawaban terpilih]
+     */
+    private function answerMap(): array
+    {
+        return [
+            ['transportasi', 'moda_transportasi', $this->mainTransport],
+            ['transportasi', 'jarak_harian', $this->distance],
+            ['listrik_rumah', 'penggunaan_ac', $this->acUsage],
+            ['listrik_rumah', 'tipe_kulkas', $this->fridgeType],
+            ['listrik_rumah', 'daya_terpasang', $this->powerLimit],
+            ['konsumsi_sampah', 'plastik_sekali_pakai', $this->plasticUsage],
+            ['konsumsi_sampah', 'tas_belanja', $this->shoppingBag],
+            ['konsumsi_sampah', 'pilah_sampah', $this->wasteSort],
+            ['konsumsi_sampah', 'galon_isi_ulang', $this->gallonWater],
+            ['konsumsi_sampah', 'daging_merah', $this->redMeat],
+            ['konsumsi_sampah', 'belanja_online', $this->onlineShopping],
+        ];
+    }
+
     // Submit khusus untuk Step Terakhir (Data Diri)
     public function submitLeads()
     {
@@ -129,48 +151,130 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             'consent' => 'accepted',
         ]);
 
-        // Disini panggil CarbonCalculator service lalu simpan ke DB..
+        // Jaga-jaga: kalau ada jawaban step 1-3 yang kosong (mis. sesi
+        // sempat berpindah), jangan bekukan submission kosong — balik ke
+        // step 1 daripada membuat hasil dengan skor 0 yang menyesatkan.
+        if (collect($this->answerMap())->contains(fn ($row) => blank($row[2]))) {
+            $this->step = 1;
+            $this->addError('form', __('calculator.validation.incomplete'));
+
+            return null;
+        }
+
+        $submission = Submission::create([
+            'locale' => app()->getLocale(),
+            'status' => 'draft',
+            'current_step' => $this->totalSteps,
+        ]);
+
+        foreach ($this->answerMap() as [$categoryCode, $fieldCode, $optionCode]) {
+            $option = EmissionFieldOption::query()
+                ->where('code', $optionCode)
+                ->whereHas('field', fn ($field) => $field->where('code', $fieldCode)
+                    ->whereHas('category', fn ($category) => $category->where('code', $categoryCode)))
+                ->with('field')
+                ->first();
+
+            // Kode tidak ketemu berarti answerMap() di atas sudah tidak sinkron
+            // dengan seeder — dicatat ke log supaya ketahuan, submission tetap
+            // lanjut dengan baris yang berhasil dipetakan saja.
+            if (! $option) {
+                report(new \RuntimeException("Opsi kalkulator tidak ditemukan: {$categoryCode}.{$fieldCode}.{$optionCode}"));
+
+                continue;
+            }
+
+            $submission->values()->create([
+                'emission_category_id' => $option->field->emission_category_id,
+                'emission_field_id' => $option->emission_field_id,
+                'emission_field_option_id' => $option->id,
+                'points' => $option->points,
+                'score_multiplier' => $option->score_multiplier,
+                'value_numeric' => $option->numeric_value,
+                'kg_co2e_year' => $option->kg_co2e_year,
+            ]);
+        }
+
+        $lead = Leads::create([
+            'name' => $this->name,
+            'email' => $this->email,
+            'whatsapp_number' => $this->normalisedWhatsapp(),
+            'dob' => $this->dob ?: null,
+            'gender' => $this->gender ?: null,
+            'intent' => $this->intent ?: null,
+            'locale' => app()->getLocale(),
+            'consented_at' => now(),
+            'consent_version' => config('carbon-calculator.consent_version'),
+        ]);
+
+        $submission->forceFill([
+            'lead_id' => $lead->id,
+            'ip_address' => request()->ip(),
+            'user_agent' => substr((string) request()->userAgent(), 0, 255),
+        ])->save();
+
+        app(CarbonCalculator::class)->finalise($submission->fresh(['values.field', 'values.option']));
+
+        // ResultEmailer menelan kegagalannya sendiri (SMTP bermasalah tidak
+        // boleh membatalkan hasil yang sudah tersimpan) — lihat kelas itu.
+        app(ResultEmailer::class)->send($submission->fresh('lead'));
+
         session()->forget(self::DRAFT_CALC_KEY);
 
-        // Simulasi redirect ke halaman hasil (Ganti dengan UUID asli dari DB nantinya)
-        return redirect()->route('calculator.result', ['uuid' => 'dummy-uuid']);
+        return redirect()->route('calculator.result', ['uuid' => $submission->uuid]);
+    }
+
+    /** "08123456789" dan "8123456789" sama-sama disimpan sebagai "628123456789". */
+    private function normalisedWhatsapp(): string
+    {
+        $digits = preg_replace('/\D+/', '', $this->whatsapp) ?? '';
+
+        if (str_starts_with($digits, '62')) {
+            return $digits;
+        }
+
+        return '62'.ltrim($digits, '0');
     }
 
     // Helper untuk menampilkan label di Summary Box
     public function getSummaryLabel($type, $value)
     {
+        // Key di tiap peta ini HARUS sama dengan kode emission_field_options
+        // di database (lihat answerMap()) — bukan sekadar label tampilan.
         $labels = [
             'transport' => [
-                'mobil_bensin' => 'Mobil Bensin', 'motor_bensin' => 'Motor Bensin',
-                'mobil_listrik' => 'Mobil Listrik (EV)', 'motor_listrik' => 'Motor Listrik (EV)',
-                'umum' => 'Transportasi Umum', 'kombinasi' => 'Kombinasi Transportasi'
+                'mobil_bbm' => 'Mobil Bensin', 'motor_bbm' => 'Motor Bensin',
+                'mobil_ev' => 'Mobil Listrik (EV)', 'motor_ev' => 'Motor Listrik (EV)',
+                'transportasi_umum' => 'Transportasi Umum', 'kombinasi' => 'Kombinasi Transportasi'
             ],
             'distance' => [
-                'less_10' => '< 10 km / hari', '10_25' => '10 – 25 km / hari',
-                '26_50' => '26 – 50 km / hari', 'more_50' => '> 50 km / hari'
+                'lt_10' => '< 10 km / hari', '10_25' => '10 – 25 km / hari',
+                '26_50' => '26 – 50 km / hari', 'gt_50' => '> 50 km / hari'
             ],
             'ac' => [
-                'ac_none' => 'Tidak Menggunakan AC', 
-                'ac_1_less_5_std' => '1 Unit (< 5 jam / hari) - Standar',
-                'ac_1_more_8_std' => '1 Unit (> 8 jam / hari) - Standar',
-                'ac_1_less_5_inv' => '1 Unit (< 5 jam / hari) - Inverter',
-                'ac_1_more_8_inv' => '1 Unit (> 8 jam / hari) - Inverter',
-                'ac_more_1' => 'Lebih dari 1 Unit AC'
+                'tidak_ada' => 'Tidak Menggunakan AC',
+                'satu_unit_5jam_standar' => '1 Unit (< 5 jam / hari) - Standar',
+                'satu_unit_8jam_standar' => '1 Unit (> 8 jam / hari) - Standar',
+                'satu_unit_5jam_inverter' => '1 Unit (< 5 jam / hari) - Inverter',
+                'satu_unit_8jam_inverter' => '1 Unit (> 8 jam / hari) - Inverter',
+                'dua_unit' => '2 Unit AC (Standar/Malam Hari)',
+                'tiga_unit_atau_intensif' => '≥ 3 Unit AC atau Pemakaian Intensif'
             ],
             'fridge' => [
-                'fridge_none' => 'Tidak Ada Kulkas', 
-                'fridge_std' => 'Kulkas Standar (Non-Inverter)',
-                'fridge_inv' => 'Kulkas Hemat Energi (Inverter)'
+                'tidak_ada' => 'Tidak Ada Kulkas',
+                'standar' => 'Kulkas Standar (Non-Inverter)',
+                'inverter' => 'Kulkas Hemat Energi (Inverter)'
             ],
             'power' => [
-                'va_900' => '≤ 900 VA', 'va_1300' => '1300 VA', 'va_2200' => '2200 VA'
+                'lte_900' => '≤ 900 VA', '1300' => '1300 VA', '2200' => '2200 VA',
+                '3500_5500' => '3.500 VA – 5.500 VA', 'gte_6600' => '≥ 6.600 VA'
             ],
             'plastic' => [
                 'jarang' => 'Jarang (0-2x / minggu)', 'sedang' => 'Sedang (3-5x / minggu)',
                 'sering' => 'Sering (>5x / minggu)'
             ],
             'bag' => [
-                'selalu' => 'Ya, Selalu', 'kadang' => 'Kadang-kadang', 'tidak' => 'Tidak Pernah'
+                'selalu' => 'Ya, Selalu', 'kadang' => 'Kadang-kadang', 'tidak_pernah' => 'Tidak Pernah'
             ],
             'sort' => [
                 'ya' => 'Ya, Dipilah', 'tidak' => 'Tidak Dipilah'
@@ -183,7 +287,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 'sering' => 'Sering (>5x / minggu)'
             ],
             'shopping' => [
-                'less_5' => '≤ 5 kali / bulan', 'more_5' => '> 5 kali / bulan'
+                'lte_5' => '≤ 5 kali / bulan', 'gt_5' => '> 5 kali / bulan'
             ],
         ];
         return $labels[$type][$value] ?? '-';
@@ -320,12 +424,14 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Apa moda transportasi utama yang kamu gunakan sehari-hari?</legend>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             @php
+                                // id di sini HARUS sama dengan kode emission_field_options
+                                // (field moda_transportasi) — lihat answerMap() di atas.
                                 $transportOptions = [
-                                    ['id' => 'mobil_bensin', 'label' => 'Mobil Bensin (BBM)', 'icon' => 'car'],
-                                    ['id' => 'motor_bensin', 'label' => 'Motor Bensin (BBM)', 'icon' => 'motorcycle'],
-                                    ['id' => 'mobil_listrik', 'label' => 'Mobil Listrik (EV)', 'icon' => 'car-electric'],
-                                    ['id' => 'motor_listrik', 'label' => 'Motor Listrik (EV)', 'icon' => 'motorcycle-electric'],
-                                    ['id' => 'umum', 'label' => 'Transportasi Umum', 'icon' => 'bus'],
+                                    ['id' => 'mobil_bbm', 'label' => 'Mobil Bensin (BBM)', 'icon' => 'car'],
+                                    ['id' => 'motor_bbm', 'label' => 'Motor Bensin (BBM)', 'icon' => 'motorcycle'],
+                                    ['id' => 'mobil_ev', 'label' => 'Mobil Listrik (EV)', 'icon' => 'car-electric'],
+                                    ['id' => 'motor_ev', 'label' => 'Motor Listrik (EV)', 'icon' => 'motorcycle-electric'],
+                                    ['id' => 'transportasi_umum', 'label' => 'Transportasi Umum', 'icon' => 'bus'],
                                     ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'icon' => 'shuffle'],
                                 ];
                             @endphp
@@ -358,11 +464,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Berapa estimasi total jarak yang kamu tempuh dalam sehari?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
+                                // id di sini HARUS sama dengan kode emission_field_options
+                                // (field jarak_harian) — lihat answerMap() di atas.
                                 $distOptions = [
-                                    ['id' => 'less_10', 'label' => 'Kurang dari 10 km / hari'],
+                                    ['id' => 'lt_10', 'label' => 'Kurang dari 10 km / hari'],
                                     ['id' => '10_25', 'label' => '10 – 25 km / hari'],
                                     ['id' => '26_50', 'label' => '26 – 50 km / hari'],
-                                    ['id' => 'more_50', 'label' => 'Lebih dari 50 km / hari'],
+                                    ['id' => 'gt_50', 'label' => 'Lebih dari 50 km / hari'],
                                 ];
                             @endphp
                             @foreach($distOptions as $opt)
@@ -388,12 +496,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $acOptions = [
-                                    ['id' => 'ac_none', 'label' => 'Tidak Menggunakan AC'],
-                                    ['id' => 'ac_1_less_5_std', 'label' => '1 Unit (< 5 jam / hari) - Standar'],
-                                    ['id' => 'ac_1_more_8_std', 'label' => '1 Unit (> 8 jam / hari) - Standar'],
-                                    ['id' => 'ac_1_less_5_inv', 'label' => '1 Unit (< 5 jam / hari) - Inverter'],
-                                    ['id' => 'ac_1_more_8_inv', 'label' => '1 Unit (> 8 jam / hari) - Inverter'],
-                                    ['id' => 'ac_more_1', 'label' => 'Lebih dari 1 Unit AC'],
+                                    ['id' => 'tidak_ada', 'label' => 'Tidak Menggunakan AC'],
+                                    ['id' => 'satu_unit_5jam_standar', 'label' => '1 Unit (< 5 jam / hari) - Standar'],
+                                    ['id' => 'satu_unit_8jam_standar', 'label' => '1 Unit (> 8 jam / hari) - Standar'],
+                                    ['id' => 'satu_unit_5jam_inverter', 'label' => '1 Unit (< 5 jam / hari) - Inverter'],
+                                    ['id' => 'satu_unit_8jam_inverter', 'label' => '1 Unit (> 8 jam / hari) - Inverter'],
+                                    ['id' => 'dua_unit', 'label' => '2 Unit AC (Standar/Malam Hari)'],
+                                    ['id' => 'tiga_unit_atau_intensif', 'label' => '≥ 3 Unit AC atau Pemakaian Intensif'],
                                 ];
                             @endphp
                             @foreach($acOptions as $opt)
@@ -413,9 +522,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $fridgeOptions = [
-                                    ['id' => 'fridge_none', 'label' => 'Tidak Ada Kulkas'],
-                                    ['id' => 'fridge_std', 'label' => 'Kulkas Standar (Non-Inverter)'],
-                                    ['id' => 'fridge_inv', 'label' => 'Kulkas Hemat Energi (Inverter)'],
+                                    ['id' => 'tidak_ada', 'label' => 'Tidak Ada Kulkas'],
+                                    ['id' => 'standar', 'label' => 'Kulkas Standar (Non-Inverter)'],
+                                    ['id' => 'inverter', 'label' => 'Kulkas Hemat Energi (Inverter)'],
                                 ];
                             @endphp
                             @foreach($fridgeOptions as $opt)
@@ -435,9 +544,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $powerOptions = [
-                                    ['id' => 'va_900', 'label' => '≤ 900 VA'],
-                                    ['id' => 'va_1300', 'label' => '1300 VA'],
-                                    ['id' => 'va_2200', 'label' => '2200 VA'],
+                                    ['id' => 'lte_900', 'label' => '≤ 900 VA'],
+                                    ['id' => '1300', 'label' => '1300 VA'],
+                                    ['id' => '2200', 'label' => '2200 VA'],
+                                    ['id' => '3500_5500', 'label' => '3.500 VA – 5.500 VA'],
+                                    ['id' => 'gte_6600', 'label' => '≥ 6.600 VA'],
                                 ];
                             @endphp
                             @foreach($powerOptions as $opt)
@@ -460,11 +571,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     @foreach([
                         ['model'=>'plasticUsage', 'label'=>'Seberapa sering kamu menggunakan plastik sekali pakai?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-2x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (3-5x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
-                        ['model'=>'shoppingBag', 'label'=>'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'ops'=>[['id'=>'selalu', 'label'=>'Ya, Selalu'], ['id'=>'kadang', 'label'=>'Kadang-kadang'], ['id'=>'tidak', 'label'=>'Tidak Pernah']]],
+                        ['model'=>'shoppingBag', 'label'=>'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'ops'=>[['id'=>'selalu', 'label'=>'Ya, Selalu'], ['id'=>'kadang', 'label'=>'Kadang-kadang'], ['id'=>'tidak_pernah', 'label'=>'Tidak Pernah']]],
                         ['model'=>'wasteSort', 'label'=>'Apakah kamu memilah sampah organik dan anorganik di rumah?', 'ops'=>[['id'=>'ya', 'label'=>'Ya'], ['id'=>'tidak', 'label'=>'Tidak']]],
                         ['model'=>'gallonWater', 'label'=>'Apakah kamu menggunakan air galon isi ulang untuk kebutuhan minum?', 'ops'=>[['id'=>'ya', 'label'=>'Ya'], ['id'=>'tidak', 'label'=>'Tidak']]],
                         ['model'=>'redMeat', 'label'=>'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-1x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (2-4x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
-                        ['model'=>'onlineShopping', 'label'=>'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops'=>[['id'=>'less_5', 'label'=>'≤ 5 kali / bulan'], ['id'=>'more_5', 'label'=>'> 5 kali / bulan']]]
+                        ['model'=>'onlineShopping', 'label'=>'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops'=>[['id'=>'lte_5', 'label'=>'≤ 5 kali / bulan'], ['id'=>'gt_5', 'label'=>'> 5 kali / bulan']]]
                     ] as $index => $q)
                         <fieldset class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4">
                             <legend class="text-sm sm:text-base font-bold text-slate-800 mb-3">{{ $q['label'] }}</legend>
@@ -576,7 +687,17 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
             {{-- KOLOM KANAN: PANEL SKOR & SUMMARY (Sticky) --}}
             <aside class="sticky top-24 space-y-4">
-                
+
+                {{-- Kartu ajakan. Menempati slot yang sama dengan kartu "Skor
+                     Kamu" yang lama (rounded-2xl, lebih besar dari kartu
+                     ringkasan di bawahnya) tapi isinya cuma kalimat ajakan —
+                     tidak ada angka apa pun yang bisa menggoda peserta
+                     berhenti di tengah jalan atau menjawab demi angka bagus. --}}
+                <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100 text-center">
+                    <h3 class="text-sm font-bold text-slate-900">{{ __('calculator.cta.heading') }}</h3>
+                    <p class="mt-2 text-xs leading-relaxed text-slate-500">{{ __('calculator.cta.body') }}</p>
+                </div>
+
                 {{-- Ringkasan Jawaban. Menggantikan gauge skor dummy yang sempat
                      dipasang di rewrite kemarin — angkanya hardcoded per step
                      (25/46/71), bukan hasil hitungan sungguhan, jadi berisiko

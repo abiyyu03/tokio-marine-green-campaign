@@ -9,6 +9,14 @@ return [
         'empty' => 'Belum Diisi',
     ],
 
+    // Kartu ajakan di atas Ringkasan Jawaban selama wizard diisi — bukan
+    // kartu skor sungguhan (lihat score_card di atas, disiapkan untuk versi
+    // yang sudah tersambung ke perhitungan asli).
+    'cta' => [
+        'heading' => 'Yuk, Selesaikan Sampai Akhir!',
+        'body' => 'Lengkapi semua pertanyaan supaya kami bisa hitung jejak karbon dan kasih rekomendasi aksi yang paling sesuai buat kamu.',
+    ],
+
     'summary' => [
         'heading' => 'Ringkasan Jawaban',
         'empty' => 'Jawabanmu akan muncul di sini begitu kamu mulai mengisi.',

@@ -340,7 +340,11 @@ new class extends Component
                     <h3 class="text-center text-sm font-bold text-slate-900">{{ __('result.score_card.title') }}</h3>
 
                     <div class="relative mx-auto mt-6 flex size-48 items-center justify-center">
-                        <svg class="size-full -rotate-90" viewBox="0 0 36 36">
+                        {{-- Path lingkarannya sudah dimulai dari titik jam 12
+                             (M18 2.0845 = tepat di atas titik pusat), jadi SVG
+                             ini sengaja TIDAK dirotasi -90° — merotasinya
+                             malah menggeser titik mulainya ke jam 9. --}}
+                        <svg class="size-full" viewBox="0 0 36 36">
                             <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="100, 100"/>
                             <path stroke="{{ $tier?->color ?? '#cbd5e1' }}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-dasharray="{{ max($report->score(), 2) }}, 100" stroke-linecap="round"/>
                         </svg>
