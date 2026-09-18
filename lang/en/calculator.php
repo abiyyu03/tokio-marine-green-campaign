@@ -11,10 +11,25 @@ return [
 
     // Call-to-action card above the answer summary while the wizard is being
     // filled in — not a real score card (see score_card above, kept ready
-    // for once it's wired up to the real calculation).
+    // for once it's wired up to the real calculation). Content changes per
+    // step, one key per category (+ "personal" for the personal-data step).
     'cta' => [
-        'heading' => "Let's Finish This Together!",
-        'body' => 'Answer every question so we can calculate your carbon footprint and give you the most relevant action recommendations.',
+        'transportasi' => [
+            'heading' => 'Calculating Your Transport Footprint! 🚗',
+            'body' => 'Your vehicle and daily distance matter a lot for emissions. 3 more steps to see your result!',
+        ],
+        'listrik_rumah' => [
+            'heading' => 'Calculating Your Home Energy! ⚡',
+            'body' => 'Electricity use hides a lot of emissions. 2 more steps to see your result!',
+        ],
+        'konsumsi_sampah' => [
+            'heading' => 'Calculating Your Lifestyle! ♻️',
+            'body' => 'Your consumption and waste habits shape your footprint too. 1 more step to see your result!',
+        ],
+        'personal' => [
+            'heading' => 'Your Report Is Ready to Go! 🎉',
+            'body' => 'Your lifestyle data is 100% complete! Add your name & email to reveal your full report.',
+        ],
     ],
 
     'summary' => [

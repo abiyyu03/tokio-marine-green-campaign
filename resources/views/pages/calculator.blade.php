@@ -692,10 +692,27 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                      Kamu" yang lama (rounded-2xl, lebih besar dari kartu
                      ringkasan di bawahnya) tapi isinya cuma kalimat ajakan —
                      tidak ada angka apa pun yang bisa menggoda peserta
-                     berhenti di tengah jalan atau menjawab demi angka bagus. --}}
-                <div class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100 text-center">
-                    <h3 class="text-sm font-bold text-slate-900">{{ __('calculator.cta.heading') }}</h3>
-                    <p class="mt-2 text-xs leading-relaxed text-slate-500">{{ __('calculator.cta.body') }}</p>
+                     berhenti di tengah jalan atau menjawab demi angka bagus.
+                     Isi dan warnanya berganti per step, warnanya mengikuti
+                     accent_color kategori yang sama (transportasi #F59E0B,
+                     listrik_rumah #10B981, konsumsi_sampah #EF4444 — lihat
+                     CalculatorSchemaSeeder), step 4 pakai emas krn tidak
+                     terikat kategori manapun. --}}
+                @php
+                    $ctaByStep = [
+                        1 => ['accent' => '#F59E0B', 'key' => 'transportasi'],
+                        2 => ['accent' => '#10B981', 'key' => 'listrik_rumah'],
+                        3 => ['accent' => '#EF4444', 'key' => 'konsumsi_sampah'],
+                        4 => ['accent' => '#F59E0B', 'key' => 'personal'],
+                    ][$step];
+                @endphp
+                <div
+                    class="rounded-2xl p-6 border text-center"
+                    style="background-color: {{ $ctaByStep['accent'] }}0F; border-color: {{ $ctaByStep['accent'] }}33;"
+                    wire:key="calculator-cta-{{ $step }}"
+                >
+                    <h3 class="text-sm font-bold" style="color: {{ $ctaByStep['accent'] }}">{{ __('calculator.cta.'.$ctaByStep['key'].'.heading') }}</h3>
+                    <p class="mt-2 text-xs leading-relaxed" style="color: {{ $ctaByStep['accent'] }}">{{ __('calculator.cta.'.$ctaByStep['key'].'.body') }}</p>
                 </div>
 
                 {{-- Ringkasan Jawaban. Menggantikan gauge skor dummy yang sempat
