@@ -34,3 +34,45 @@ window.confirmCalculatorExit = (link) => {
         }
     });
 };
+
+// Wizard kalkulator: tombol "Lanjut"/"Kembali" ada di bagian bawah halaman,
+// sedangkan judul step berikutnya dan kotak pesan error ada di paling atas.
+// Tanpa penyesuaian scroll, di mobile user mendarat di tengah-tengah dan
+// harus menggulir manual ke atas — atau, saat validasi gagal, mengira
+// tombolnya tidak bereaksi karena pesannya tidak terlihat.
+// Event-nya dikirim dari resources/views/pages/calculator.blade.php.
+const calculatorScrollBehavior = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
+document.addEventListener('livewire:init', () => {
+    // Pindah step: kembali ke paling atas (judul + progress bar).
+    // requestAnimationFrame dipakai supaya gulirannya berjalan setelah
+    // Livewire selesai mengganti DOM step.
+    window.Livewire.on('calculator-step-changed', () => {
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: calculatorScrollBehavior() });
+        });
+    });
+
+    // Validasi gagal: step tidak berpindah, jadi yang dituju adalah pertanyaan
+    // pertama yang masih kosong — dipilih berdasarkan urutan tampil di halaman,
+    // bukan urutan aturan validasi. Kalau penandanya tidak ketemu, jatuh ke
+    // kotak ringkasan error di atas form.
+    window.Livewire.on('calculator-validation-failed', (payload) => {
+        const data = Array.isArray(payload) ? payload[0] : payload;
+        const failed = new Set(data?.fields ?? []);
+
+        requestAnimationFrame(() => {
+            const target =
+                [...document.querySelectorAll('[data-calc-field]')]
+                    .find((el) => failed.has(el.dataset.calcField))
+                ?? document.querySelector('[data-calc-error-summary]');
+
+            if (! target) {
+                return;
+            }
+
+            target.scrollIntoView({ behavior: calculatorScrollBehavior(), block: 'center' });
+        });
+    });
+});

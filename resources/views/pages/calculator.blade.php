@@ -90,11 +90,11 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     {
         // Validasi per step sebelum pindah
         if ($this->step == 1) {
-            $this->validate(['mainTransport' => 'required', 'distance' => 'required']);
+            $this->validateStep(['mainTransport' => 'required', 'distance' => 'required']);
         } elseif ($this->step == 2) {
-            $this->validate(['acUsage' => 'required', 'fridgeType' => 'required', 'powerLimit' => 'required']);
+            $this->validateStep(['acUsage' => 'required', 'fridgeType' => 'required', 'powerLimit' => 'required']);
         } elseif ($this->step == 3) {
-            $this->validate([
+            $this->validateStep([
                 'plasticUsage' => 'required', 'shoppingBag' => 'required',
                 'wasteSort' => 'required', 'gallonWater' => 'required',
                 'redMeat' => 'required', 'onlineShopping' => 'required'
@@ -104,6 +104,25 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         if ($this->step < $this->totalSteps) {
             $this->step++;
             $this->updated();
+            $this->dispatch('calculator-step-changed');
+        }
+    }
+
+    /**
+     * Sama seperti validate(), hanya saja nama field yang gagal ikut dikirim ke
+     * browser. Tanpa ini posisi scroll tertinggal di tombol bawah sementara
+     * pesan errornya ada di atas form — di mobile tombolnya terlihat seperti
+     * tidak bereaksi. Lihat listener 'calculator-validation-failed' di
+     * resources/js/app.js.
+     */
+    private function validateStep(array $rules): void
+    {
+        try {
+            $this->validate($rules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('calculator-validation-failed', fields: $e->validator->errors()->keys());
+
+            throw $e;
         }
     }
 
@@ -112,6 +131,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         if ($this->step > 1) {
             $this->step--;
             $this->updated();
+            $this->dispatch('calculator-step-changed');
         }
     }
 
@@ -144,7 +164,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     // Submit khusus untuk Step Terakhir (Data Diri)
     public function submitLeads()
     {
-        $this->validate([
+        $this->validateStep([
             'name' => 'required',
             'email' => 'required|email',
             'whatsapp' => 'required',
@@ -157,6 +177,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         if (collect($this->answerMap())->contains(fn ($row) => blank($row[2]))) {
             $this->step = 1;
             $this->addError('form', __('calculator.validation.incomplete'));
+            $this->dispatch('calculator-step-changed');
 
             return null;
         }
@@ -411,7 +432,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             <div class="{{ $step == 4 ? 'rounded-2xl bg-white p-6 shadow-sm border border-slate-100' : 'space-y-6' }}">
                 
                 @if ($errors->any())
-                    <div class="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 mb-6">
+                    <div data-calc-error-summary class="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 mb-6">
                         Mohon lengkapi data yang masih kosong sebelum melanjutkan.
                     </div>
                 @endif
@@ -420,7 +441,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 1)
                     <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Transportasi</h2>
 
-                    <fieldset class="space-y-4">
+                    <fieldset data-calc-field="mainTransport" class="space-y-4">
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Apa moda transportasi utama yang kamu gunakan sehari-hari?</legend>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             @php
@@ -460,7 +481,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset class="pt-6 space-y-4">
+                    <fieldset data-calc-field="distance" class="pt-6 space-y-4">
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Berapa estimasi total jarak yang kamu tempuh dalam sehari?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
@@ -491,7 +512,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 2)
                     <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Listrik Rumah</h2>
 
-                    <fieldset class="space-y-4">
+                    <fieldset data-calc-field="acUsage" class="space-y-4">
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Bagaimana penggunaan Air Conditioner (AC) di rumahmu?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
@@ -517,7 +538,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset class="pt-6 space-y-4">
+                    <fieldset data-calc-field="fridgeType" class="pt-6 space-y-4">
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Tipe kulkas apa yang digunakan di rumahmu?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
@@ -539,7 +560,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset class="pt-6 space-y-4">
+                    <fieldset data-calc-field="powerLimit" class="pt-6 space-y-4">
                         <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Berapa batas daya listrik (VA) terpasang di rumahmu?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
@@ -577,7 +598,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         ['model'=>'redMeat', 'label'=>'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-1x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (2-4x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
                         ['model'=>'onlineShopping', 'label'=>'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops'=>[['id'=>'lte_5', 'label'=>'≤ 5 kali / bulan'], ['id'=>'gt_5', 'label'=>'> 5 kali / bulan']]]
                     ] as $index => $q)
-                        <fieldset class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4">
+                        <fieldset data-calc-field="{{ $q['model'] }}" class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4">
                             <legend class="text-sm sm:text-base font-bold text-slate-800 mb-3">{{ $q['label'] }}</legend>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 @foreach($q['ops'] as $opt)
@@ -604,13 +625,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 1: Nama & Email --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset>
+                        <fieldset data-calc-field="name">
                             <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">Nama Lengkap</label>
                             <input type="text" wire:model="name" id="name" placeholder="Contoh: Andi Pratama" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
                             @error('name') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
                         </fieldset>
 
-                        <fieldset>
+                        <fieldset data-calc-field="email">
                             <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">Alamat Email aktif</label>
                             <input type="email" wire:model="email" id="email" placeholder="contoh@email.com" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
                             @error('email') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
@@ -619,7 +640,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset>
+                        <fieldset data-calc-field="whatsapp">
                             <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">Nomor WhatsApp</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
@@ -672,7 +693,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
-                    <fieldset>
+                    <fieldset data-calc-field="consent">
                         <div class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <input id="consent" type="checkbox" wire:model="consent" class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
