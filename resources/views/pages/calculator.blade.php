@@ -441,8 +441,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 1)
                     <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Transportasi</h2>
 
-                    <fieldset data-calc-field="mainTransport" class="space-y-4">
-                        <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Apa moda transportasi utama yang kamu gunakan sehari-hari?</legend>
+                    <fieldset data-calc-field="mainTransport" class="space-y-4 @error('mainTransport') [&_label]:border-red-300 @enderror">
+                        <legend class="text-sm sm:text-base font-bold @error('mainTransport') text-red-600 @else text-slate-800 @enderror mb-4">Apa moda transportasi utama yang kamu gunakan sehari-hari?
+                            @error('mainTransport')
+                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                            @enderror
+                        </legend>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                             @php
                                 // id di sini HARUS sama dengan kode emission_field_options
@@ -481,8 +485,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="distance" class="pt-6 space-y-4">
-                        <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Berapa estimasi total jarak yang kamu tempuh dalam sehari?</legend>
+                    <fieldset data-calc-field="distance" class="pt-6 space-y-4 @error('distance') [&_label]:border-red-300 @enderror">
+                        <legend class="text-sm sm:text-base font-bold @error('distance') text-red-600 @else text-slate-800 @enderror mb-4">Berapa estimasi total jarak yang kamu tempuh dalam sehari?
+                            @error('distance')
+                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                            @enderror
+                        </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 // id di sini HARUS sama dengan kode emission_field_options
@@ -512,8 +520,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 2)
                     <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Listrik Rumah</h2>
 
-                    <fieldset data-calc-field="acUsage" class="space-y-4">
-                        <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Bagaimana penggunaan Air Conditioner (AC) di rumahmu?</legend>
+                    <fieldset data-calc-field="acUsage" class="space-y-4 @error('acUsage') [&_label]:border-red-300 @enderror">
+                        <legend class="text-sm sm:text-base font-bold @error('acUsage') text-red-600 @else text-slate-800 @enderror mb-4">Bagaimana penggunaan Air Conditioner (AC) di rumahmu?
+                            @error('acUsage')
+                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                            @enderror
+                        </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $acOptions = [
@@ -538,8 +550,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="fridgeType" class="pt-6 space-y-4">
-                        <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Tipe kulkas apa yang digunakan di rumahmu?</legend>
+                    <fieldset data-calc-field="fridgeType" class="pt-6 space-y-4 @error('fridgeType') [&_label]:border-red-300 @enderror">
+                        <legend class="text-sm sm:text-base font-bold @error('fridgeType') text-red-600 @else text-slate-800 @enderror mb-4">Tipe kulkas apa yang digunakan di rumahmu?
+                            @error('fridgeType')
+                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                            @enderror
+                        </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $fridgeOptions = [
@@ -560,8 +576,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="powerLimit" class="pt-6 space-y-4">
-                        <legend class="text-sm sm:text-base font-bold text-slate-800 mb-4">Berapa batas daya listrik (VA) terpasang di rumahmu?</legend>
+                    <fieldset data-calc-field="powerLimit" class="pt-6 space-y-4 @error('powerLimit') [&_label]:border-red-300 @enderror">
+                        <legend class="text-sm sm:text-base font-bold @error('powerLimit') text-red-600 @else text-slate-800 @enderror mb-4">Berapa batas daya listrik (VA) terpasang di rumahmu?
+                            @error('powerLimit')
+                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                            @enderror
+                        </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             @php
                                 $powerOptions = [
@@ -598,8 +618,12 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         ['model'=>'redMeat', 'label'=>'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-1x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (2-4x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
                         ['model'=>'onlineShopping', 'label'=>'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops'=>[['id'=>'lte_5', 'label'=>'≤ 5 kali / bulan'], ['id'=>'gt_5', 'label'=>'> 5 kali / bulan']]]
                     ] as $index => $q)
-                        <fieldset data-calc-field="{{ $q['model'] }}" class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4">
-                            <legend class="text-sm sm:text-base font-bold text-slate-800 mb-3">{{ $q['label'] }}</legend>
+                        <fieldset data-calc-field="{{ $q['model'] }}" class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4 @error($q['model']) [&_label]:border-red-300 @enderror">
+                            <legend class="text-sm sm:text-base font-bold @error($q['model']) text-red-600 @else text-slate-800 @enderror mb-3">{{ $q['label'] }}
+                                @error($q['model'])
+                                    <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                @enderror
+                            </legend>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 @foreach($q['ops'] as $opt)
                                 <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
@@ -625,28 +649,28 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 1: Nama & Email --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="name">
+                        <fieldset data-calc-field="name" class="@error('name') [&_input]:border [&_input]:border-red-400 @enderror">
                             <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">Nama Lengkap</label>
                             <input type="text" wire:model="name" id="name" placeholder="Contoh: Andi Pratama" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('name') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            @error('name') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
 
-                        <fieldset data-calc-field="email">
+                        <fieldset data-calc-field="email" class="@error('email') [&_input]:border [&_input]:border-red-400 @enderror">
                             <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">Alamat Email aktif</label>
                             <input type="email" wire:model="email" id="email" placeholder="contoh@email.com" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('email') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            @error('email') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="whatsapp">
+                        <fieldset data-calc-field="whatsapp" class="@error('whatsapp') [&_input]:border [&_input]:border-red-400 @enderror">
                             <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">Nomor WhatsApp</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
                                 <input type="text" wire:model="whatsapp" id="whatsapp" placeholder="8123456789" class="block w-full rounded-xl border-slate-200 pl-14 pr-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
                             </div>
-                            @error('whatsapp') <span class="text-xs text-red-600 mt-1">{{ $message }}</span> @enderror
+                            @error('whatsapp') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
                         </fieldset>
 
                         <fieldset>
@@ -693,7 +717,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
-                    <fieldset data-calc-field="consent">
+                    <fieldset data-calc-field="consent" class="@error('consent') [&>div]:border-red-300 [&>div]:bg-red-50/60 @enderror">
                         <div class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <input id="consent" type="checkbox" wire:model="consent" class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">

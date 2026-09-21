@@ -85,5 +85,6 @@ return [
     'validation' => [
         'form' => 'A few details still need fixing:',
         'incomplete' => 'Please answer every question in this step first.',
+        'unanswered' => 'This question still needs an answer.',
     ],
 ];

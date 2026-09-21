@@ -85,5 +85,6 @@ return [
     'validation' => [
         'form' => 'Ada isian yang perlu diperbaiki dulu:',
         'incomplete' => 'Lengkapi semua pertanyaan di langkah ini dulu ya.',
+        'unanswered' => 'Pertanyaan ini belum dijawab.',
     ],
 ];
