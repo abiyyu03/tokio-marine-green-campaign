@@ -63,9 +63,22 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         }
     }
 
-    public function updated()
+    /**
+     * Livewire memanggil hook ini dengan nama properti yang berubah; dipanggil
+     * juga tanpa argumen dari nextStep()/previousStep() sekadar untuk menyimpan
+     * draft, karena itu $property punya nilai bawaan.
+     */
+    public function updated($property = null)
     {
         session([self::DRAFT_CALC_KEY => $this->allInput()]);
+
+        // Begitu pertanyaannya dijawab, penanda merahnya langsung hilang —
+        // tidak perlu menunggu klik "Lanjut" berikutnya. Nilai yang masih
+        // kosong (atau consent yang dilepas centangnya) sengaja dibiarkan
+        // bertanda supaya tidak menyembunyikan isian yang memang belum beres.
+        if ($property !== null && property_exists($this, $property) && $this->{$property}) {
+            $this->resetValidation($property);
+        }
     }
 
     private function allInput()
@@ -321,8 +334,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
     {{-- HEADER ATAS WIZARD --}}
     <div class="bg-white w-full border-b border-slate-200">
-        <div class="mx-auto flex max-w-7xl flex-col sm:flex-row sm:items-center justify-between gap-6 px-4 py-6 sm:px-6 lg:px-8">
-            
+        <div
+            class="mx-auto flex max-w-7xl flex-col sm:flex-row sm:items-center justify-between gap-6 px-4 py-6 sm:px-6 lg:px-8">
+
             {{-- Kiri: Judul & Progress Bar --}}
             <div class="w-full lg:w-3/4">
                 <h1 class="text-2xl sm:text-3xl font-bold text-[#1e293b]">Kalkulator Karbon</h1>
@@ -342,19 +356,30 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     @endphp
                     <div class="relative h-2 w-full rounded-full bg-slate-200">
                         {{-- Bar hijau yang berjalan --}}
-                        <div class="absolute left-0 top-0 h-2 rounded-full bg-[#0d9488] transition-all duration-500" style="width: {{ $progress }}%"></div>
-                        
+                        <div class="absolute left-0 top-0 h-2 rounded-full bg-[#0d9488] transition-all duration-500"
+                            style="width: {{ $progress }}%"></div>
+
                         {{-- Titik Penanda --}}
                         <div class="absolute inset-0">
-                            <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 0 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 0%;"></span>
-                            <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 30 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 30%;"></span>
-                            <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 60 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 60%;"></span>
-                            <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 90 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 90%;"></span>
-                            <span class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 99 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}" style="left: 99%;"></span>
+                            <span
+                                class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 0 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
+                                style="left: 0%;"></span>
+                            <span
+                                class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 30 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
+                                style="left: 30%;"></span>
+                            <span
+                                class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 60 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
+                                style="left: 60%;"></span>
+                            <span
+                                class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 90 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
+                                style="left: 90%;"></span>
+                            <span
+                                class="absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full {{ $progress >= 99 ? 'bg-white ring-2 ring-[#0d9488]' : 'bg-slate-300' }}"
+                                style="left: 99%;"></span>
                         </div>
                     </div>
                     <p class="mt-2 text-xs sm:text-sm text-[#0d9488]">
-                        <strong class="font-bold">{{ $progress }}%</strong> 
+                        <strong class="font-bold">{{ $progress }}%</strong>
                         <span class="font-medium text-[#0d9488]/80">to complete</span>
                     </p>
                 </div>
@@ -362,15 +387,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
             {{-- Kanan: Tombol Keluar --}}
             <div class="shrink-0 self-start sm:self-center">
-                <a href="{{ route('home') }}"
-                    data-confirm-title="{{ __('calculator.nav.leave_confirm_title') }}"
+                <a href="{{ route('home') }}" data-confirm-title="{{ __('calculator.nav.leave_confirm_title') }}"
                     data-confirm-text="{{ __('calculator.nav.leave_confirm_text') }}"
                     data-confirm-yes="{{ __('calculator.nav.leave_confirm_confirm') }}"
                     data-confirm-no="{{ __('calculator.nav.leave_confirm_cancel') }}"
                     x-on:click.prevent="confirmCalculatorExit($el)"
                     class="inline-flex items-center gap-2 rounded-md bg-red-50 px-5 py-2 text-sm font-bold text-red-500 transition hover:bg-red-100 hover:text-red-600 border border-red-100">
                     <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     Kembali ke Beranda
                 </a>
@@ -380,71 +405,89 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
     </div>
 
     <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        
+
         {{-- CARD INDIKATOR (Hanya Tampil di Step 1-3) --}}
         @if ($step < 4)
-        <div class="mb-8 overflow-hidden rounded-2xl bg-white px-4 py-8 shadow-sm sm:px-16 sm:py-10">
-            <div class="relative mx-auto flex max-w-4xl items-start justify-between">
-                
-                {{-- Garis Penghubung --}}
-                <div class="absolute left-10 right-10 top-7 h-[2px] bg-slate-200 sm:left-16 sm:right-16 sm:top-8"></div>
-                <div class="absolute left-10 top-7 h-[2px] bg-[#0d9488] transition-all duration-500 sm:left-16 sm:top-8" 
-                     style="width: {{ $step === 1 ? '0%' : ($step === 2 ? '50%' : '100%') }}; max-width: calc(100% - 2.5rem);">
-                </div>
+            <div class="mb-8 overflow-hidden rounded-2xl bg-white px-4 py-8 shadow-sm sm:px-16 sm:py-10">
+                <div class="relative mx-auto flex max-w-4xl items-start justify-between">
 
-                {{-- Step 1 Indicator --}}
-                <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 1 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
-                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            <x-brand-icon set="step" name="car" :state="$step >= 1 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
-                        </div>
+                    {{-- Garis Penghubung --}}
+                    <div class="absolute left-10 right-10 top-7 h-[2px] bg-slate-200 sm:left-16 sm:right-16 sm:top-8">
                     </div>
-                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 1 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Transportasi<br>darat</span>
-                </div>
+                    <div class="absolute left-10 top-7 h-[2px] bg-[#0d9488] transition-all duration-500 sm:left-16 sm:top-8"
+                        style="width: {{ $step === 1 ? '0%' : ($step === 2 ? '50%' : '100%') }}; max-width: calc(100% - 2.5rem);">
+                    </div>
 
-                {{-- Step 2 Indicator --}}
-                <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 2 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
-                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            <x-brand-icon set="step" name="bolt" :state="$step >= 2 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
+                    {{-- Step 1 Indicator --}}
+                    <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
+                        <div
+                            class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 1 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                            <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                                <x-brand-icon set="step" name="car" :state="$step >= 1 ? 'passed' : 'disabled'"
+                                    class="size-7 sm:size-9" />
+                            </div>
                         </div>
+                        <span
+                            class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 1 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Transportasi<br>darat</span>
                     </div>
-                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 2 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Listrik Rumah</span>
-                </div>
 
-                {{-- Step 3 Indicator --}}
-                <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
-                    <div class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 3 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
-                        <div class="flex size-full items-center justify-center rounded-full bg-transparent">
-                            <x-brand-icon set="step" name="recycle" :state="$step >= 3 ? 'passed' : 'disabled'" class="size-7 sm:size-9" />
+                    {{-- Step 2 Indicator --}}
+                    <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
+                        <div
+                            class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 2 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                            <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                                <x-brand-icon set="step" name="bolt" :state="$step >= 2 ? 'passed' : 'disabled'"
+                                    class="size-7 sm:size-9" />
+                            </div>
                         </div>
+                        <span
+                            class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 2 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Listrik
+                            Rumah</span>
                     </div>
-                    <span class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 3 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Konsumsi &<br>Sampah</span>
+
+                    {{-- Step 3 Indicator --}}
+                    <div class="relative z-10 flex w-20 flex-col items-center gap-2 sm:w-32 sm:gap-3">
+                        <div
+                            class="flex size-14 items-center justify-center rounded-full transition-all sm:size-16 {{ $step >= 3 ? 'border-[3px] border-[#0d9488] bg-white p-1' : 'bg-[#e2e8f0] p-1' }}">
+                            <div class="flex size-full items-center justify-center rounded-full bg-transparent">
+                                <x-brand-icon set="step" name="recycle" :state="$step >= 3 ? 'passed' : 'disabled'"
+                                    class="size-7 sm:size-9" />
+                            </div>
+                        </div>
+                        <span
+                            class="text-center text-[10px] leading-tight sm:text-sm sm:leading-snug {{ $step >= 3 ? 'font-bold text-[#0d9488]' : 'font-medium text-slate-500' }}">Konsumsi
+                            &<br>Sampah</span>
+                    </div>
                 </div>
             </div>
-        </div>
         @endif
 
         {{-- LAYOUT UTAMA --}}
         <div class="grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
-            
+
             {{-- KOLOM KIRI: FORMULIR WIZARD --}}
             <div class="{{ $step == 4 ? 'rounded-2xl bg-white p-6 shadow-sm border border-slate-100' : 'space-y-6' }}">
-                
+
                 @if ($errors->any())
-                    <div data-calc-error-summary class="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 mb-6">
+                    <div data-calc-error-summary
+                        class="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 mb-6">
                         Mohon lengkapi data yang masih kosong sebelum melanjutkan.
                     </div>
                 @endif
 
                 {{-- ==================== STEP 1 ==================== --}}
                 @if ($step == 1)
-                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Transportasi</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">
+                        Transportasi</h2>
 
-                    <fieldset data-calc-field="mainTransport" class="space-y-4 @error('mainTransport') [&_label]:border-red-300 @enderror">
-                        <legend class="text-sm sm:text-base font-bold @error('mainTransport') text-red-600 @else text-slate-800 @enderror mb-4">Apa moda transportasi utama yang kamu gunakan sehari-hari?
+                    <fieldset data-calc-field="mainTransport"
+                        class="space-y-4 @error('mainTransport') [&_label]:border-red-300 @enderror">
+                        <legend
+                            class="text-sm sm:text-base font-bold @error('mainTransport') text-red-600 @else text-slate-800 @enderror mb-4">
+                            Apa moda transportasi utama yang kamu gunakan sehari-hari?
                             @error('mainTransport')
-                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                <span
+                                    class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                             @enderror
                         </legend>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -455,40 +498,55 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'mobil_bbm', 'label' => 'Mobil Bensin (BBM)', 'icon' => 'car'],
                                     ['id' => 'motor_bbm', 'label' => 'Motor Bensin (BBM)', 'icon' => 'motorcycle'],
                                     ['id' => 'mobil_ev', 'label' => 'Mobil Listrik (EV)', 'icon' => 'car-electric'],
-                                    ['id' => 'motor_ev', 'label' => 'Motor Listrik (EV)', 'icon' => 'motorcycle-electric'],
+                                    [
+                                        'id' => 'motor_ev',
+                                        'label' => 'Motor Listrik (EV)',
+                                        'icon' => 'motorcycle-electric',
+                                    ],
                                     ['id' => 'transportasi_umum', 'label' => 'Transportasi Umum', 'icon' => 'bus'],
                                     ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'icon' => 'shuffle'],
                                 ];
                             @endphp
-                            @foreach($transportOptions as $opt)
-                                <label class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488] bg-white shadow-sm' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}" class="sr-only">
-                                    
+                            @foreach ($transportOptions as $opt)
+                                <label
+                                    class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488] bg-white shadow-sm' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+
                                     {{-- Radio Button Custom Indicator --}}
-                                    <div class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $mainTransport === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if($mainTransport === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                    <div
+                                        class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $mainTransport === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($mainTransport === $opt['id'])
+                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
 
                                     {{-- Wrapper untuk Ikon dan Lingkaran Background --}}
                                     <div class="relative mb-3 flex h-14 w-full items-center justify-center sm:h-16">
                                         {{-- Lingkaran Biru Kecil --}}
                                         <div class="absolute size-10 sm:size-12 rounded-full bg-[#e6f4f1]"></div>
-                                        
+
                                         {{-- Gambar Ikon (di-set lebih besar dari lingkaran agar menjorok keluar) --}}
-                                        <x-brand-icon set="option" :name="$opt['icon']" class="relative z-10 w-16 sm:w-20 drop-shadow-sm transition-transform duration-300 group-hover:scale-105" />
+                                        <x-brand-icon set="option" :name="$opt['icon']"
+                                            class="relative z-10 w-16 sm:w-20 drop-shadow-sm transition-transform duration-300 group-hover:scale-105" />
                                     </div>
-                                    
+
                                     {{-- Label Text dengan perubahan warna saat aktif --}}
-                                    <span class="text-center text-[11px] sm:text-xs font-bold {{ $mainTransport === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                    <span
+                                        class="text-center text-[11px] sm:text-xs font-bold {{ $mainTransport === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                 </label>
                             @endforeach
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="distance" class="pt-6 space-y-4 @error('distance') [&_label]:border-red-300 @enderror">
-                        <legend class="text-sm sm:text-base font-bold @error('distance') text-red-600 @else text-slate-800 @enderror mb-4">Berapa estimasi total jarak yang kamu tempuh dalam sehari?
+                    <fieldset data-calc-field="distance"
+                        class="pt-6 space-y-4 @error('distance') [&_label]:border-red-300 @enderror">
+                        <legend
+                            class="text-sm sm:text-base font-bold @error('distance') text-red-600 @else text-slate-800 @enderror mb-4">
+                            Berapa estimasi total jarak yang kamu tempuh dalam sehari?
                             @error('distance')
-                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                <span
+                                    class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                             @enderror
                         </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -502,12 +560,18 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'gt_50', 'label' => 'Lebih dari 50 km / hari'],
                                 ];
                             @endphp
-                            @foreach($distOptions as $opt)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $distance === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold {{ $distance === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
-                                    <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $distance === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if($distance === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                            @foreach ($distOptions as $opt)
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $distance === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+                                    <span
+                                        class="text-xs sm:text-sm font-semibold {{ $distance === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                    <div
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $distance === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($distance === $opt['id'])
+                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
@@ -518,12 +582,17 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- ==================== STEP 2 ==================== --}}
                 @if ($step == 2)
-                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Listrik Rumah</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">
+                        Listrik Rumah</h2>
 
-                    <fieldset data-calc-field="acUsage" class="space-y-4 @error('acUsage') [&_label]:border-red-300 @enderror">
-                        <legend class="text-sm sm:text-base font-bold @error('acUsage') text-red-600 @else text-slate-800 @enderror mb-4">Bagaimana penggunaan Air Conditioner (AC) di rumahmu?
+                    <fieldset data-calc-field="acUsage"
+                        class="space-y-4 @error('acUsage') [&_label]:border-red-300 @enderror">
+                        <legend
+                            class="text-sm sm:text-base font-bold @error('acUsage') text-red-600 @else text-slate-800 @enderror mb-4">
+                            Bagaimana penggunaan Air Conditioner (AC) di rumahmu?
                             @error('acUsage')
-                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                <span
+                                    class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                             @enderror
                         </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -532,28 +601,47 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'tidak_ada', 'label' => 'Tidak Menggunakan AC'],
                                     ['id' => 'satu_unit_5jam_standar', 'label' => '1 Unit (< 5 jam / hari) - Standar'],
                                     ['id' => 'satu_unit_8jam_standar', 'label' => '1 Unit (> 8 jam / hari) - Standar'],
-                                    ['id' => 'satu_unit_5jam_inverter', 'label' => '1 Unit (< 5 jam / hari) - Inverter'],
-                                    ['id' => 'satu_unit_8jam_inverter', 'label' => '1 Unit (> 8 jam / hari) - Inverter'],
+                                    [
+                                        'id' => 'satu_unit_5jam_inverter',
+                                        'label' => '1 Unit (< 5 jam / hari) - Inverter',
+                                    ],
+                                    [
+                                        'id' => 'satu_unit_8jam_inverter',
+                                        'label' => '1 Unit (> 8 jam / hari) - Inverter',
+                                    ],
                                     ['id' => 'dua_unit', 'label' => '2 Unit AC (Standar/Malam Hari)'],
-                                    ['id' => 'tiga_unit_atau_intensif', 'label' => '≥ 3 Unit AC atau Pemakaian Intensif'],
+                                    [
+                                        'id' => 'tiga_unit_atau_intensif',
+                                        'label' => '≥ 3 Unit AC atau Pemakaian Intensif',
+                                    ],
                                 ];
                             @endphp
-                            @foreach($acOptions as $opt)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $acUsage === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold {{ $acUsage === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
-                                    <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $acUsage === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if($acUsage === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                            @foreach ($acOptions as $opt)
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $acUsage === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+                                    <span
+                                        class="text-xs sm:text-sm font-semibold {{ $acUsage === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                    <div
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $acUsage === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($acUsage === $opt['id'])
+                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="fridgeType" class="pt-6 space-y-4 @error('fridgeType') [&_label]:border-red-300 @enderror">
-                        <legend class="text-sm sm:text-base font-bold @error('fridgeType') text-red-600 @else text-slate-800 @enderror mb-4">Tipe kulkas apa yang digunakan di rumahmu?
+                    <fieldset data-calc-field="fridgeType"
+                        class="pt-6 space-y-4 @error('fridgeType') [&_label]:border-red-300 @enderror">
+                        <legend
+                            class="text-sm sm:text-base font-bold @error('fridgeType') text-red-600 @else text-slate-800 @enderror mb-4">
+                            Tipe kulkas apa yang digunakan di rumahmu?
                             @error('fridgeType')
-                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                <span
+                                    class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                             @enderror
                         </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -564,22 +652,32 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'inverter', 'label' => 'Kulkas Hemat Energi (Inverter)'],
                                 ];
                             @endphp
-                            @foreach($fridgeOptions as $opt)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $fridgeType === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold {{ $fridgeType === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
-                                    <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $fridgeType === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if($fridgeType === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                            @foreach ($fridgeOptions as $opt)
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $fridgeType === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+                                    <span
+                                        class="text-xs sm:text-sm font-semibold {{ $fridgeType === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                    <div
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $fridgeType === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($fridgeType === $opt['id'])
+                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
                         </div>
                     </fieldset>
 
-                    <fieldset data-calc-field="powerLimit" class="pt-6 space-y-4 @error('powerLimit') [&_label]:border-red-300 @enderror">
-                        <legend class="text-sm sm:text-base font-bold @error('powerLimit') text-red-600 @else text-slate-800 @enderror mb-4">Berapa batas daya listrik (VA) terpasang di rumahmu?
+                    <fieldset data-calc-field="powerLimit"
+                        class="pt-6 space-y-4 @error('powerLimit') [&_label]:border-red-300 @enderror">
+                        <legend
+                            class="text-sm sm:text-base font-bold @error('powerLimit') text-red-600 @else text-slate-800 @enderror mb-4">
+                            Berapa batas daya listrik (VA) terpasang di rumahmu?
                             @error('powerLimit')
-                                <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                <span
+                                    class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                             @enderror
                         </legend>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -592,12 +690,18 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'gte_6600', 'label' => '≥ 6.600 VA'],
                                 ];
                             @endphp
-                            @foreach($powerOptions as $opt)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $powerLimit === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold {{ $powerLimit === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
-                                    <div class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $powerLimit === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if($powerLimit === $opt['id']) <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                            @foreach ($powerOptions as $opt)
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $powerLimit === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+                                    <span
+                                        class="text-xs sm:text-sm font-semibold {{ $powerLimit === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                    <div
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $powerLimit === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($powerLimit === $opt['id'])
+                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
+                                        @endif
                                     </div>
                                 </label>
                             @endforeach
@@ -608,31 +712,42 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- ==================== STEP 3 ==================== --}}
                 @if ($step == 3)
-                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">Konsumsi & Sampah</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488] mb-2 border-b pb-4 border-slate-200">
+                        Konsumsi & Sampah</h2>
 
-                    @foreach([
-                        ['model'=>'plasticUsage', 'label'=>'Seberapa sering kamu menggunakan plastik sekali pakai?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-2x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (3-5x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
-                        ['model'=>'shoppingBag', 'label'=>'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'ops'=>[['id'=>'selalu', 'label'=>'Ya, Selalu'], ['id'=>'kadang', 'label'=>'Kadang-kadang'], ['id'=>'tidak_pernah', 'label'=>'Tidak Pernah']]],
-                        ['model'=>'wasteSort', 'label'=>'Apakah kamu memilah sampah organik dan anorganik di rumah?', 'ops'=>[['id'=>'ya', 'label'=>'Ya'], ['id'=>'tidak', 'label'=>'Tidak']]],
-                        ['model'=>'gallonWater', 'label'=>'Apakah kamu menggunakan air galon isi ulang untuk kebutuhan minum?', 'ops'=>[['id'=>'ya', 'label'=>'Ya'], ['id'=>'tidak', 'label'=>'Tidak']]],
-                        ['model'=>'redMeat', 'label'=>'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'ops'=>[['id'=>'jarang', 'label'=>'Jarang (0-1x / minggu)'], ['id'=>'sedang', 'label'=>'Sedang (2-4x / minggu)'], ['id'=>'sering', 'label'=>'Sering (>5x / minggu)']]],
-                        ['model'=>'onlineShopping', 'label'=>'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops'=>[['id'=>'lte_5', 'label'=>'≤ 5 kali / bulan'], ['id'=>'gt_5', 'label'=>'> 5 kali / bulan']]]
-                    ] as $index => $q)
-                        <fieldset data-calc-field="{{ $q['model'] }}" class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4 @error($q['model']) [&_label]:border-red-300 @enderror">
-                            <legend class="text-sm sm:text-base font-bold @error($q['model']) text-red-600 @else text-slate-800 @enderror mb-3">{{ $q['label'] }}
+                    @foreach ([
+        ['model' => 'plasticUsage', 'label' => 'Seberapa sering kamu menggunakan plastik sekali pakai?', 'ops' => [['id' => 'jarang', 'label' => 'Jarang (0-2x / minggu)'], ['id' => 'sedang', 'label' => 'Sedang (3-5x / minggu)'], ['id' => 'sering', 'label' => 'Sering (>5x / minggu)']]],
+        ['model' => 'shoppingBag', 'label' => 'Apakah kamu selalu membawa tas belanja sendiri saat bepergian?', 'ops' => [['id' => 'selalu', 'label' => 'Ya, Selalu'], ['id' => 'kadang', 'label' => 'Kadang-kadang'], ['id' => 'tidak_pernah', 'label' => 'Tidak Pernah']]],
+        ['model' => 'wasteSort', 'label' => 'Apakah kamu memilah sampah organik dan anorganik di rumah?', 'ops' => [['id' => 'ya', 'label' => 'Ya'], ['id' => 'tidak', 'label' => 'Tidak']]],
+        ['model' => 'gallonWater', 'label' => 'Apakah kamu menggunakan air galon isi ulang untuk kebutuhan minum?', 'ops' => [['id' => 'ya', 'label' => 'Ya'], ['id' => 'tidak', 'label' => 'Tidak']]],
+        ['model' => 'redMeat', 'label' => 'Seberapa sering kamu mengonsumsi daging merah (sapi/kambing)?', 'ops' => [['id' => 'jarang', 'label' => 'Jarang (0-1x / minggu)'], ['id' => 'sedang', 'label' => 'Sedang (2-4x / minggu)'], ['id' => 'sering', 'label' => 'Sering (>5x / minggu)']]],
+        ['model' => 'onlineShopping', 'label' => 'Berapa frekuensi kamu melakukan transaksi belanja online dalam sebulan?', 'ops' => [['id' => 'lte_5', 'label' => '≤ 5 kali / bulan'], ['id' => 'gt_5', 'label' => '> 5 kali / bulan']]],
+    ] as $index => $q)
+                        <fieldset data-calc-field="{{ $q['model'] }}"
+                            class="{{ $index > 0 ? 'pt-6' : 'pt-2' }} space-y-4 @error($q['model']) [&_label]:border-red-300 @enderror">
+                            <legend
+                                class="text-sm sm:text-base font-bold @error($q['model']) text-red-600 @else text-slate-800 @enderror mb-3">
+                                {{ $q['label'] }}
                                 @error($q['model'])
-                                    <span class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
+                                    <span
+                                        class="mt-1 block text-xs font-semibold text-red-600">{{ __('calculator.validation.unanswered') }}</span>
                                 @enderror
                             </legend>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                @foreach($q['ops'] as $opt)
-                                <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="{{ $q['model'] }}" value="{{ $opt['id'] }}" class="sr-only">
-                                    <span class="text-xs sm:text-sm font-semibold {{ ${$q['model']} === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
-                                    <div class="flex size-4 items-center justify-center rounded-full border-2 {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if(${$q['model']} === $opt['id']) <div class="size-2 rounded-full bg-[#0d9488]"></div> @endif
-                                    </div>
-                                </label>
+                                @foreach ($q['ops'] as $opt)
+                                    <label
+                                        class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                        <input type="radio" wire:model.live="{{ $q['model'] }}"
+                                            value="{{ $opt['id'] }}" class="sr-only">
+                                        <span
+                                            class="text-xs sm:text-sm font-semibold {{ ${$q['model']} === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        <div
+                                            class="flex size-4 items-center justify-center rounded-full border-2 {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                            @if (${$q['model']} === $opt['id'])
+                                                <div class="size-2 rounded-full bg-[#0d9488]"></div>
+                                            @endif
+                                        </div>
+                                    </label>
                                 @endforeach
                             </div>
                         </fieldset>
@@ -644,38 +759,58 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 4)
                     <div class="border-b pb-5 border-slate-100 mb-6">
                         <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488]">Isi Data Diri</h2>
-                        <p class="mt-1.5 text-sm text-slate-600">Satu langkah lagi untuk melihat laporan jejak karbonmu dan berkontribusi untuk bumi.</p>
+                        <p class="mt-1.5 text-sm text-slate-600">Satu langkah lagi untuk melihat laporan jejak karbonmu
+                            dan berkontribusi untuk bumi.</p>
                     </div>
 
                     {{-- Row 1: Nama & Email --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="name" class="@error('name') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">Nama Lengkap</label>
-                            <input type="text" wire:model="name" id="name" placeholder="Contoh: Andi Pratama" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('name') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
+                        <fieldset data-calc-field="name"
+                            class="@error('name') [&_input]:border [&_input]:border-red-400 @enderror">
+                            <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">Nama
+                                Lengkap</label>
+                            <input type="text" wire:model="name" id="name"
+                                placeholder="Contoh: Andi Pratama"
+                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                            @error('name')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
 
-                        <fieldset data-calc-field="email" class="@error('email') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">Alamat Email aktif</label>
-                            <input type="email" wire:model="email" id="email" placeholder="contoh@email.com" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
-                            @error('email') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
+                        <fieldset data-calc-field="email"
+                            class="@error('email') [&_input]:border [&_input]:border-red-400 @enderror">
+                            <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">Alamat Email
+                                aktif</label>
+                            <input type="email" wire:model="email" id="email" placeholder="contoh@email.com"
+                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                            @error('email')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="whatsapp" class="@error('whatsapp') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">Nomor WhatsApp</label>
+                        <fieldset data-calc-field="whatsapp"
+                            class="@error('whatsapp') [&_input]:border [&_input]:border-red-400 @enderror">
+                            <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">Nomor
+                                WhatsApp</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
-                                <input type="text" wire:model="whatsapp" id="whatsapp" placeholder="8123456789" class="block w-full rounded-xl border-slate-200 pl-14 pr-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
+                                <input type="text" wire:model="whatsapp" id="whatsapp" placeholder="8123456789"
+                                    class="block w-full rounded-xl border-slate-200 pl-14 pr-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
                             </div>
-                            @error('whatsapp') <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p> @enderror
+                            @error('whatsapp')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
 
                         <fieldset>
-                            <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">Tanggal Lahir</label>
-                            <input type="date" wire:model="dob" id="dob" class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20 text-slate-700">
+                            <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">Tanggal
+                                Lahir</label>
+                            <input type="date" wire:model="dob" id="dob"
+                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20 text-slate-700">
                         </fieldset>
                     </div>
 
@@ -683,18 +818,26 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     <fieldset class="mb-6">
                         <legend class="text-sm font-semibold text-slate-800 mb-3">Jenis Kelamin</legend>
                         <div class="grid grid-cols-2 gap-4">
-                            <label class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'male' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                            <label
+                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'male' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                 <input type="radio" wire:model.live="gender" value="male" class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Laki-laki</span>
-                                <div class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'male' ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                    @if($gender === 'male') <div class="size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                <div
+                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'male' ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    @if ($gender === 'male')
+                                        <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
+                                    @endif
                                 </div>
                             </label>
-                            <label class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'female' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                            <label
+                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'female' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                 <input type="radio" wire:model.live="gender" value="female" class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Perempuan</span>
-                                <div class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'female' ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                    @if($gender === 'female') <div class="size-2.5 rounded-full bg-[#0d9488]"></div> @endif
+                                <div
+                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'female' ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    @if ($gender === 'female')
+                                        <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
+                                    @endif
                                 </div>
                             </label>
                         </div>
@@ -702,29 +845,43 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 4: Intent --}}
                     <fieldset class="mb-6">
-                        <legend class="text-sm font-semibold text-slate-800 mb-3">Apakah kamu berencana untuk mengurangi emisi karbonmu setelah melihat hasil ini?</legend>
+                        <legend class="text-sm font-semibold text-slate-800 mb-3">Apakah kamu berencana untuk
+                            mengurangi emisi karbonmu setelah melihat hasil ini?</legend>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            @foreach([['id'=>'belum_tahu', 'label'=>'Belum Tahu'], ['id'=>'mungkin', 'label'=>'Mungkin'], ['id'=>'tentu', 'label'=>'Tentu, Pasti']] as $opt)
-                            <label class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ $intent === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}" class="sr-only">
-                                <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
-                                <div class="flex size-4 items-center justify-center rounded-full border-2 {{ $intent === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                    @if($intent === $opt['id']) <div class="size-2 rounded-full bg-[#0d9488]"></div> @endif
-                                </div>
-                            </label>
+                            @foreach ([['id' => 'belum_tahu', 'label' => 'Belum Tahu'], ['id' => 'mungkin', 'label' => 'Mungkin'], ['id' => 'tentu', 'label' => 'Tentu, Pasti']] as $opt)
+                                <label
+                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ $intent === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                    <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}"
+                                        class="sr-only">
+                                    <span
+                                        class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <div
+                                        class="flex size-4 items-center justify-center rounded-full border-2 {{ $intent === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                        @if ($intent === $opt['id'])
+                                            <div class="size-2 rounded-full bg-[#0d9488]"></div>
+                                        @endif
+                                    </div>
+                                </label>
                             @endforeach
                         </div>
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
-                    <fieldset data-calc-field="consent" class="@error('consent') [&>div]:border-red-300 [&>div]:bg-red-50/60 @enderror">
+                    <fieldset data-calc-field="consent"
+                        class="@error('consent') [&>div]:border-red-300 [&>div]:bg-red-50/60 @enderror">
                         <div class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <input id="consent" type="checkbox" wire:model="consent" class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
+                            <input id="consent" type="checkbox" wire:model="consent"
+                                class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                                Saya menyetujui <a href="#" class="font-semibold text-[#0d9488] hover:underline">Syarat & Ketentuan</a> serta <a href="#" class="font-semibold text-[#0d9488] hover:underline">Kebijakan Privasi</a> yang berlaku dalam kampanye Tokio Marine Green Campaign ini.
+                                Saya menyetujui <a href="#"
+                                    class="font-semibold text-[#0d9488] hover:underline">Syarat & Ketentuan</a> serta
+                                <a href="#" class="font-semibold text-[#0d9488] hover:underline">Kebijakan
+                                    Privasi</a> yang berlaku dalam kampanye Tokio Marine Green Campaign ini.
                             </label>
                         </div>
-                        @error('consent') <p class="text-xs text-red-600 mt-2">{{ $message }}</p> @enderror
+                        @error('consent')
+                            <p class="text-xs text-red-600 mt-2">{{ $message }}</p>
+                        @enderror
                     </fieldset>
                 @endif
 
@@ -751,13 +908,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         4 => ['accent' => '#F59E0B', 'key' => 'personal'],
                     ][$step];
                 @endphp
-                <div
-                    class="rounded-2xl p-6 border text-center"
+                <div class="rounded-2xl p-6 border text-center"
                     style="background-color: {{ $ctaByStep['accent'] }}0F; border-color: {{ $ctaByStep['accent'] }}33;"
-                    wire:key="calculator-cta-{{ $step }}"
-                >
-                    <h3 class="text-sm font-bold" style="color: {{ $ctaByStep['accent'] }}">{{ __('calculator.cta.'.$ctaByStep['key'].'.heading') }}</h3>
-                    <p class="mt-2 text-xs leading-relaxed" style="color: {{ $ctaByStep['accent'] }}">{{ __('calculator.cta.'.$ctaByStep['key'].'.body') }}</p>
+                    wire:key="calculator-cta-{{ $step }}">
+                    <h3 class="text-sm font-bold" style="color: {{ $ctaByStep['accent'] }}">
+                        {{ __('calculator.cta.' . $ctaByStep['key'] . '.heading') }}</h3>
+                    <p class="mt-2 text-xs leading-relaxed" style="color: {{ $ctaByStep['accent'] }}">
+                        {{ __('calculator.cta.' . $ctaByStep['key'] . '.body') }}</p>
                 </div>
 
                 {{-- Ringkasan Jawaban. Menggantikan gauge skor dummy yang sempat
@@ -772,93 +929,106 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @php
                     $hasTransportSummary = $mainTransport && $distance;
                     $hasElectricSummary = $acUsage && $fridgeType && $powerLimit;
-                    $hasConsumptionSummary = $plasticUsage && $shoppingBag && $wasteSort && $gallonWater && $redMeat && $onlineShopping;
+                    $hasConsumptionSummary =
+                        $plasticUsage && $shoppingBag && $wasteSort && $gallonWater && $redMeat && $onlineShopping;
                 @endphp
 
-                @if (! $hasTransportSummary && ! $hasElectricSummary && ! $hasConsumptionSummary)
-                    <p class="rounded-xl border border-dashed border-slate-200 bg-white p-5 text-center text-xs text-slate-500">
+                @if (!$hasTransportSummary && !$hasElectricSummary && !$hasConsumptionSummary)
+                    <p
+                        class="rounded-xl border border-dashed border-slate-200 bg-white p-5 text-center text-xs text-slate-500">
                         {{ __('calculator.summary.empty') }}
                     </p>
                 @endif
 
                 {{-- Summary Transportasi --}}
                 @if ($hasTransportSummary)
-                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h4 class="mb-4 text-xs font-bold text-slate-800">Transportasi Darat</h4>
-                    <div class="space-y-3 text-[11px] sm:text-xs">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                            <span class="text-slate-500">Moda</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('transport', $mainTransport) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-500">Jarak</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('distance', $distance) }}</span>
+                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h4 class="mb-4 text-xs font-bold text-slate-800">Transportasi Darat</h4>
+                        <div class="space-y-3 text-[11px] sm:text-xs">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="text-slate-500">Moda</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('transport', $mainTransport) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500">Jarak</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('distance', $distance) }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @endif
 
                 {{-- Summary Listrik --}}
                 @if ($hasElectricSummary)
-                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h4 class="mb-4 text-xs font-bold text-slate-800">Listrik Rumah</h4>
-                    <div class="space-y-3 text-[11px] sm:text-xs">
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">AC</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('ac', $acUsage) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Kulkas</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('fridge', $fridgeType) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Daya Listrik</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('power', $powerLimit) }}</span>
+                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h4 class="mb-4 text-xs font-bold text-slate-800">Listrik Rumah</h4>
+                        <div class="space-y-3 text-[11px] sm:text-xs">
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">AC</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('ac', $acUsage) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Kulkas</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('fridge', $fridgeType) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Daya Listrik</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('power', $powerLimit) }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @endif
 
                 {{-- Summary Konsumsi & Sampah --}}
                 @if ($hasConsumptionSummary)
-                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h4 class="mb-4 text-xs font-bold text-slate-800">Konsumsi & Sampah</h4>
-                    <div class="space-y-3 text-[11px] sm:text-xs">
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Plastik Sekali Pakai</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('plastic', $plasticUsage) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Tas Belanja Sendiri</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('bag', $shoppingBag) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Pilah Sampah</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('sort', $wasteSort) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Galon Isi Ulang</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('gallon', $gallonWater) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Daging Merah</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('meat', $redMeat) }}</span>
-                        </div>
-                        <div class="flex justify-between items-start gap-2">
-                            <span class="text-slate-500 whitespace-nowrap">Belanja Online</span>
-                            <span class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('shopping', $onlineShopping) }}</span>
+                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h4 class="mb-4 text-xs font-bold text-slate-800">Konsumsi & Sampah</h4>
+                        <div class="space-y-3 text-[11px] sm:text-xs">
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Plastik Sekali Pakai</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('plastic', $plasticUsage) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Tas Belanja Sendiri</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('bag', $shoppingBag) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Pilah Sampah</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('sort', $wasteSort) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Galon Isi Ulang</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('gallon', $gallonWater) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Daging Merah</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('meat', $redMeat) }}</span>
+                            </div>
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="text-slate-500 whitespace-nowrap">Belanja Online</span>
+                                <span
+                                    class="font-semibold text-slate-800 text-right">{{ $this->getSummaryLabel('shopping', $onlineShopping) }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @endif
 
             </aside>
         </div>
-        
+
         {{-- AREA TOMBOL NAVIGASI BAWAH --}}
         <div class="mt-8 border-t border-slate-200 bg-white p-4 shadow-sm sm:rounded-xl sm:px-6">
             <div class="flex items-center justify-between">
-                
+
                 {{-- Tombol Kembali --}}
                 @if ($step == 1)
                     <a href="{{ route('home') }}"
@@ -868,13 +1038,22 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         data-confirm-no="{{ __('calculator.nav.leave_confirm_cancel') }}"
                         x-on:click.prevent="confirmCalculatorExit($el)"
                         class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                         <span class="hidden sm:inline">Kembali ke Beranda</span>
                         <span class="sm:hidden">Kembali</span>
                     </a>
                 @else
-                    <button type="button" wire:click="previousStep" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
+                    <button type="button" wire:click="previousStep"
+                        class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                         @if ($step == 2)
                             <span class="hidden sm:inline">Kembali ke Transportasi Darat</span>
                             <span class="sm:hidden">Kembali</span>
@@ -890,25 +1069,45 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                 {{-- Tombol Lanjut / Generate --}}
                 @if ($step == 1)
-                    <button type="button" wire:click="nextStep" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
+                    <button type="button" wire:click="nextStep"
+                        class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
                         Lanjut <span class="hidden sm:inline">ke Listrik Rumah</span>
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @elseif ($step == 2)
-                    <button type="button" wire:click="nextStep" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
+                    <button type="button" wire:click="nextStep"
+                        class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
                         Lanjut <span class="hidden sm:inline">ke Konsumsi & Sampah</span>
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @elseif ($step == 3)
-                    <button type="button" wire:click="nextStep" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
+                    <button type="button" wire:click="nextStep"
+                        class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
                         Lanjut ke Isi Data Diri
-                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @elseif ($step == 4)
-                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled" class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
+                    <button type="button" wire:click="submitLeads" wire:loading.attr="disabled"
+                        class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
                         <span wire:loading.remove>Generate Laporan</span>
                         <span wire:loading>Processing...</span>
-                        <svg wire:loading.remove class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" /></svg>
+                        <svg wire:loading.remove class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 @endif
             </div>
