@@ -296,7 +296,10 @@ new class extends Component
                             </button>
                             <div x-show="expanded" x-collapse id="faq-answer-{{ $index }}">
                                 <div class="px-6 pb-6 pt-0 ml-9 text-sm text-slate-600 leading-relaxed font-medium">
-                                    {{ $item['a'] }}
+                                    {{-- Isinya dari lang/*/seo.php, bukan input pengguna, jadi aman
+                                         dirender apa adanya — beberapa jawaban menyisipkan <em> di
+                                         sekitar "result page" (lihat App\Support\Seo::faq()). --}}
+                                    {!! $item['a'] !!}
                                 </div>
                             </div>
                         </div>

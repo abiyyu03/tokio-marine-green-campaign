@@ -48,7 +48,37 @@ new class extends Component
     $dropOffs = $report->dropOffPoints()->take(3);
 @endphp
 
-<div class="report" style="--tier: {{ $accent }}">
+<div
+    class="report"
+    style="--tier: {{ $accent }}"
+    x-data="{
+        // window.print() dibutuhkan untuk 'Simpan sebagai PDF', tapi in-app
+        // browser (WebView WhatsApp/Instagram/Facebook/GSA-nya Google App)
+        // sering membisukannya total: tidak ada dialog, tidak ada pesan
+        // error, dan pengguna kira tombolnya rusak (temuan UAT-RES-05,
+        // ponselnya memakai in-app browser Google App / 'GSA/'). Situs tidak
+        // bisa memaksa WebView menampilkan dialog cetak, jadi solusinya
+        // memberi tahu pengguna dan menawarkan jalan keluar: salin tautan,
+        // buka manual di Chrome/Safari.
+        inApp: /FBAN|FBAV|Instagram|Line\/|MicroMessenger|GSA\/|TikTok/i.test(navigator.userAgent),
+        copied: false,
+        async copyLink() {
+            const url = window.location.href;
+            try {
+                await navigator.clipboard.writeText(url);
+            } catch (e) {
+                const input = document.createElement('input');
+                input.value = url;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                input.remove();
+            }
+            this.copied = true;
+            setTimeout(() => (this.copied = false), 2000);
+        },
+    }"
+>
     <style>
         /* ---------------------------------------------------------------
            Laporan cetak. Warna sengaja lebih gelap dari halaman hasil:
@@ -126,13 +156,33 @@ new class extends Component
                 <p class="hidden text-xs text-slate-500 sm:block">{{ __('result.report.hint') }}</p>
                 <button
                     type="button"
+                    x-show="!inApp"
                     onclick="window.print()"
                     class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0b7c72] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b3b36]"
                 >
                     <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     {{ __('result.report.save') }}
                 </button>
+                <button
+                    type="button"
+                    x-show="inApp"
+                    x-cloak
+                    @click="copyLink()"
+                    class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0b7c72] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b3b36]"
+                >
+                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span x-text="copied ? '{{ __('result.report.copy_link_done') }}' : '{{ __('result.report.copy_link') }}'"></span>
+                </button>
             </div>
+        </div>
+
+        {{-- Pita peringatan: hanya muncul kalau UA-nya kedeteksi in-app browser,
+             supaya pengguna tahu kenapa tombol cetaknya diganti, bukan hilang
+             begitu saja tanpa penjelasan (persis keluhan UAT-RES-05). --}}
+        <div x-show="inApp" x-cloak class="border-t border-amber-200 bg-amber-50 px-4 py-2.5">
+            <p class="mx-auto max-w-[210mm] text-xs text-amber-800">
+                <strong>{{ __('result.report.inapp_notice_title') }}</strong> — {{ __('result.report.inapp_notice_body') }}
+            </p>
         </div>
     </div>
 
@@ -144,11 +194,14 @@ new class extends Component
             {{-- Kop dokumen --}}
             <header class="flex flex-col gap-4 border-b-2 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8" style="border-color: var(--pine)">
                 <div class="flex items-center gap-3">
-                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-[#0b3b36] text-[13px] font-bold text-white">TM</span>
-                    <div class="leading-tight">
-                        <p class="text-[13px] font-bold text-[#0b3b36]">Tokio Marine Insurance Group</p>
-                        <p class="text-[11px] text-[#5f7370]">{{ __('result.report.campaign', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
-                    </div>
+                    {{-- Logo lockup asli (sama dengan yang dipakai site-header), bukan
+                       lagi placeholder lingkaran "TM" — namanya sudah ada di
+                       gambarnya sendiri, jadi tidak perlu diulang sebagai teks. --}}
+                    <img
+                        src="{{ asset('asset/images/logo.png') }}"
+                        alt="Tokio Marine, TM Life Peduli, Dompet Dhuafa"
+                        class="h-7 w-auto shrink-0 object-contain"
+                    >
                 </div>
 
                 <dl class="figure grid grid-cols-[auto_auto] gap-x-3 gap-y-1 text-left text-[10px] leading-tight whitespace-nowrap sm:text-right">
@@ -391,7 +444,15 @@ new class extends Component
     @if ($autoPrint)
         <script>
             // Dibuka dari tombol "Download Result": langsung tawarkan simpan PDF.
-            addEventListener('load', () => setTimeout(() => window.print(), 300), { once: true });
+            // Dilewati di in-app browser — window.print() di sana biasanya diam
+            // saja tanpa dialog maupun error, jadi memanggilnya cuma bikin
+            // pengguna menunggu tanpa hasil (lihat pita amber & tombol "Salin
+            // Tautan" di atas untuk jalan keluarnya).
+            addEventListener('load', () => setTimeout(() => {
+                if (! /FBAN|FBAV|Instagram|Line\/|MicroMessenger|GSA\/|TikTok/i.test(navigator.userAgent)) {
+                    window.print();
+                }
+            }, 300), { once: true });
         </script>
     @endif
 </div>

@@ -13,7 +13,10 @@
                 </p>
 
                 <div class="flex flex-wrap gap-6 text-xs">
-                    <a href="tel:+6287861500086" class="flex items-center gap-2 transition hover:text-white">
+                    {{-- Link-nya sengaja ke wa.me, bukan tel: — sesuai catatan UAT-HOM-01
+                         ("Link No. Telp: https://wa.me/..."), supaya klik nomor ini langsung
+                         membuka chat WhatsApp, bukan dialer telepon. --}}
+                    <a href="https://wa.me/6287861500086" target="_blank" rel="noopener" class="flex items-center gap-2 transition hover:text-white">
                         <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.5 11.5 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15A13 13 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
                         </svg>
@@ -37,8 +40,16 @@
                 </nav>
 
                 <div class="flex gap-4">
-                    @foreach (['Facebook', 'YouTube', 'Instagram'] as $channel)
-                        <a href="#" aria-label="{{ $channel }}" class="grid size-8 place-items-center rounded-full border border-slate-600 text-xs transition hover:border-white hover:text-white">
+                    @php
+                        $socials = [
+                            'Facebook' => 'https://www.facebook.com/share/1Bvz8HphGS/',
+                            'Instagram' => 'https://www.instagram.com/tokiomarineid',
+                            'YouTube' => 'https://youtube.com/@tokiomarineinsurancegroup',
+                            'TikTok' => 'https://www.tiktok.com/@tokiomarineindonesia',
+                        ];
+                    @endphp
+                    @foreach ($socials as $channel => $url)
+                        <a href="{{ $url }}" target="_blank" rel="noopener" aria-label="{{ $channel }}" class="grid size-8 place-items-center rounded-full border border-slate-600 text-xs transition hover:border-white hover:text-white">
                             {{ substr($channel, 0, 1) }}
                         </a>
                     @endforeach

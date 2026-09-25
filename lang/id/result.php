@@ -49,6 +49,14 @@ return [
         'title' => 'Laporan Jejak Karbon Tahunan',
         'campaign' => ':brand',
         'document' => 'Nomor dokumen',
+        // Dialog cetak (window.print()) sering tidak muncul sama sekali di
+        // in-app browser (WebView WhatsApp/Instagram/Facebook/Google App) —
+        // bukan error, browser-nya memang tidak mengizinkan. Lihat deteksi
+        // di report.blade.php.
+        'inapp_notice_title' => 'Buka di browser untuk menyimpan PDF',
+        'inapp_notice_body' => 'Tautan ini dibuka lewat aplikasi lain, jadi menu simpan PDF tidak akan muncul. Salin tautannya, lalu buka lewat Chrome atau Safari.',
+        'copy_link' => 'Salin Tautan',
+        'copy_link_done' => 'Tautan tersalin!',
         'issued' => 'Diterbitkan',
         'prepared_for' => 'Disusun untuk',
         'save' => 'Simpan sebagai PDF',

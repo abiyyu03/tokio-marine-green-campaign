@@ -82,11 +82,11 @@ return [
         ],
         [
             'q' => 'Apakah data pribadi yang saya masukkan saat pengisian aman?',
-            'a' => 'Sangat aman. Data yang kamu masukkan hanya digunakan untuk keperluan kalkulasi emisi dan personalisasi rekomendasi pada result page. Kami menjaga privasi pengguna dan tidak pernah membagikan data pribadi kamu kepada pihak ketiga.',
+            'a' => 'Sangat aman. Data yang kamu masukkan hanya digunakan untuk keperluan kalkulasi emisi dan personalisasi rekomendasi pada <em>result page</em>. Kami menjaga privasi pengguna dan tidak pernah membagikan data pribadi kamu kepada pihak ketiga.',
         ],
         [
             'q' => 'Apa yang bisa saya lakukan setelah mengetahui hasil estimasi emisi karbon saya?',
-            'a' => 'Pada result page, kamu akan mendapatkan rekomendasi aksi nyata sesuai kategori dampakmu (ringan, sedang, atau tinggi), seperti saran pemilahan sampah harian hingga lokasi Rumah Pilah/Bank Sampah terdekat untuk mulai menekan sisa emisi harian.',
+            'a' => 'Pada <em>result page</em>, kamu akan mendapatkan rekomendasi aksi nyata sesuai kategori dampakmu (ringan, sedang, atau tinggi), seperti saran pemilahan sampah harian hingga lokasi Rumah Pilah/Bank Sampah terdekat untuk mulai menekan sisa emisi harian.',
         ],
     ],
 ];

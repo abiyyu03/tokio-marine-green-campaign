@@ -51,3 +51,9 @@
     /* Geometri kartu wizard: satu knob, bukan rounded-* yang tersebar. */
     --radius-card: 0.75rem;
 }
+
+/* Alpine belum sempat menjalankan x-show sebelum render pertama — tanpa ini,
+   elemen x-cloak kelihatan sekilas (FOUC) sebelum disembunyikan/dihapus. */
+[x-cloak] {
+    display: none !important;
+}
