@@ -194,11 +194,15 @@ new class extends Component
             {{-- Kop dokumen --}}
             <header class="flex flex-col gap-4 border-b-2 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8" style="border-color: var(--pine)">
                 <div class="flex items-center gap-3">
-                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-[#0b3b36] text-[13px] font-bold text-white">TM</span>
-                    <div class="leading-tight">
-                        <p class="text-[13px] font-bold text-[#0b3b36]">Tokio Marine Insurance Group</p>
-                        <p class="text-[11px] text-[#5f7370]">{{ __('result.report.campaign', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
-                    </div>
+                    {{-- Logo lockup asli (sama dengan yang dipakai site-header), bukan
+                       lagi placeholder lingkaran "TM" — namanya sudah ada di
+                       gambarnya sendiri, jadi tidak perlu diulang sebagai teks. --}}
+                    <img
+                        src="{{ asset('asset/images/logo.png') }}"
+                        alt="Tokio Marine, TM Life Peduli, Dompet Dhuafa"
+                        class="h-7 w-auto shrink-0 object-contain"
+                    >
+                    <p class="text-[11px] leading-tight text-[#5f7370]">{{ __('result.report.campaign', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
                 </div>
 
                 <dl class="figure grid grid-cols-[auto_auto] gap-x-3 gap-y-1 text-left text-[10px] leading-tight whitespace-nowrap sm:text-right">
