@@ -202,7 +202,6 @@ new class extends Component
                         alt="Tokio Marine, TM Life Peduli, Dompet Dhuafa"
                         class="h-7 w-auto shrink-0 object-contain"
                     >
-                    <p class="text-[11px] leading-tight text-[#5f7370]">{{ __('result.report.campaign', ['brand' => config('carbon-calculator.brand.name')]) }}</p>
                 </div>
 
                 <dl class="figure grid grid-cols-[auto_auto] gap-x-3 gap-y-1 text-left text-[10px] leading-tight whitespace-nowrap sm:text-right">
