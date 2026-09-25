@@ -180,7 +180,17 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         $this->validateStep([
             'name' => 'required',
             'email' => 'required|email',
-            'whatsapp' => 'required',
+            // Digit saja (peserta bisa mengetik dengan atau tanpa 0/+62 di
+            // depan, disatukan nanti oleh normalisedWhatsapp()) — tanpa aturan
+            // ini nomor berisi huruf tetap lolos "required" dan laporan tetap
+            // dibuat dengan whatsapp_number yang tidak bisa dihubungi.
+            'whatsapp' => 'required|regex:/^[0-9]+$/|min:8|max:15',
+            // Tanggal lahir dan gender opsional (lihat lang/id/validation.php
+            // custom.dob/gender: tidak ada pesan "required" untuk keduanya,
+            // hanya validasi format) — jangan dipaksa wajib di sini.
+            'dob' => 'nullable|date|before:today',
+            'gender' => 'nullable|in:male,female',
+            'intent' => 'nullable|in:belum_tahu,mungkin,tentu',
             'consent' => 'accepted',
         ]);
 
@@ -511,6 +521,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 <label
                                     class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488] bg-white shadow-sm' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}"
+                                        x-on:click="$wire.mainTransport === '{{ $opt['id'] }}' && $wire.$set('mainTransport', null)"
                                         class="sr-only">
 
                                     {{-- Radio Button Custom Indicator --}}
@@ -564,6 +575,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 <label
                                     class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $distance === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}"
+                                        x-on:click="$wire.distance === '{{ $opt['id'] }}' && $wire.$set('distance', null)"
                                         class="sr-only">
                                     <span
                                         class="text-xs sm:text-sm font-semibold {{ $distance === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
@@ -620,6 +632,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 <label
                                     class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $acUsage === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}"
+                                        x-on:click="$wire.acUsage === '{{ $opt['id'] }}' && $wire.$set('acUsage', null)"
                                         class="sr-only">
                                     <span
                                         class="text-xs sm:text-sm font-semibold {{ $acUsage === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
@@ -656,6 +669,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 <label
                                     class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $fridgeType === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}"
+                                        x-on:click="$wire.fridgeType === '{{ $opt['id'] }}' && $wire.$set('fridgeType', null)"
                                         class="sr-only">
                                     <span
                                         class="text-xs sm:text-sm font-semibold {{ $fridgeType === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
@@ -694,6 +708,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 <label
                                     class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $powerLimit === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                     <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}"
+                                        x-on:click="$wire.powerLimit === '{{ $opt['id'] }}' && $wire.$set('powerLimit', null)"
                                         class="sr-only">
                                     <span
                                         class="text-xs sm:text-sm font-semibold {{ $powerLimit === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
@@ -738,7 +753,8 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     <label
                                         class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
                                         <input type="radio" wire:model.live="{{ $q['model'] }}"
-                                            value="{{ $opt['id'] }}" class="sr-only">
+                                            value="{{ $opt['id'] }}" class="sr-only"
+                                            x-on:click="$wire.{{ $q['model'] }} === '{{ $opt['id'] }}' && $wire.$set('{{ $q['model'] }}', null)">
                                         <span
                                             class="text-xs sm:text-sm font-semibold {{ ${$q['model']} === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
                                         <div
@@ -806,16 +822,20 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @enderror
                         </fieldset>
 
-                        <fieldset>
+                        <fieldset data-calc-field="dob"
+                            class="@error('dob') [&_input]:border [&_input]:border-red-400 @enderror">
                             <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">Tanggal
                                 Lahir</label>
                             <input type="date" wire:model="dob" id="dob"
                                 class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20 text-slate-700">
+                            @error('dob')
+                                <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </fieldset>
                     </div>
 
                     {{-- Row 3: Jenis Kelamin --}}
-                    <fieldset class="mb-6">
+                    <fieldset class="mb-6" data-calc-field="gender">
                         <legend class="text-sm font-semibold text-slate-800 mb-3">Jenis Kelamin</legend>
                         <div class="grid grid-cols-2 gap-4">
                             <label
@@ -841,6 +861,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 </div>
                             </label>
                         </div>
+                        @error('gender')
+                            <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </fieldset>
 
                     {{-- Row 4: Intent --}}
@@ -1071,7 +1094,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 1)
                     <button type="button" wire:click="nextStep"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
-                        Lanjut <span class="hidden sm:inline">ke Listrik Rumah</span>
+                        <span>Lanjut<span class="hidden sm:inline"> ke Listrik Rumah</span></span>
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
@@ -1081,7 +1104,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @elseif ($step == 2)
                     <button type="button" wire:click="nextStep"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
-                        Lanjut <span class="hidden sm:inline">ke Konsumsi & Sampah</span>
+                        <span>Lanjut<span class="hidden sm:inline"> ke Konsumsi & Sampah</span></span>
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"

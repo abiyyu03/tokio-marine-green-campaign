@@ -49,7 +49,7 @@ return [
         'see_result_short' => 'See Results',
         'processing' => 'Processing...',
         'leave_confirm_title' => 'Leave the calculator?',
-        'leave_confirm_text' => 'Your answers so far haven\'t been saved and will be lost.',
+        'leave_confirm_text' => 'Your answers are saved automatically for this session and won\'t be lost, but the report only shows once every step is complete.',
         'leave_confirm_confirm' => 'Yes, leave',
         'leave_confirm_cancel' => 'Keep Filling In',
     ],

@@ -111,40 +111,28 @@
                 </a>
                 @endunless
 
-                {{-- <div class="hidden sm:block h-8 w-px bg-slate-200">
-
-                <div class="flex items-center gap-2 sm:gap-3">
-
-                    <form method="GET" action="{{ route('locale.switch') }}" class="relative">
-                        <select name="locale" onchange="this.form.submit()" aria-label="{{ __('nav.language') }}"
-                            class="cursor-pointer appearance-none rounded-md border border-slate-300 py-2 pr-8 pl-3 text-sm font-medium text-slate-700 focus:border-[#00AEC7] focus:ring-2 focus:ring-[#00AEC7]/20 focus:outline-none">
-                            @foreach (config('carbon-calculator.locales') as $option)
-                                <option value="{{ $option }}" @selected($locale === $option)>{{ strtoupper($option) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <svg class="pointer-events-none absolute top-1/2 right-2 size-4 -translate-y-1/2 text-slate-500"
-                            viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd"
-                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </form>
-
-                    <button @click="mobileMenuOpen = !mobileMenuOpen"
-                        class="block rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Toggle menu">
-                        <svg x-show="!mobileMenuOpen" class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                        <svg x-show="mobileMenuOpen" style="display: none;" class="size-6" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                </div> --}}
+                {{-- Bahasa dimatikan sementara (lihat form GET locale.switch di
+                     riwayat) — belum ada versi Inggris yang siap ditampilkan.
+                     Tombol hamburger TIDAK ikut dimatikan: dulu ia ada satu
+                     <div> dengan form bahasa itu, jadi mengomentari
+                     keduanya sekaligus membuat menu mobile (Beranda/Tentang
+                     Kami/Sektor Emisi/FAQ) tidak bisa dibuka sama sekali di
+                     HP — tidak ada elemen lain yang men-toggle
+                     `mobileMenuOpen`. --}}
+                @unless ($minimal)
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                    class="block rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Toggle menu">
+                    <svg x-show="!mobileMenuOpen" class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                    <svg x-show="mobileMenuOpen" style="display: none;" class="size-6" fill="none"
+                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                @endunless
             </div>
         </div>
 

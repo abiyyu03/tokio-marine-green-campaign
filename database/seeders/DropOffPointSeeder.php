@@ -61,6 +61,12 @@ class DropOffPointSeeder extends Seeder
                 // bukan disamaratakan seperti sebelumnya.
                 'address' => 'Jl. K.S. Tubun Raya',
                 'city' => 'Slipi, Jakarta Barat',
+                // Alamat teksnya ambigu — "Jl. K.S. Tubun" juga ada di
+                // Kampung Melayu, jadi pencarian teks polos di mapsUrl()
+                // sempat nyasar ke sana (temuan UAT-RES-04). Koordinat ini
+                // dikonfirmasi lewat percakapan dengan user, 25 Sep 2026.
+                'latitude' => -6.211484233536067,
+                'longitude' => 106.82080613686034,
             ],
         ];
 
@@ -78,6 +84,11 @@ class DropOffPointSeeder extends Seeder
                     'address' => $data['address'],
                     'city' => $data['city'] ?? 'Jakarta Timur',
                     'province' => 'DKI Jakarta',
+                    // Kalau lat/long tersedia, DropOffPoint::mapsUrl() memakainya
+                    // duluan sebelum jatuh ke pencarian teks nama+alamat yang
+                    // rawan nyasar (lihat catatan di baris Bank Sampah Harapan).
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                     'opening_hours' => null,
                     'phone' => null,
                     'whatsapp_number' => null,

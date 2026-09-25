@@ -49,7 +49,10 @@ return [
         'see_result_short' => 'Lihat Hasil',
         'processing' => 'Memproses...',
         'leave_confirm_title' => 'Keluar dari kalkulator?',
-        'leave_confirm_text' => 'Jawaban yang sudah kamu isi belum tersimpan dan akan hilang.',
+        // Jawabannya sebenarnya TETAP tersimpan (draft di sesi ini) begitu
+        // kamu kembali ke kalkulator — lihat updated() di komponen ini. Jangan
+        // menulis "akan hilang" di sini lagi, itu tidak sesuai kenyataan.
+        'leave_confirm_text' => 'Jawabanmu tersimpan otomatis di sesi ini dan tidak akan hilang, tapi laporan baru bisa dilihat setelah semua langkah selesai.',
         'leave_confirm_confirm' => 'Ya, keluar',
         'leave_confirm_cancel' => 'Lanjutkan Mengisi',
     ],

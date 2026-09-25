@@ -66,11 +66,11 @@ return [
         ],
         [
             'q' => 'Is the personal data I enter safe?',
-            'a' => 'Yes. What you enter is used only to calculate your emissions and personalise the recommendations on your result page. We protect your privacy and never share your personal data with third parties.',
+            'a' => 'Yes. What you enter is used only to calculate your emissions and personalise the recommendations on your <em>result page</em>. We protect your privacy and never share your personal data with third parties.',
         ],
         [
             'q' => 'What can I do once I know my estimated carbon emissions?',
-            'a' => 'On the result page you get concrete recommendations matched to your impact band (light, moderate, or high) — from daily waste sorting tips to the nearest Rumah Pilah / Bank Sampah where you can start cutting what is left.',
+            'a' => 'On the <em>result page</em> you get concrete recommendations matched to your impact band (light, moderate, or high) — from daily waste sorting tips to the nearest Rumah Pilah / Bank Sampah where you can start cutting what is left.',
         ],
     ],
 ];
