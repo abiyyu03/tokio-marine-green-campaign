@@ -71,7 +71,7 @@
             <div class="mt-10 border-t border-white/20 pt-6">
                 <p class="text-xs text-white/70">
                     {{ __('coming_soon.contact') }}
-                    <a href="mailto:marketing@tokiomarine.com" class="font-semibold text-white underline underline-offset-4 transition hover:text-white/80">
+                    <a href="mailto:marketing.com@tokiomarine-life.co.id" class="font-semibold text-white underline underline-offset-4 transition hover:text-white/80">
                         {{ __('coming_soon.contact_action') }}
                     </a>
                 </p>

@@ -13,18 +13,18 @@
                 </p>
 
                 <div class="flex flex-wrap gap-6 text-xs">
-                    <a href="tel:+622112345678" class="flex items-center gap-2 transition hover:text-white">
+                    <a href="tel:+6287861500086" class="flex items-center gap-2 transition hover:text-white">
                         <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.5 11.5 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15A13 13 0 0 1 2 5V3.5Z" clip-rule="evenodd" />
                         </svg>
-                        (021) 1234 5678
+                        +62-878-6150-0086
                     </a>
-                    <a href="mailto:marketing@tokiomarine.com" class="flex items-center gap-2 transition hover:text-white">
+                    <a href="mailto:marketing.com@tokiomarine-life.co.id" class="flex items-center gap-2 transition hover:text-white">
                         <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path d="M3 4a2 2 0 0 0-2 2v.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 6.161V6a2 2 0 0 0-2-2H3Z" />
                             <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
                         </svg>
-                        marketing@tokiomarine.com
+                        marketing.com@tokiomarine-life.co.id
                     </a>
                 </div>
             </div>

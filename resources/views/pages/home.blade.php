@@ -48,7 +48,7 @@ new class extends Component
                     </h1>
                     
                     <p class="mt-4 max-w-2xl text-sm leading-relaxed text-white/90 sm:mt-6 sm:text-base font-medium">
-                        Mulai langkah nyata untuk bumi. Carbon calculator berbasis data emisi nasional untuk memahami seberapa besar dampak aktivitas harianmu terhadap lingkungan &mdash; gratis, tanpa perlu membuat akun.
+                        Mulai langkah nyata untuk bumi. Kalkulator Karbon berbasis data emisi nasional untuk memahami seberapa besar dampak aktivitas harianmu terhadap lingkungan &mdash; gratis, tanpa perlu membuat akun.
                     </p>
 
                     <a
