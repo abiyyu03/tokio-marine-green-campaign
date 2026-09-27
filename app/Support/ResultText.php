@@ -63,6 +63,41 @@ class ResultText
     }
 
     /**
+     * Membulatkan beberapa komponen sehingga jumlahnya tetap sama dengan
+     * total yang dibulatkan (metode largest remainder).
+     *
+     * Pembulatan biasa per komponen bisa meleset dari total: 1,117 + 0,978 +
+     * 0,698 = 2,793 tampil 1,12 + 0,98 + 0,7 = 2,80, padahal totalnya 2,79.
+     * Di sini semua komponen dibulatkan ke bawah dulu, lalu kekurangannya
+     * dibagikan satu per satu ke komponen dengan sisa pecahan terbesar,
+     * hasilnya 1,11 + 0,98 + 0,7 = 2,79.
+     *
+     * @param  array<array-key, float>  $values
+     * @return array<array-key, float>  kunci sama dengan $values
+     */
+    public static function apportion(array $values, float $total, int $decimals = 2): array
+    {
+        $scale = 10 ** $decimals;
+
+        // round(.., 6) meredam galat float seperti 0,29999999 sebelum floor.
+        $floors = array_map(fn ($value) => floor(round($value * $scale, 6)), $values);
+        $remainders = array_map(fn ($value, $floor) => $value * $scale - $floor, $values, $floors);
+        $remainders = array_combine(array_keys($values), $remainders);
+
+        $shortfall = (int) (round($total * $scale) - array_sum($floors));
+
+        // Kekurangan ke sisa terbesar; kelebihan (bila komponen tidak persis
+        // berjumlah total) diambil dari sisa terkecil.
+        $shortfall >= 0 ? arsort($remainders) : asort($remainders);
+
+        foreach (array_slice(array_keys($remainders), 0, abs($shortfall)) as $key) {
+            $floors[$key] += $shortfall >= 0 ? 1 : -1;
+        }
+
+        return array_map(fn ($units) => $units / $scale, $floors);
+    }
+
+    /**
      * Angka tanpa nol di belakang koma: 2,0 -> "2" tapi 2,5 tetap "2,5".
      * Dipakai pada rentang pembanding "(2 - 2,5 Ton CO2/tahun)".
      */

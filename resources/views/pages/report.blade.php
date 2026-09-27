@@ -322,7 +322,7 @@ new class extends Component
                                     {{ ResultText::compact($row->percentage, 0) }}%
                                 </td>
                                 <td class="figure py-2.5 text-right font-semibold text-[#0b3b36]">
-                                    {{ ResultText::tonCompact($row->kg_co2e_year) }} {{ __('result.ton_unit') }}
+                                    {{ $report->categoryTon($row) }} {{ __('result.ton_unit') }}
                                 </td>
                             </tr>
                         @endforeach

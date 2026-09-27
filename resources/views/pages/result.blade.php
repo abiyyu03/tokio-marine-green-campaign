@@ -123,7 +123,7 @@ new class extends Component
                                 </span>
                             </div>
                             <p class="mt-6 text-xl font-bold" style="color: {{ $accent }}">
-                                ±{{ ResultText::tonCompact($row->kg_co2e_year) }} {{ __('result.ton_unit') }}
+                                ±{{ $report->categoryTon($row) }} {{ __('result.ton_unit') }}
                                 <span class="block mt-1 text-xs font-medium text-slate-500">{{ __('result.per_year') }}</span>
                             </p>
                         </div>

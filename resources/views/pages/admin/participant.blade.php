@@ -274,7 +274,7 @@ new #[Title('Detail Peserta | Admin')] class extends Component
                                     </th>
                                     <td class="py-2.5 text-right text-slate-600 tabular-nums">{{ $row->score }}</td>
                                     <td class="py-2.5 text-right text-slate-600 tabular-nums">{{ ResultText::compact($row->percentage, 1) }}%</td>
-                                    <td class="py-2.5 text-right font-semibold text-slate-900 tabular-nums">{{ ResultText::tonCompact($row->kg_co2e_year) }} Ton</td>
+                                    <td class="py-2.5 text-right font-semibold text-slate-900 tabular-nums">{{ $report->categoryTon($row) }} Ton</td>
                                     <td class="py-2.5 text-right text-slate-400 tabular-nums">{{ ResultText::number($row->raw_kg_co2e_year ?? 0, 1) }}</td>
                                 </tr>
                             @endforeach

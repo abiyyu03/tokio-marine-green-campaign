@@ -9,6 +9,7 @@ use App\Models\EmissionEquivalence;
 use App\Models\Recommendation;
 use App\Models\ResultTier;
 use App\Models\Submission;
+use App\Models\SubmissionCategoryResult;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -133,6 +134,23 @@ class ResultReport
             ->filter(fn ($row) => $row->category !== null)
             ->sortBy(fn ($row) => $row->category->sort_order)
             ->values());
+    }
+
+    /**
+     * "1,11" — ton satu kategori yang ditayangkan. Dibulatkan bersama
+     * kategori lain supaya jumlah kartu/baris sama dengan total yang tampil
+     * (lihat ResultText::apportion).
+     */
+    public function categoryTon(SubmissionCategoryResult $row): string
+    {
+        $tons = $this->once('categoryTons', fn () => ResultText::apportion(
+            $this->categoryResults()
+                ->mapWithKeys(fn ($row) => [$row->emission_category_id => $row->kg_co2e_year / 1000])
+                ->all(),
+            $this->totalTon()
+        ));
+
+        return ResultText::compact($tons[$row->emission_category_id] ?? $row->kg_co2e_year / 1000, 2);
     }
 
     // -----------------------------------------------------------------
