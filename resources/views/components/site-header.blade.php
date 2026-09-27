@@ -97,7 +97,7 @@
 
                 <a href="{{ url('/#faq') }}" class="text-sm transition pb-1"
                     :class="activeSection === 'faq' ? 'font-bold text-[#00AEC7] border-b-2 border-[#00AEC7]' :
-                        'font-medium text-slate-600 hover:text-[#00AEC7]'">FAQ</a>
+                        'font-medium text-slate-600 hover:text-[#00AEC7]'">Tanya Jawab (FAQ)</a>
             </nav>
             @endunless
 
@@ -157,7 +157,7 @@
 
                 <a href="{{ url('/#faq') }}" @click="mobileMenuOpen = false" class="block text-base transition"
                     :class="activeSection === 'faq' ? 'font-bold text-[#00AEC7]' :
-                        'font-medium text-slate-600 hover:text-[#00AEC7]'">FAQ</a>
+                        'font-medium text-slate-600 hover:text-[#00AEC7]'">Tanya Jawab (FAQ)</a>
 
                 <div class="border-t border-slate-100 pt-4 mt-2 flex flex-col gap-3">
                     <a href="{{ route('calculator') }}"

@@ -265,7 +265,7 @@ new class extends Component
                 <div class="flex flex-col lg:sticky lg:top-28">
                     <div class="flex items-center gap-3 text-sm font-bold text-[#00AEC7] mb-4">
                         <span class="w-2.5 h-2.5 bg-[#00AEC7] rounded-full"></span>
-                        <span class="tracking-wider uppercase">FAQ</span>
+                        <span class="tracking-wider uppercase">Tanya jawab (FAQ)</span>
                     </div>
                     <h2 class="text-3xl sm:text-4xl font-black text-slate-800 leading-tight mb-6">
                         Punya Pertanyaan Seputar Kalkulator Karbon?
