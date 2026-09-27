@@ -326,11 +326,15 @@ new class extends Component
                         </ul>
                     </div>
 
-                    <button type="button" class="mt-6 rounded-lg bg-[#0d9488] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
+                    {{-- <button type="button" class="mt-6 rounded-lg bg-[#0d9488] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
                         {{ __('result.community.cta') }}
-                    </button>
+                    </button> --}}
+                    <a href="https://wa.me/6287861500086" target="_blank" rel="noopener noreferrer"
+                    class="mt-6 inline-block rounded-lg bg-[#0d9488] px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-700">
+                        {{ __('result.community.cta') }}
+                    </a>
                 </section>
-            </div>
+            </div>  
 
             {{-- KOLOM KANAN: PANEL SKOR (Sticky) --}}
             <aside class="space-y-6 lg:sticky lg:top-24">

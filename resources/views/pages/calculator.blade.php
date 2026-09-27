@@ -771,7 +771,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @endif
 
 
-                {{-- ==================== STEP 4: DATA DIRI ==================== --}}
+               {{-- ==================== STEP 4: DATA DIRI ==================== --}}
                 @if ($step == 4)
                     <div class="border-b pb-5 border-slate-100 mb-6">
                         <h2 class="text-xl sm:text-2xl font-bold text-[#0d9488]">Isi Data Diri</h2>
@@ -781,24 +781,24 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 1: Nama & Email --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="name"
-                            class="@error('name') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="name" class="block text-sm font-semibold text-slate-800 mb-2">Nama
-                                Lengkap</label>
+                        <fieldset data-calc-field="name">
+                            <label for="name" class="block text-sm font-semibold @error('name') text-red-600 @else text-slate-800 @enderror mb-2">
+                                Nama Lengkap <span class="text-red-500">*</span>
+                            </label>
                             <input type="text" wire:model="name" id="name"
                                 placeholder="Contoh: Andi Pratama"
-                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                                class="block w-full rounded-xl px-4 py-3 text-sm transition-all focus:ring-2 focus:outline-none {{ $errors->has('name') ? 'border-red-400 border focus:border-red-500 focus:ring-red-100' : 'border border-slate-200 focus:border-[#0d9488] focus:ring-[#0d9488]/20' }}">
                             @error('name')
                                 <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
                             @enderror
                         </fieldset>
 
-                        <fieldset data-calc-field="email"
-                            class="@error('email') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="email" class="block text-sm font-semibold text-slate-800 mb-2">Alamat Email
-                                aktif</label>
+                        <fieldset data-calc-field="email">
+                            <label for="email" class="block text-sm font-semibold @error('email') text-red-600 @else text-slate-800 @enderror mb-2">
+                                Alamat Email aktif <span class="text-red-500">*</span>
+                            </label>
                             <input type="email" wire:model="email" id="email" placeholder="contoh@email.com"
-                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                                class="block w-full rounded-xl px-4 py-3 text-sm transition-all focus:ring-2 focus:outline-none {{ $errors->has('email') ? 'border-red-400 border focus:border-red-500 focus:ring-red-100' : 'border border-slate-200 focus:border-[#0d9488] focus:ring-[#0d9488]/20' }}">
                             @error('email')
                                 <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
                             @enderror
@@ -807,27 +807,32 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 2: WhatsApp & Tanggal Lahir --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <fieldset data-calc-field="whatsapp"
-                            class="@error('whatsapp') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="whatsapp" class="block text-sm font-semibold text-slate-800 mb-2">Nomor
-                                WhatsApp</label>
+                        <fieldset data-calc-field="whatsapp">
+                            <label for="whatsapp" class="block text-sm font-semibold @error('whatsapp') text-red-600 @else text-slate-800 @enderror mb-2">
+                                Nomor WhatsApp <span class="text-red-500">*</span>
+                            </label>
                             <div class="relative">
-                                <span
-                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-medium">+62</span>
-                                <input type="text" wire:model="whatsapp" id="whatsapp" placeholder="8123456789"
-                                    class="block w-full rounded-xl border-slate-200 pl-14 pr-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm @error('whatsapp') text-red-400 @else text-slate-500 @enderror font-medium">+62</span>
+                                <input type="tel" 
+                                    inputmode="numeric" 
+                                    wire:model="whatsapp" 
+                                    id="whatsapp" 
+                                    placeholder="8123456789"
+                                    maxlength="15"
+                                    oninput="this.value = this.value.replace(/\D/g, '')"
+                                    class="block w-full rounded-xl pl-14 pr-4 py-3 text-sm transition-all focus:ring-2 focus:outline-none {{ $errors->has('whatsapp') ? 'border-red-400 border focus:border-red-500 focus:ring-red-100' : 'border border-slate-200 focus:border-[#0d9488] focus:ring-[#0d9488]/20' }}">
                             </div>
                             @error('whatsapp')
                                 <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
                             @enderror
                         </fieldset>
 
-                        <fieldset data-calc-field="dob"
-                            class="@error('dob') [&_input]:border [&_input]:border-red-400 @enderror">
-                            <label for="dob" class="block text-sm font-semibold text-slate-800 mb-2">Tanggal
-                                Lahir</label>
+                        <fieldset data-calc-field="dob">
+                            <label for="dob" class="block text-sm font-semibold @error('dob') text-red-600 @else text-slate-800 @enderror mb-2">
+                                Tanggal Lahir <span class="text-red-500">*</span>
+                            </label>
                             <input type="date" wire:model="dob" id="dob"
-                                class="block w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-[#0d9488] focus:ring-[#0d9488]/20 text-slate-700">
+                                class="block w-full rounded-xl px-4 py-3 text-sm text-slate-700 transition-all focus:ring-2 focus:outline-none {{ $errors->has('dob') ? 'border-red-400 border focus:border-red-500 focus:ring-red-100' : 'border border-slate-200 focus:border-[#0d9488] focus:ring-[#0d9488]/20' }}">
                             @error('dob')
                                 <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
                             @enderror
@@ -836,25 +841,27 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                     {{-- Row 3: Jenis Kelamin --}}
                     <fieldset class="mb-6" data-calc-field="gender">
-                        <legend class="text-sm font-semibold text-slate-800 mb-3">Jenis Kelamin</legend>
+                        <legend class="text-sm font-semibold @error('gender') text-red-600 @else text-slate-800 @enderror mb-3">
+                            Jenis Kelamin <span class="text-red-500">*</span>
+                        </legend>
                         <div class="grid grid-cols-2 gap-4">
                             <label
-                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'male' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'male' ? 'border-[#0d9488] bg-white' : ($errors->has('gender') ? 'border-red-300 bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white') }}">
                                 <input type="radio" wire:model.live="gender" value="male" class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Laki-laki</span>
                                 <div
-                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'male' ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'male' ? 'border-[#0d9488]' : ($errors->has('gender') ? 'border-red-400' : 'border-slate-300') }}">
                                     @if ($gender === 'male')
                                         <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
                                     @endif
                                 </div>
                             </label>
                             <label
-                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'female' ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'female' ? 'border-[#0d9488] bg-white' : ($errors->has('gender') ? 'border-red-300 bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white') }}">
                                 <input type="radio" wire:model.live="gender" value="female" class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Perempuan</span>
                                 <div
-                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'female' ? 'border-[#0d9488]' : 'border-slate-300' }}">
+                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'female' ? 'border-[#0d9488]' : ($errors->has('gender') ? 'border-red-400' : 'border-slate-300') }}">
                                     @if ($gender === 'female')
                                         <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
                                     @endif
@@ -869,15 +876,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     {{-- Row 4: Intent --}}
                     <fieldset class="mb-6">
                         <legend class="text-sm font-semibold text-slate-800 mb-3">Apakah kamu berencana untuk
-                            mengurangi emisi karbonmu setelah melihat hasil ini?</legend>
+                            mengurangi emisi karbonmu setelah melihat hasil ini? <span class="text-red-500">*</span></legend> 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             @foreach ([['id' => 'belum_tahu', 'label' => 'Belum Tahu'], ['id' => 'mungkin', 'label' => 'Mungkin'], ['id' => 'tentu', 'label' => 'Tentu, Pasti']] as $opt)
                                 <label
                                     class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ $intent === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}"
-                                        class="sr-only">
-                                    <span
-                                        class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
+                                    <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}" class="sr-only">
+                                    <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
                                     <div
                                         class="flex size-4 items-center justify-center rounded-full border-2 {{ $intent === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
                                         @if ($intent === $opt['id'])
@@ -890,16 +895,13 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
-                    <fieldset data-calc-field="consent"
-                        class="@error('consent') [&>div]:border-red-300 [&>div]:bg-red-50/60 @enderror">
-                        <div class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <fieldset data-calc-field="consent">
+                        <div class="flex items-start gap-3 rounded-xl border p-4 transition-all {{ $errors->has('consent') ? 'border-red-300 bg-red-50/60' : 'border-slate-200 bg-slate-50' }}">
                             <input id="consent" type="checkbox" wire:model="consent"
                                 class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
-                            <label for="consent" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                                Saya menyetujui <a href="#"
-                                    class="font-semibold text-[#0d9488] hover:underline">Syarat & Ketentuan</a> serta
-                                <a href="#" class="font-semibold text-[#0d9488] hover:underline">Kebijakan
-                                    Privasi</a> yang berlaku dalam kampanye Tokio Marine Green Campaign ini.
+                            <label for="consent" class="text-xs sm:text-sm leading-relaxed {{ $errors->has('consent') ? 'text-red-700' : 'text-slate-600' }}">
+                                Saya menyetujui <a href="#" class="font-semibold text-[#0d9488] hover:underline">Syarat & Ketentuan</a> serta
+                                <a href="#" class="font-semibold text-[#0d9488] hover:underline">Kebijakan Privasi</a> yang berlaku dalam kampanye Tokio Marine Green Campaign ini. <span class="text-red-500">*</span>
                             </label>
                         </div>
                         @error('consent')
@@ -1066,8 +1068,8 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 d="M12.79 5.23a.75.75 0 0 1 0 1.06L9.06 10l3.73 3.71a.75.75 0 1 1-1.06 1.06l-4.25-4.24a.75.75 0 0 1 0-1.06l4.25-4.24a.75.75 0 0 1 1.06 0Z"
                                 clip-rule="evenodd" />
                         </svg>
-                        <span class="hidden sm:inline">Kembali ke Beranda</span>
-                        <span class="sm:hidden">Kembali</span>
+                        <span>Kembali ke Beranda</span>
+                        {{-- <span class="sm:hidden">Kembali</span> --}}
                     </a>
                 @else
                     <button type="button" wire:click="previousStep"
@@ -1078,14 +1080,14 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 clip-rule="evenodd" />
                         </svg>
                         @if ($step == 2)
-                            <span class="hidden sm:inline">Kembali ke Transportasi Darat</span>
-                            <span class="sm:hidden">Kembali</span>
+                            <span>Kembali ke Transportasi Darat</span>
+                            {{-- <span class="sm:hidden">Kembali</span> --}}
                         @elseif ($step == 3)
-                            <span class="hidden sm:inline">Kembali ke Listrik Rumah</span>
-                            <span class="sm:hidden">Kembali</span>
+                            <span>Kembali ke Listrik Rumah</span>
+                            {{-- <span class="sm:hidden">Kembali</span> --}}
                         @elseif ($step == 4)
-                            <span class="hidden sm:inline">Kembali ke Konsumsi & Sampah</span>
-                            <span class="sm:hidden">Kembali</span>
+                            <span>Kembali ke Konsumsi & Sampah</span>
+                            {{-- <span class="sm:hidden">Kembali</span> --}}
                         @endif
                     </button>
                 @endif
@@ -1094,7 +1096,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @if ($step == 1)
                     <button type="button" wire:click="nextStep"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
-                        <span>Lanjut<span class="hidden sm:inline"> ke Listrik Rumah</span></span>
+                        <span>Lanjut ke Listrik Rumah</span>
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"
@@ -1104,7 +1106,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @elseif ($step == 2)
                     <button type="button" wire:click="nextStep"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700">
-                        <span>Lanjut<span class="hidden sm:inline"> ke Konsumsi & Sampah</span></span>
+                        <span>Lanjut ke Konsumsi & Sampah</span>
                         <svg class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 0 1 0-1.06L10.94 10 7.21 6.29a.75.75 0 1 1 1.06-1.06l4.25 4.24a.75.75 0 0 1 0 1.06l-4.25 4.24a.75.75 0 0 1-1.06 0Z"

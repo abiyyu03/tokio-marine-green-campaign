@@ -84,6 +84,6 @@ return [
         'heading' => 'Dampak Kolektif Komunitas',
         'intro' => ':name, jika :cohort orang dengan profil emisi sepertimu melakukan aksi memilah sampah ini, lebih dari :min - :max Ton CO₂ dapat dihindari setiap tahunnya.',
         'stats_heading' => 'Tahun ini, komunitas mitra Bank Sampah telah:',
-        'cta' => 'Saya Mau Ikut Berkontribusi',
+        'cta' => 'Saya ingin pelajari lebih lanjut',
     ],
 ];

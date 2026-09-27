@@ -16,15 +16,15 @@ return [
     'cta' => [
         'transportasi' => [
             'heading' => 'Menghitung Jejak Transportasi! 🚗',
-            'body' => 'Kendaraan dan jarak tempuhmu berpengaruh besar ke emisi harian. Tinggal 3 step lagi untuk lihat hasil!',
+            'body' => 'Kendaraan dan jarak tempuhmu berpengaruh besar ke emisi harian. Tinggal 3 langkah lagi untuk lihat hasil!',
         ],
         'listrik_rumah' => [
             'heading' => 'Menghitung Energi Rumah! ⚡',
-            'body' => 'Penggunaan listrik menyimpan emisi terselubung. Tinggal 2 step lagi untuk lihat hasil!',
+            'body' => 'Penggunaan listrik menyimpan emisi terselubung. Tinggal 2 langkah lagi untuk lihat hasil!',
         ],
         'konsumsi_sampah' => [
             'heading' => 'Menghitung Gaya Hidupmu! ♻️',
-            'body' => 'Kebiasaan konsumsi dan sampah turut menentukan jejak karbonmu. Tinggal 1 step lagi untuk lihat hasil!',
+            'body' => 'Kebiasaan konsumsi dan sampah turut menentukan jejak karbonmu. Tinggal 1 langkah lagi untuk lihat hasil!',
         ],
         'personal' => [
             'heading' => 'Laporanmu Siap Diterbitkan! 🎉',
