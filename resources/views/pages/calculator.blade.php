@@ -188,9 +188,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             // Tanggal lahir dan gender opsional (lihat lang/id/validation.php
             // custom.dob/gender: tidak ada pesan "required" untuk keduanya,
             // hanya validasi format) — jangan dipaksa wajib di sini.
-            'dob' => 'nullable|date|before:today',
-            'gender' => 'nullable|in:male,female',
-            'intent' => 'nullable|in:belum_tahu,mungkin,tentu',
+            'dob' => 'required|date|before:today',
+            'gender' => 'required|in:male,female',
+            'intent' => 'required|in:belum_tahu,mungkin,tentu',
             'consent' => 'accepted',
         ]);
 
@@ -892,6 +892,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                 </label>
                             @endforeach
                         </div>
+                        @error('intent')
+                            <p class="mt-1.5 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </fieldset>
 
                     {{-- Consent Checkbox --}}
@@ -1126,7 +1129,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                 @elseif ($step == 4)
                     <button type="button" wire:click="submitLeads" wire:loading.attr="disabled"
                         class="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50">
-                        <span wire:loading.remove>Generate Laporan</span>
+                        <span wire:loading.remove>Lihat Laporan Akhir</span>
                         <span wire:loading>Processing...</span>
                         <svg wire:loading.remove class="size-4 sm:size-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
