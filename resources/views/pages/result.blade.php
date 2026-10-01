@@ -2,6 +2,7 @@
 
 use App\Support\ResultReport;
 use App\Support\ResultText;
+use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -28,6 +29,47 @@ new class extends Component
     public function report(): ?ResultReport
     {
         return ResultReport::forUuid($this->uuid);
+    }
+
+    /**
+     * Data kartu "Bagikan Hasilmu", dibaca resources/js/result-share.js.
+     * Gambar kartunya sengaja tanpa nama peserta: gambar itu diunggah ke
+     * media sosial publik, beda dengan halaman ini yang tidak diindeks.
+     */
+    #[Computed]
+    public function share(): array
+    {
+        $report = $this->report;
+        $tier = $report->tier();
+        $url = route('calculator.result', ['uuid' => $this->uuid]);
+
+        // Path ikon badge diambil dari komponen yang sama dengan badge di
+        // halaman ini, supaya gambar kartu tidak menyimpan peta ikon sendiri.
+        $badgeIcon = $tier ? Blade::render('<x-emission-icon :name="$name" />', ['name' => $tier->badge_icon]) : '';
+        preg_match('/\sd="([^"]+)"/', $badgeIcon, $iconPath);
+
+        return [
+            'url' => $url,
+            'facebook' => 'https://www.facebook.com/sharer/sharer.php?u='.urlencode($url),
+            'title' => __('seo.result.share_title'),
+            'fileName' => __('result.share.file_name'),
+            'card' => [
+                'logo' => asset('asset/images/logo.png'),
+                'lockup' => config('carbon-calculator.brand.lockup'),
+                'eyebrow' => __('result.share.card_eyebrow'),
+                'value' => ResultText::tonCompact($report->totalKg()),
+                'unit' => __('result.ton_per_year'),
+                // Badge, bukan label tier: "Climate Mover" layak dipamerkan,
+                // "Dampak Tinggi" tidak — label tier tetap ada di halaman ini.
+                'badgeLabel' => $tier?->tr('badge_label'),
+                'badgeColor' => $tier?->color ?? '#0d9488',
+                'badgeIcon' => $iconPath[1] ?? null,
+                'score' => __('result.share.card_score', ['score' => $report->score()]),
+                'footnote' => __('result.share.card_footnote'),
+                'cta' => __('result.share.card_cta'),
+                'host' => preg_replace('/^www\./', '', (string) parse_url(url('/'), PHP_URL_HOST)),
+            ],
+        ];
     }
 };
 ?>
@@ -369,6 +411,8 @@ new class extends Component
                         @endforeach
                     </div>
                 </div>
+
+                <x-result-share :share="$this->share" />
 
                 {{-- Tabel "Total poin dikategorikan" --}}
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -28,13 +28,13 @@ return [
     ],
 
     'drop_off' => [
-        'heading' => 'Find Your Nearest Sorting House',
+        'heading' => 'Find Your Nearest Waste Bank/Sorting House',
         'count' => ':count locations — scroll to see them all',
         'scroll_prev' => 'Previous locations',
         'scroll_next' => 'More locations',
         'maps' => 'View on Maps',
         'whatsapp' => 'Chat on WhatsApp',
-        'empty' => 'No sorting house locations have been listed yet.',
+        'empty' => 'No waste bank or sorting house locations have been listed yet.',
     ],
 
     'email_notice' => [
@@ -74,6 +74,28 @@ return [
         'drop_off_note' => 'Drop your sorted waste at one of these locations.',
         'page' => 'Page :number of :total',
         'closing' => 'This report was generated from the answers :name gave in the :brand carbon calculator. The latest version is always available at the link below.',
+    ],
+
+    'share' => [
+        'heading' => 'Share Your Result',
+        'body' => 'Invite friends and family to calculate their carbon footprint too.',
+        'instagram' => 'Instagram',
+        'facebook' => 'Facebook',
+        'tiktok' => 'TikTok',
+        'failed' => 'Your result image could not be created on this device. Please try again, or open this page in another browser.',
+        'preview_title' => 'Your result image is ready to share',
+        'preview_instagram' => 'Download this image, then post it to your Instagram Story or Feed.',
+        'preview_tiktok' => 'Download this image, then post it as a photo post on TikTok.',
+        'preview_hint' => 'If the download button does not work, press and hold the image, then choose Save.',
+        'download' => 'Download Image',
+        'close' => 'Close',
+        'image_alt' => 'Carbon footprint result card for sharing',
+        'file_name' => 'my-carbon-footprint.png',
+        // Text inside the card image (no participant name — the image is public).
+        'card_eyebrow' => 'My annual carbon footprint',
+        'card_score' => 'Final score: :score',
+        'card_footnote' => 'Calculated with the Carbon Calculator',
+        'card_cta' => 'Calculate your carbon footprint too!',
     ],
 
     'community' => [

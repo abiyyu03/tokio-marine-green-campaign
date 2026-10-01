@@ -28,13 +28,13 @@ return [
     ],
 
     'drop_off' => [
-        'heading' => 'Temukan Rumah Pilah Terdekat!',
+        'heading' => 'Temukan Bank Sampah/Rumah Pilah Terdekat',
         'count' => ':count lokasi — geser untuk melihat semuanya',
         'scroll_prev' => 'Lihat lokasi sebelumnya',
         'scroll_next' => 'Lihat lokasi berikutnya',
         'maps' => 'Lihat di Maps',
         'whatsapp' => 'Hubungi WhatsApp',
-        'empty' => 'Belum ada lokasi Rumah Pilah yang terdaftar.',
+        'empty' => 'Belum ada lokasi Bank Sampah/Rumah Pilah yang terdaftar.',
     ],
 
     'email_notice' => [
@@ -78,6 +78,28 @@ return [
         'drop_off_note' => 'Setorkan sampah terpilahmu ke salah satu lokasi berikut.',
         'page' => 'Halaman :number dari :total',
         'closing' => 'Laporan ini disusun otomatis dari jawaban :name pada Kalkulator Karbon :brand. Versi terbarunya selalu tersedia di tautan berikut.',
+    ],
+
+    'share' => [
+        'heading' => 'Bagikan Hasilmu',
+        'body' => 'Ajak teman dan keluarga ikut menghitung jejak karbonnya.',
+        'instagram' => 'Instagram',
+        'facebook' => 'Facebook',
+        'tiktok' => 'TikTok',
+        'failed' => 'Gambar hasil gagal dibuat di perangkat ini. Coba lagi, atau buka halaman ini di browser lain.',
+        'preview_title' => 'Gambar hasilmu siap dibagikan',
+        'preview_instagram' => 'Unduh gambar ini, lalu unggah ke Story atau Feed Instagram.',
+        'preview_tiktok' => 'Unduh gambar ini, lalu unggah sebagai postingan foto di TikTok.',
+        'preview_hint' => 'Kalau tombol unduh tidak berfungsi, tekan lama gambarnya lalu pilih Simpan.',
+        'download' => 'Unduh Gambar',
+        'close' => 'Tutup',
+        'image_alt' => 'Kartu hasil jejak karbon untuk dibagikan',
+        'file_name' => 'jejak-karbonku.png',
+        // Teks di dalam gambar kartu (tanpa nama peserta — gambarnya publik).
+        'card_eyebrow' => 'Jejak karbon tahunanku',
+        'card_score' => 'Skor akhir: :score',
+        'card_footnote' => 'Dihitung lewat Kalkulator Karbon',
+        'card_cta' => 'Yuk, hitung jejak karbonmu juga!',
     ],
 
     'community' => [

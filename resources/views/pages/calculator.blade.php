@@ -2,9 +2,11 @@
 
 use App\Models\EmissionFieldOption;
 use App\Models\Leads;
+use App\Models\LegalDocument;
 use App\Models\Submission;
 use App\Services\CarbonCalculator;
 use App\Services\ResultEmailer;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -79,6 +81,19 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
         if ($property !== null && property_exists($this, $property) && $this->{$property}) {
             $this->resetValidation($property);
         }
+    }
+
+    /**
+     * Syarat & Ketentuan yang tampil di modal step 4. Teksnya diedit di tabel
+     * legal_document_translations; null kalau tabelnya belum diisi — atau
+     * belum dibuat karena kode ter-upload sebelum bundle SQL dijalankan
+     * (dicatat ke log lewat rescue()). Centang persetujuan tetap wajib, hanya
+     * tautan modalnya yang disembunyikan.
+     */
+    #[Computed]
+    public function terms(): ?LegalDocument
+    {
+        return rescue(fn () => LegalDocument::active(LegalDocument::TERMS), null);
     }
 
     private function allInput()
@@ -248,7 +263,9 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
             'intent' => $this->intent ?: null,
             'locale' => app()->getLocale(),
             'consented_at' => now(),
-            'consent_version' => config('carbon-calculator.consent_version'),
+            // Versi dokumen yang benar-benar ditampilkan ke peserta; config
+            // hanya cadangan kalau tabel legal_documents belum diisi.
+            'consent_version' => $this->terms?->version ?? config('carbon-calculator.consent_version'),
         ]);
 
         $submission->forceFill([
@@ -517,19 +534,23 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                                     ['id' => 'kombinasi', 'label' => 'Kombinasi Transportasi', 'icon' => 'shuffle'],
                                 ];
                             @endphp
+                            {{-- Tampilan "terpilih" di semua kartu opsi wizard ini digambar CSS
+                                 (has-checked / group-has-checked/option), bukan kelas dari server.
+                                 Dulu kelasnya dihitung di Blade, jadi sorotan baru muncul setelah
+                                 request wire:model.live pulang — di hosting produksi terasa lambat
+                                 (catatan UAT). Request tetap jalan untuk menyimpan draft; @checked
+                                 hanya supaya pilihan draft sudah tampil sebelum Livewire boot. --}}
                             @foreach ($transportOptions as $opt)
                                 <label
-                                    class="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all {{ $mainTransport === $opt['id'] ? 'border-[#0d9488] bg-white shadow-sm' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}"
+                                    class="group/option relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 sm:p-4 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488] has-checked:shadow-sm">
+                                    <input type="radio" wire:model.live="mainTransport" value="{{ $opt['id'] }}" @checked($mainTransport === $opt['id'])
                                         x-on:click="$wire.mainTransport === '{{ $opt['id'] }}' && $wire.$set('mainTransport', null)"
                                         class="sr-only">
 
                                     {{-- Radio Button Custom Indicator --}}
                                     <div
-                                        class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $mainTransport === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($mainTransport === $opt['id'])
-                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="absolute right-2 top-2 sm:right-3 sm:top-3 flex size-4 sm:size-5 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 sm:size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
 
                                     {{-- Wrapper untuk Ikon dan Lingkaran Background --}}
@@ -544,7 +565,7 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
 
                                     {{-- Label Text dengan perubahan warna saat aktif --}}
                                     <span
-                                        class="text-center text-[11px] sm:text-xs font-bold {{ $mainTransport === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        class="text-center text-[11px] sm:text-xs font-bold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -573,17 +594,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @endphp
                             @foreach ($distOptions as $opt)
                                 <label
-                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $distance === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}"
+                                    class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
+                                    <input type="radio" wire:model.live="distance" value="{{ $opt['id'] }}" @checked($distance === $opt['id'])
                                         x-on:click="$wire.distance === '{{ $opt['id'] }}' && $wire.$set('distance', null)"
                                         class="sr-only">
                                     <span
-                                        class="text-xs sm:text-sm font-semibold {{ $distance === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                     <div
-                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $distance === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($distance === $opt['id'])
-                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 sm:size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
                                 </label>
                             @endforeach
@@ -630,17 +649,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @endphp
                             @foreach ($acOptions as $opt)
                                 <label
-                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $acUsage === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}"
+                                    class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
+                                    <input type="radio" wire:model.live="acUsage" value="{{ $opt['id'] }}" @checked($acUsage === $opt['id'])
                                         x-on:click="$wire.acUsage === '{{ $opt['id'] }}' && $wire.$set('acUsage', null)"
                                         class="sr-only">
                                     <span
-                                        class="text-xs sm:text-sm font-semibold {{ $acUsage === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                     <div
-                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $acUsage === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($acUsage === $opt['id'])
-                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 sm:size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
                                 </label>
                             @endforeach
@@ -667,17 +684,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @endphp
                             @foreach ($fridgeOptions as $opt)
                                 <label
-                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $fridgeType === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}"
+                                    class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
+                                    <input type="radio" wire:model.live="fridgeType" value="{{ $opt['id'] }}" @checked($fridgeType === $opt['id'])
                                         x-on:click="$wire.fridgeType === '{{ $opt['id'] }}' && $wire.$set('fridgeType', null)"
                                         class="sr-only">
                                     <span
-                                        class="text-xs sm:text-sm font-semibold {{ $fridgeType === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                     <div
-                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $fridgeType === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($fridgeType === $opt['id'])
-                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 sm:size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
                                 </label>
                             @endforeach
@@ -706,17 +721,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             @endphp
                             @foreach ($powerOptions as $opt)
                                 <label
-                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all {{ $powerLimit === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}"
+                                    class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 sm:p-4 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
+                                    <input type="radio" wire:model.live="powerLimit" value="{{ $opt['id'] }}" @checked($powerLimit === $opt['id'])
                                         x-on:click="$wire.powerLimit === '{{ $opt['id'] }}' && $wire.$set('powerLimit', null)"
                                         class="sr-only">
                                     <span
-                                        class="text-xs sm:text-sm font-semibold {{ $powerLimit === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                        class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                     <div
-                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 {{ $powerLimit === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($powerLimit === $opt['id'])
-                                            <div class="size-2 sm:size-2.5 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="flex size-4 sm:size-5 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 sm:size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
                                 </label>
                             @endforeach
@@ -751,17 +764,15 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 @foreach ($q['ops'] as $opt)
                                     <label
-                                        class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
+                                        class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
                                         <input type="radio" wire:model.live="{{ $q['model'] }}"
-                                            value="{{ $opt['id'] }}" class="sr-only"
+                                            value="{{ $opt['id'] }}" @checked(${$q['model']} === $opt['id']) class="sr-only"
                                             x-on:click="$wire.{{ $q['model'] }} === '{{ $opt['id'] }}' && $wire.$set('{{ $q['model'] }}', null)">
                                         <span
-                                            class="text-xs sm:text-sm font-semibold {{ ${$q['model']} === $opt['id'] ? 'text-[#0d9488]' : 'text-slate-700' }}">{{ $opt['label'] }}</span>
+                                            class="text-xs sm:text-sm font-semibold text-slate-700 group-has-checked/option:text-[#0d9488]">{{ $opt['label'] }}</span>
                                         <div
-                                            class="flex size-4 items-center justify-center rounded-full border-2 {{ ${$q['model']} === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                            @if (${$q['model']} === $opt['id'])
-                                                <div class="size-2 rounded-full bg-[#0d9488]"></div>
-                                            @endif
+                                            class="flex size-4 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                            <div class="hidden size-2 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                         </div>
                                     </label>
                                 @endforeach
@@ -846,25 +857,21 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         </legend>
                         <div class="grid grid-cols-2 gap-4">
                             <label
-                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'male' ? 'border-[#0d9488] bg-white' : ($errors->has('gender') ? 'border-red-300 bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white') }}">
-                                <input type="radio" wire:model.live="gender" value="male" class="sr-only">
+                                class="group/option relative flex cursor-pointer items-center justify-between rounded-xl border-2 bg-white p-4 transition-all has-checked:border-[#0d9488] {{ $errors->has('gender') ? 'border-red-300' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
+                                <input type="radio" wire:model.live="gender" value="male" @checked($gender === 'male') class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Laki-laki</span>
                                 <div
-                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'male' ? 'border-[#0d9488]' : ($errors->has('gender') ? 'border-red-400' : 'border-slate-300') }}">
-                                    @if ($gender === 'male')
-                                        <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
-                                    @endif
+                                    class="flex size-5 items-center justify-center rounded-full border-2 group-has-checked/option:border-[#0d9488] {{ $errors->has('gender') ? 'border-red-400' : 'border-slate-300' }}">
+                                    <div class="hidden size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                 </div>
                             </label>
                             <label
-                                class="relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all {{ $gender === 'female' ? 'border-[#0d9488] bg-white' : ($errors->has('gender') ? 'border-red-300 bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white') }}">
-                                <input type="radio" wire:model.live="gender" value="female" class="sr-only">
+                                class="group/option relative flex cursor-pointer items-center justify-between rounded-xl border-2 bg-white p-4 transition-all has-checked:border-[#0d9488] {{ $errors->has('gender') ? 'border-red-300' : 'border-slate-200 hover:border-[#0d9488]/50' }}">
+                                <input type="radio" wire:model.live="gender" value="female" @checked($gender === 'female') class="sr-only">
                                 <span class="text-sm font-semibold text-slate-700">Perempuan</span>
                                 <div
-                                    class="flex size-5 items-center justify-center rounded-full border-2 {{ $gender === 'female' ? 'border-[#0d9488]' : ($errors->has('gender') ? 'border-red-400' : 'border-slate-300') }}">
-                                    @if ($gender === 'female')
-                                        <div class="size-2.5 rounded-full bg-[#0d9488]"></div>
-                                    @endif
+                                    class="flex size-5 items-center justify-center rounded-full border-2 group-has-checked/option:border-[#0d9488] {{ $errors->has('gender') ? 'border-red-400' : 'border-slate-300' }}">
+                                    <div class="hidden size-2.5 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                 </div>
                             </label>
                         </div>
@@ -880,33 +887,93 @@ new #[Title('Hitung Jejak Karbonmu | Tokio Marine Green Campaign')] class extend
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             @foreach ([['id' => 'belum_tahu', 'label' => 'Belum Tahu'], ['id' => 'mungkin', 'label' => 'Mungkin'], ['id' => 'tentu', 'label' => 'Tentu, Pasti']] as $opt)
                                 <label
-                                    class="relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all {{ $intent === $opt['id'] ? 'border-[#0d9488] bg-white' : 'border-slate-200 hover:border-[#0d9488]/50 bg-white' }}">
-                                    <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}" class="sr-only">
+                                    class="group/option relative flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-all border-slate-200 bg-white hover:border-[#0d9488]/50 has-checked:border-[#0d9488]">
+                                    <input type="radio" wire:model.live="intent" value="{{ $opt['id'] }}" @checked($intent === $opt['id']) class="sr-only">
                                     <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ $opt['label'] }}</span>
                                     <div
-                                        class="flex size-4 items-center justify-center rounded-full border-2 {{ $intent === $opt['id'] ? 'border-[#0d9488]' : 'border-slate-300' }}">
-                                        @if ($intent === $opt['id'])
-                                            <div class="size-2 rounded-full bg-[#0d9488]"></div>
-                                        @endif
+                                        class="flex size-4 items-center justify-center rounded-full border-2 border-slate-300 group-has-checked/option:border-[#0d9488]">
+                                        <div class="hidden size-2 rounded-full bg-[#0d9488] group-has-checked/option:block"></div>
                                     </div>
                                 </label>
                             @endforeach
                         </div>
                     </fieldset>
 
-                    {{-- Consent Checkbox --}}
-                    <fieldset data-calc-field="consent">
+                    {{-- Persetujuan Syarat & Ketentuan. Teks dokumennya dari tabel
+                         legal_documents (lihat terms() di atas); tombol "Saya Setuju"
+                         di modal ikut mencentang kotak ini. Sengaja memanggil
+                         $this->terms langsung, tanpa variabel dari direktif php
+                         satu baris: file ini juga punya blok php, dan Blade menelan
+                         teks dari direktif satu baris itu sampai penutup blok
+                         berikutnya — @if di antaranya rusak (ParseError). --}}
+                    <fieldset data-calc-field="consent"
+                        x-data="{
+                            termsOpen: false,
+                            agree() {
+                                this.$wire.consent = true;
+                                this.termsOpen = false;
+                            },
+                        }">
                         <div class="flex items-start gap-3 rounded-xl border p-4 transition-all {{ $errors->has('consent') ? 'border-red-300 bg-red-50/60' : 'border-slate-200 bg-slate-50' }}">
                             <input id="consent" type="checkbox" wire:model="consent"
                                 class="size-5 mt-0.5 rounded border-slate-300 text-[#0d9488] focus:ring-[#0d9488]">
                             <label for="consent" class="text-xs sm:text-sm leading-relaxed {{ $errors->has('consent') ? 'text-red-700' : 'text-slate-600' }}">
-                                Saya menyetujui <a href="#" class="font-semibold text-[#0d9488] hover:underline">Syarat & Ketentuan</a> serta
-                                <a href="#" class="font-semibold text-[#0d9488] hover:underline">Kebijakan Privasi</a> yang berlaku dalam kampanye Tokio Marine Green Campaign ini. <span class="text-red-500">*</span>
+                                Saya telah membaca dan menyetujui
+                                @if ($this->terms)
+                                    <button type="button" x-on:click.prevent="termsOpen = true"
+                                        class="font-semibold text-[#0d9488] underline-offset-2 hover:underline">Syarat & Ketentuan</button>,
+                                @else
+                                    Syarat & Ketentuan,
+                                @endif
+                                termasuk ketentuan penggunaan data pribadi, yang berlaku dalam program ini. <span class="text-red-500">*</span>
                             </label>
                         </div>
                         @error('consent')
                             <p class="text-xs text-red-600 mt-2">{{ $message }}</p>
                         @enderror
+
+                        @if ($this->terms)
+                            <template x-teleport="body">
+                                <div x-show="termsOpen" x-cloak x-transition.opacity
+                                    x-on:click.self="termsOpen = false" x-on:keydown.escape.window="termsOpen = false"
+                                    role="dialog" aria-modal="true" aria-labelledby="terms-title"
+                                    class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/70 p-4">
+                                    <div class="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-xl">
+                                        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+                                            <div>
+                                                <h2 id="terms-title" class="text-base font-bold text-slate-900">{{ $this->terms->tr('title') }}</h2>
+                                                <p class="mt-0.5 text-[11px] text-slate-500">Versi {{ $this->terms->version }}</p>
+                                            </div>
+                                            <button type="button" x-on:click="termsOpen = false" aria-label="Tutup"
+                                                class="-m-1 rounded-md p-1 text-slate-400 transition hover:text-slate-700">
+                                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
+                                        </div>
+
+                                        {{-- Isi Markdown dari DB; HTML mentahnya sudah dibuang
+                                             LegalDocumentTranslation::html(). --}}
+                                        <div class="overflow-y-auto px-5 py-4 text-sm leading-relaxed text-slate-600 sm:px-6
+                                            [&_h2]:mt-5 [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2:first-child]:mt-0
+                                            [&_p]:mt-2 [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mt-2 [&_ol]:list-decimal [&_ol]:pl-5
+                                            [&_li]:mt-1 [&_strong]:font-semibold [&_strong]:text-slate-900 [&_a]:text-[#0d9488] [&_a]:underline
+                                            [&_blockquote]:rounded-lg [&_blockquote]:border [&_blockquote]:border-amber-200 [&_blockquote]:bg-amber-50 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_blockquote]:text-xs [&_blockquote]:text-amber-800 [&_blockquote_p]:mt-0">
+                                            {!! $this->terms->html() !!}
+                                        </div>
+
+                                        <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                                            <button type="button" x-on:click="termsOpen = false"
+                                                class="rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                                Tutup
+                                            </button>
+                                            <button type="button" x-on:click="agree()"
+                                                class="rounded-lg bg-[#0d9488] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+                                                Saya Setuju
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        @endif
                     </fieldset>
                 @endif
 

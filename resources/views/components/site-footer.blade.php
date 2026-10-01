@@ -8,8 +8,11 @@
                     <svg class="mt-0.5 size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M9.69 18.933A9.5 9.5 0 0 0 10 19a9.5 9.5 0 0 0 .31-.067c.17-.06.42-.157.72-.293.6-.27 1.4-.69 2.2-1.28 1.6-1.18 3.27-3.05 3.27-5.61a6.5 6.5 0 1 0-13 0c0 2.56 1.67 4.43 3.27 5.61.8.59 1.6 1.01 2.2 1.28.3.136.55.232.72.293ZM10 9.75a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5Z" clip-rule="evenodd" />
                     </svg>
-                    International Financial Center Tower 2, Jl. Jenderal Sudirman No.32A Kavling 22-23, RT.10/RW.1,
-                    Kuningan, Karet, Kecamatan Setiabudi, Jakarta, Daerah Khusus Ibukota Jakarta 12920
+                    {{-- Dibungkus <span> supaya <br> tidak jadi item flex tersendiri. --}}
+                    <span>
+                        International Financial Centre, Tower 2, Lantai 33A &amp; 35<br>
+                        Jl. Jenderal Sudirman Kav. 22-23, Jakarta 12920
+                    </span>
                 </p>
 
                 <div class="flex flex-wrap gap-6 text-xs">
@@ -50,7 +53,7 @@
                     @endphp
                     @foreach ($socials as $channel => $url)
                         <a href="{{ $url }}" target="_blank" rel="noopener" aria-label="{{ $channel }}" class="grid size-8 place-items-center rounded-full border border-slate-600 text-xs transition hover:border-white hover:text-white">
-                            {{ substr($channel, 0, 1) }}
+                            <x-social-icon :name="strtolower($channel)" class="size-4" />
                         </a>
                     @endforeach
                 </div>

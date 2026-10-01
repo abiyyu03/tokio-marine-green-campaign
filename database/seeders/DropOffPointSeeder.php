@@ -7,9 +7,11 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 /**
- * Isi direktori "Temukan Rumah Pilah Terdekat!" — sekarang berisi dua jenis
+ * Isi direktori "Temukan Bank Sampah/Rumah Pilah Terdekat" — berisi dua jenis
  * lokasi: 10 "Rumah Pilah" dari daftar awal, ditambah "Bank Sampah" dari
  * tabel "DATA BANK SAMPAH" yang dikirim tim kampanye (17 September 2026).
+ * Urutan array = urutan tampil (sort_order): Bank Sampah ASA, Gunung Emas,
+ * Harapan di atas, baru Rumah Pilah — sesuai permintaan tim kampanye.
  * Keduanya sama-sama titik setor sampah terpilah, jadi dipakai model dan
  * tabel yang sama, dibedakan lewat namanya masing-masing.
  *
@@ -32,17 +34,6 @@ class DropOffPointSeeder extends Seeder
     public function run(): void
     {
         $points = [
-            ['name' => 'Rumah Pilah Temugiring', 'address' => 'Jl. Temugiring RW 08 Kayu Putih'],
-            ['name' => 'Rumah Pilah RKI Kayu Putih', 'address' => 'Jl. Kayu Putih Raya - Kayu Putih'],
-            ['name' => 'Rumah Pilah Berkah', 'address' => 'Jl. Buna Karya I Pondok Kelapa'],
-            ['name' => 'Rumah Pilah Cemara', 'address' => 'Jl. Komplek DKI RT 009/02'],
-            ['name' => 'Rumah Pilah Ceria Sehat', 'address' => 'Jl. Mawar Meray III Duren Sawit'],
-            ['name' => 'Rumah Pilah Hijau', 'address' => 'Rusun Penggilingan Tower E Cakung'],
-            ['name' => 'Rumah Pilah PKSMS', 'address' => 'Rusun Klender RW 001'],
-            ['name' => 'Rumah Pilah RW 05 Kayu Putih', 'address' => 'Jl. Logam RW 05 Kayu Putih'],
-            ['name' => 'Rumah Pilah Tunas Beringin', 'address' => 'Taman Segitiga Beringin Jl. Bunga Rampai Raya 17'],
-            ['name' => 'Rumah Pilah Pedaengan', 'address' => 'Kp. Pedaengan Penggilingan Cakung'],
-
             // "DATA BANK SAMPAH", tim kampanye (17 September 2026).
             [
                 'name' => 'Bank Sampah Anugerah Alam Semesta (ASA)',
@@ -61,13 +52,28 @@ class DropOffPointSeeder extends Seeder
                 // bukan disamaratakan seperti sebelumnya.
                 'address' => 'Jl. K.S. Tubun Raya',
                 'city' => 'Slipi, Jakarta Barat',
-                // Alamat teksnya ambigu — "Jl. K.S. Tubun" juga ada di
-                // Kampung Melayu, jadi pencarian teks polos di mapsUrl()
-                // sempat nyasar ke sana (temuan UAT-RES-04). Koordinat ini
-                // dikonfirmasi lewat percakapan dengan user, 25 Sep 2026.
-                'latitude' => -6.211484233536067,
-                'longitude' => 106.82080613686034,
+                // Bank sampah ini tidak punya listing sendiri di Google Maps:
+                // pencarian nama + alamat membuka bank sampah lain, mis.
+                // "Tunas Harapan - Bekasi" (temuan UAT-RES-04 dan UAT 1 Okt
+                // 2026). Tautan share di bawah dikirim user 2 Okt 2026 dan
+                // menunjuk ke "Kantor Kelurahan Kota Slipi Jakarta Barat";
+                // koordinatnya diambil dari tautan yang sama. (Koordinat
+                // lama -6.2115, 106.8208 jatuh di Karet Kuningan — salah.)
+                'latitude' => -6.1936049,
+                'longitude' => 106.8019011,
+                'maps_url' => 'https://maps.app.goo.gl/9iWL64mQbxg5fPJv7',
             ],
+
+            ['name' => 'Rumah Pilah Temugiring', 'address' => 'Jl. Temugiring RW 08 Kayu Putih'],
+            ['name' => 'Rumah Pilah RKI Kayu Putih', 'address' => 'Jl. Kayu Putih Raya - Kayu Putih'],
+            ['name' => 'Rumah Pilah Berkah', 'address' => 'Jl. Buna Karya I Pondok Kelapa'],
+            ['name' => 'Rumah Pilah Cemara', 'address' => 'Jl. Komplek DKI RT 009/02'],
+            ['name' => 'Rumah Pilah Ceria Sehat', 'address' => 'Jl. Mawar Merah III Duren Sawit'],
+            ['name' => 'Rumah Pilah Hijau', 'address' => 'Rusun Penggilingan Tower E Cakung'],
+            ['name' => 'Rumah Pilah PKSMS', 'address' => 'Rusun Klender RW 001'],
+            ['name' => 'Rumah Pilah RW 05 Kayu Putih', 'address' => 'Jl. Logam RW 05 Kayu Putih'],
+            ['name' => 'Rumah Pilah Tunas Beringin', 'address' => 'Taman Segitiga Beringin Jl. Bunga Rampai Raya 17'],
+            ['name' => 'Rumah Pilah Pedaengan', 'address' => 'Kp. Pedaengan Penggilingan Cakung'],
         ];
 
         $slugs = [];
@@ -92,7 +98,7 @@ class DropOffPointSeeder extends Seeder
                     'opening_hours' => null,
                     'phone' => null,
                     'whatsapp_number' => null,
-                    'maps_url' => null,
+                    'maps_url' => $data['maps_url'] ?? null,
                     'sort_order' => $index + 1,
                     'is_active' => true,
                 ]

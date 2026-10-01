@@ -13,7 +13,7 @@ return [
     // `lockup` dipakai saat kedua pihak ditulis berdampingan sebagai kolaborasi.
     'brand' => [
         'name' => env('APP_BRAND_NAME', 'Tokio Marine Jaga Bumi'),
-        'lockup' => env('APP_BRAND_LOCKUP', 'Tokio Marine × Jaga Bumi'),
+        'lockup' => env('APP_BRAND_LOCKUP', 'Tokio Marine Life × Dompet Dhuafa'),
     ],
 
     // Halaman "sedang dalam pengembangan" selama situs belum diluncurkan.

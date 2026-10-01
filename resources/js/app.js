@@ -13,6 +13,9 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 
 window.Swal = Swal;
 
+// window.resultShare — tombol "Bagikan Hasilmu" di halaman hasil.
+import './result-share';
+
 // Dialog konfirmasi sebelum keluar dari wizard kalkulator (dipanggil dari
 // x-on:click di resources/views/pages/calculator.blade.php). Teksnya dibaca
 // dari data-attribute di link supaya tetap ikut terjemahan id/en, dan
